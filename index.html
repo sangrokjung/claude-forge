@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Forge - oh-my-zsh for Claude Code</title>
+  <meta name="description" content="Claude Forge transforms Claude Code into a full development environment. 11 agents, 36 commands, 15 skills, 6-layer security. Install in 5 minutes.">
+  <meta name="keywords" content="claude code, claude code framework, claude code plugins, claude code agents, ai coding, developer tools, anthropic, llm, automation, productivity">
+  <meta name="author" content="sangrokjung">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Claude Forge - oh-my-zsh for Claude Code">
+  <meta property="og:description" content="Turn Claude Code into a full development environment. 11 agents, 36 commands, 15 skills, 6-layer security hooks. Install in 5 minutes.">
+  <meta property="og:image" content="https://raw.githubusercontent.com/sangrokjung/claude-forge/main/docs/banner.jpg">
+  <meta property="og:url" content="https://github.com/sangrokjung/claude-forge">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Claude Forge">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Claude Forge - oh-my-zsh for Claude Code">
+  <meta name="twitter:description" content="Turn Claude Code into a full development environment. 11 agents, 36 commands, 15 skills, 6-layer security.">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/sangrokjung/claude-forge/main/docs/banner.jpg">
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Claude Forge",
+    "description": "An oh-my-zsh-style development environment for Claude Code. Provides 11 specialized agents, 36 slash commands, 15 skill workflows, 14 automation hooks, and 8 rule files.",
+    "url": "https://github.com/sangrokjung/claude-forge",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "macOS, Linux, Windows",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "Quantum Jump Club (QJC)",
+      "url": "https://quantumjumpclub.com"
+    },
+    "license": "https://opensource.org/licenses/MIT",
+    "softwareVersion": "1.0",
+    "programmingLanguage": ["Markdown", "Shell", "JavaScript"],
+    "codeRepository": "https://github.com/sangrokjung/claude-forge"
+  }
+  </script>
+
+  <style>
+    /* Reset */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* Variables */
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #1a1a2e;
+      --bg-terminal: #0d1117;
+      --text-primary: #e4e4e7;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --accent: #e94560;
+      --accent-hover: #ff6b81;
+      --purple: #533483;
+      --blue: #0f3460;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --cyan: #06b6d4;
+      --border: #27272a;
+      --font-mono: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --max-width: 1100px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      padding: 0 24px;
+    }
+
+    .nav-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+
+    .nav-logo {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--text-secondary); }
+
+    .nav-links { display: flex; gap: 24px; list-style: none; }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-family: var(--font-mono);
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text-primary); }
+
+    /* Sections */
+    section { padding: 80px 24px; }
+
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding-top: 120px;
+      padding-bottom: 80px;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 0%, rgba(233, 69, 96, 0.08) 0%, transparent 60%),
+        var(--bg-primary);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--accent);
+      border: 1px solid rgba(233, 69, 96, 0.3);
+      border-radius: 20px;
+      padding: 6px 16px;
+      margin-bottom: 24px;
+      background: rgba(233, 69, 96, 0.05);
+    }
+
+    .hero h1 {
+      font-family: var(--font-mono);
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .hero h1 .highlight { color: var(--accent); }
+
+    .hero-tagline {
+      font-size: clamp(18px, 3vw, 24px);
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      font-family: var(--font-mono);
+      font-weight: 300;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: var(--font-mono);
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--accent);
+      display: block;
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      padding: 14px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    /* Terminal Block */
+    .terminal {
+      background: var(--bg-terminal);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      max-width: 600px;
+      margin: 40px auto 0;
+      text-align: left;
+    }
+
+    .terminal-header {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .terminal-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .terminal-dot.red { background: #ff5f57; }
+    .terminal-dot.yellow { background: #febc2e; }
+    .terminal-dot.green { background: #28c840; }
+
+    .terminal-title {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: 8px;
+    }
+
+    .terminal-body {
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .terminal-body .prompt { color: var(--green); }
+    .terminal-body .command { color: var(--text-primary); }
+    .terminal-body .comment { color: var(--text-muted); }
+    .terminal-body .output { color: var(--cyan); }
+
+    /* Section Headers */
+    .section-title {
+      font-family: var(--font-mono);
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .section-title .highlight { color: var(--accent); }
+
+    .section-subtitle {
+      color: var(--text-secondary);
+      font-size: 16px;
+      text-align: center;
+      margin-bottom: 56px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(233, 69, 96, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .feature-count {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .feature-card h3 {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .feature-list {
+      list-style: none;
+      margin-top: 16px;
+    }
+
+    .feature-list li {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-secondary);
+      padding: 4px 0;
+    }
+
+    .feature-list li::before {
+      content: "$ ";
+      color: var(--green);
+    }
+
+    /* Quick Start */
+    .quickstart {
+      background: var(--bg-secondary);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+      margin-bottom: 48px;
+    }
+
+    .step {
+      text-align: center;
+    }
+
+    .step-number {
+      font-family: var(--font-mono);
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--accent);
+      opacity: 0.3;
+      margin-bottom: 8px;
+    }
+
+    .step h3 {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    /* Comparison Table */
+    .comparison-wrapper {
+      overflow-x: auto;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 14px;
+    }
+
+    .comparison-table th {
+      text-align: left;
+      padding: 16px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    .comparison-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(39, 39, 42, 0.5);
+      color: var(--text-secondary);
+    }
+
+    .comparison-table tr:hover td {
+      background: rgba(233, 69, 96, 0.03);
+    }
+
+    .comparison-table .feature-name {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .check { color: var(--green); font-size: 18px; }
+    .cross { color: var(--text-muted); font-size: 18px; }
+    .partial { color: var(--yellow); font-size: 14px; }
+
+    /* Workflow */
+    .workflow-pipeline {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+
+    .workflow-pipeline h3 {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      margin-bottom: 16px;
+      color: var(--accent);
+    }
+
+    .pipeline-steps {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-family: var(--font-mono);
+      font-size: 14px;
+    }
+
+    .pipeline-step {
+      background: var(--purple);
+      padding: 8px 14px;
+      border-radius: 6px;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    .pipeline-arrow {
+      color: var(--text-muted);
+      font-size: 18px;
+    }
+
+    /* FAQ */
+    .faq-list {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 24px 0;
+    }
+
+    .faq-question {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .faq-question::before {
+      content: ">";
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .faq-answer {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.8;
+      padding-left: 24px;
+    }
+
+    /* Footer */
+    footer {
+      padding: 48px 24px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    footer p {
+      color: var(--text-muted);
+      font-size: 14px;
+      font-family: var(--font-mono);
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover { color: var(--accent-hover); }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-bottom: 16px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero-stats { gap: 20px; }
+      .stat-number { font-size: 28px; }
+      .pipeline-steps { flex-direction: column; align-items: flex-start; }
+      .pipeline-arrow { transform: rotate(90deg); }
+      section { padding: 60px 16px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 28px; }
+      .hero-tagline { font-size: 16px; }
+      .hero-cta { flex-direction: column; align-items: center; }
+      .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">claude<span>-forge</span></a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#quickstart">Install</a></li>
+        <li><a href="#workflows">Workflows</a></li>
+        <li><a href="#comparison">Compare</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="https://github.com/sangrokjung/claude-forge">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <span class="hero-badge">open source &middot; MIT license</span>
+      <h1>
+        <span class="highlight">oh-my-zsh</span><br>
+        for Claude Code
+      </h1>
+      <p class="hero-tagline">Turn Claude Code into a full development environment</p>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-number">11</span>
+          <span class="stat-label">Agents</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">36</span>
+          <span class="stat-label">Commands</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">15</span>
+          <span class="stat-label">Skills</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">6</span>
+          <span class="stat-label">Security Layers</span>
+        </div>
+      </div>
+
+      <div class="hero-cta">
+        <a href="#quickstart" class="btn btn-primary">Quick Start</a>
+        <a href="https://github.com/sangrokjung/claude-forge" class="btn btn-secondary">View on GitHub</a>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-header">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span class="terminal-title">Terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="comment"># Install in 5 minutes</span></div>
+          <div><span class="prompt">$ </span><span class="command">git clone --recurse-submodules https://github.com/sangrokjung/claude-forge.git</span></div>
+          <div><span class="prompt">$ </span><span class="command">cd claude-forge && ./install.sh</span></div>
+          <div>&nbsp;</div>
+          <div><span class="comment"># Launch and explore</span></div>
+          <div><span class="prompt">$ </span><span class="command">claude</span></div>
+          <div><span class="output">&gt; /guide</span></div>
+          <div><span class="output">Welcome to Claude Forge! Let me show you around...</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="container">
+      <h2 class="section-title">What's <span class="highlight">Inside</span></h2>
+      <p class="section-subtitle">Everything you need for professional Claude Code development, pre-configured and ready to use.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <span class="feature-icon">&#x1f916;</span>
+          <div class="feature-count">11 agents</div>
+          <h3>Specialized Agents</h3>
+          <p>6 Opus-tier agents for deep analysis (planner, architect, code-reviewer, security-reviewer, TDD guide, database reviewer) and 5 Sonnet-tier agents for fast execution.</p>
+          <ul class="feature-list">
+            <li>planner</li>
+            <li>code-reviewer</li>
+            <li>security-reviewer</li>
+            <li>tdd-guide</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">&#x2318;</span>
+          <div class="feature-count">36 commands</div>
+          <h3>Slash Commands</h3>
+          <p>From planning to deployment. Chain commands into workflows or use /auto for full plan-to-PR automation.</p>
+          <ul class="feature-list">
+            <li>/plan</li>
+            <li>/tdd</li>
+            <li>/code-review</li>
+            <li>/commit-push-pr</li>
+            <li>/auto</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">&#x1f6e1;</span>
+          <div class="feature-count">6-layer defense</div>
+          <h3>Security Hooks</h3>
+          <p>Secret filtering, remote command guard, SQL injection prevention, code change scanning, rate limiting, and MCP usage tracking. All automatic.</p>
+          <ul class="feature-list">
+            <li>output-secret-filter</li>
+            <li>remote-command-guard</li>
+            <li>db-guard</li>
+            <li>security-auto-trigger</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">&#x26a1;</span>
+          <div class="feature-count">15 skills</div>
+          <h3>Skill Workflows</h3>
+          <p>Multi-step workflows combining agents, commands, and tools. Build systems, security pipelines, eval harnesses, and team orchestration.</p>
+          <ul class="feature-list">
+            <li>build-system</li>
+            <li>security-pipeline</li>
+            <li>team-orchestrator</li>
+            <li>verification-engine</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">&#x1f4d0;</span>
+          <div class="feature-count">8 rule files</div>
+          <h3>Coding Rules</h3>
+          <p>Always-on instructions that enforce coding style, security practices, git conventions, TDD, and evidence-based completion.</p>
+          <ul class="feature-list">
+            <li>coding-style</li>
+            <li>security</li>
+            <li>git-workflow</li>
+            <li>golden-principles</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">&#x1f517;</span>
+          <div class="feature-count">symlink-based</div>
+          <h3>Instant Updates</h3>
+          <p>Everything is symlinked from the git repo to ~/.claude/. Run git pull and your entire environment updates. No reinstall needed.</p>
+          <ul class="feature-list">
+            <li>git pull = instant update</li>
+            <li>settings.local.json overrides</li>
+            <li>fork-friendly</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Start -->
+  <section id="quickstart" class="quickstart">
+    <div class="container">
+      <h2 class="section-title">Quick <span class="highlight">Start</span></h2>
+      <p class="section-subtitle">From zero to a fully-equipped Claude Code environment in 3 steps.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">01</div>
+          <h3>Clone</h3>
+          <p>Clone the repository with submodules.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">02</div>
+          <h3>Install</h3>
+          <p>Run install.sh to create symlinks.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">03</div>
+          <h3>Code</h3>
+          <p>Launch claude and start building.</p>
+        </div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-header">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span class="terminal-title">Terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="comment"># Clone with submodules</span></div>
+          <div><span class="prompt">$ </span><span class="command">git clone --recurse-submodules https://github.com/sangrokjung/claude-forge.git</span></div>
+          <div><span class="prompt">$ </span><span class="command">cd claude-forge</span></div>
+          <div>&nbsp;</div>
+          <div><span class="comment"># Install (backs up existing ~/.claude/ automatically)</span></div>
+          <div><span class="prompt">$ </span><span class="command">./install.sh</span></div>
+          <div>&nbsp;</div>
+          <div><span class="comment"># Launch Claude Code with all features</span></div>
+          <div><span class="prompt">$ </span><span class="command">claude</span></div>
+          <div><span class="output">&gt; /guide</span></div>
+        </div>
+      </div>
+
+      <p style="text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 13px; font-family: var(--font-mono);">
+        Prerequisites: Node.js v22+, Git, jq, Claude Code CLI >= 1.0
+      </p>
+    </div>
+  </section>
+
+  <!-- Workflows -->
+  <section id="workflows">
+    <div class="container">
+      <h2 class="section-title">Development <span class="highlight">Workflows</span></h2>
+      <p class="section-subtitle">Pre-built command pipelines for common development patterns.</p>
+
+      <div class="workflow-pipeline">
+        <h3>Feature Development</h3>
+        <div class="pipeline-steps">
+          <span class="pipeline-step">/plan</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-step">/tdd</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-step">/code-review</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-step">/handoff-verify</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-step">/commit-push-pr</span>
+        </div>
+      </div>
+
+      <div class="workflow-pipeline">
+        <h3>Bug Fix (Fast Path)</h3>
+        <div class="pipeline-steps">
+          <span class="pipeline-step">/explore</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-step">/tdd</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-step">/verify-loop</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-step">/quick-commit</span>
+        </div>
+      </div>
+
+      <div class="workflow-pipeline">
+        <h3>Security Audit</h3>
+        <div class="pipeline-steps">
+          <span class="pipeline-step">/security-review</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-step">/stride-analysis-patterns</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-step">/security-compliance</span>
+        </div>
+      </div>
+
+      <div class="workflow-pipeline">
+        <h3>Full Autopilot</h3>
+        <div class="pipeline-steps">
+          <span class="pipeline-step">/auto login page</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-step" style="background: var(--blue);">Plan to PR, fully automated</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison -->
+  <section id="comparison" style="background: var(--bg-secondary);">
+    <div class="container">
+      <h2 class="section-title">How It <span class="highlight">Compares</span></h2>
+      <p class="section-subtitle">Claude Forge vs. manual setup vs. starting from scratch.</p>
+
+      <div class="comparison-wrapper">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Claude Forge</th>
+              <th>Manual Setup</th>
+              <th>Vanilla Claude Code</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="feature-name">Specialized agents</td>
+              <td><span class="check">&#x2713;</span> 11 pre-built</td>
+              <td><span class="partial">DIY</span></td>
+              <td><span class="cross">&#x2717;</span></td>
+            </tr>
+            <tr>
+              <td class="feature-name">Slash commands</td>
+              <td><span class="check">&#x2713;</span> 36 commands</td>
+              <td><span class="partial">DIY</span></td>
+              <td><span class="cross">&#x2717;</span></td>
+            </tr>
+            <tr>
+              <td class="feature-name">Security hooks</td>
+              <td><span class="check">&#x2713;</span> 6-layer defense</td>
+              <td><span class="partial">DIY</span></td>
+              <td><span class="cross">&#x2717;</span></td>
+            </tr>
+            <tr>
+              <td class="feature-name">Workflow pipelines</td>
+              <td><span class="check">&#x2713;</span> Pre-built chains</td>
+              <td><span class="partial">DIY</span></td>
+              <td><span class="cross">&#x2717;</span></td>
+            </tr>
+            <tr>
+              <td class="feature-name">Coding rules</td>
+              <td><span class="check">&#x2713;</span> 8 rule files</td>
+              <td><span class="partial">DIY</span></td>
+              <td><span class="cross">&#x2717;</span></td>
+            </tr>
+            <tr>
+              <td class="feature-name">MCP servers</td>
+              <td><span class="check">&#x2713;</span> 6 pre-configured</td>
+              <td><span class="partial">DIY</span></td>
+              <td><span class="cross">&#x2717;</span></td>
+            </tr>
+            <tr>
+              <td class="feature-name">Auto-updates</td>
+              <td><span class="check">&#x2713;</span> git pull</td>
+              <td><span class="cross">&#x2717;</span> Manual</td>
+              <td>N/A</td>
+            </tr>
+            <tr>
+              <td class="feature-name">Setup time</td>
+              <td><span class="check">&#x2713;</span> 5 minutes</td>
+              <td><span class="cross">&#x2717;</span> Hours/days</td>
+              <td><span class="check">&#x2713;</span> 0 minutes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <h2 class="section-title"><span class="highlight">FAQ</span></h2>
+      <p class="section-subtitle">Common questions about Claude Forge.</p>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-question">Will this break when Claude Code updates?</div>
+          <div class="faq-answer">
+            Claude Forge uses stable extension points: ~/.claude/agents/, commands/, hooks/, rules/, and settings.json. These are documented conventions, not internal APIs. Anthropic has been adding to these, not breaking them. We test against each CLI update.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does it work on Windows?</div>
+          <div class="faq-answer">
+            Yes. Windows uses install.ps1 which creates file copies instead of symlinks. You need to re-run install.ps1 after git pull. The agents, commands, hooks, and rules are identical across platforms.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can I customize the agents and commands?</div>
+          <div class="faq-answer">
+            Absolutely. Fork the repo and modify any markdown file. For per-user overrides without touching tracked files, use settings.local.json. You can also add your own agents and commands alongside the built-in ones.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What if I already have a ~/.claude/ directory?</div>
+          <div class="faq-answer">
+            The installer automatically backs up your existing ~/.claude/ directory before creating symlinks. Your config is safe. You can restore it at any time.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Is this just a collection of dotfiles?</div>
+          <div class="faq-answer">
+            It started that way, but it's evolved beyond config files. It includes workflow orchestration (commands chain into pipelines), real-time security hooks (6-layer defense), multi-step skills with conditional logic, team orchestration with parallel agents, and instant updates via symlinks.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What are the prerequisites?</div>
+          <div class="faq-answer">
+            Node.js v22+, Git, jq (macOS/Linux), and Claude Code CLI >= 1.0. The installer checks all dependencies before proceeding.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How do I contribute?</div>
+          <div class="faq-answer">
+            See CONTRIBUTING.md in the repository. You can add agents, commands, skills, hooks, or documentation. PRs are welcome.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <ul class="footer-links">
+      <li><a href="https://github.com/sangrokjung/claude-forge">GitHub</a></li>
+      <li><a href="https://github.com/sangrokjung/claude-forge/blob/main/CONTRIBUTING.md">Contributing</a></li>
+      <li><a href="https://github.com/sangrokjung/claude-forge/blob/main/LICENSE">MIT License</a></li>
+      <li><a href="https://github.com/sangrokjung/claude-forge/issues">Issues</a></li>
+    </ul>
+    <p>Made by <a href="https://github.com/sangrokjung">QJC (Quantum Jump Club)</a></p>
+    <p style="margin-top: 8px; font-size: 12px;">Claude Forge is not affiliated with Anthropic.</p>
+  </footer>
+
+</body>
+</html>
