@@ -1,6 +1,5 @@
 """CLI 통합 테스트."""
 
-import sys
 from pathlib import Path
 
 import pytest
@@ -57,13 +56,10 @@ class TestCLI:
             main(["-i", str(tmp_path / "nonexistent.csv")])
         assert exc_info.value.code == 1
 
-    def test_empty_segment_filter_exits(
+    def test_segment_filter_generates_only_matching(
         self, sample_csv: Path, tmp_path: Path
     ) -> None:
         output_dir = tmp_path / "emails"
-        # sample_csv에는 enterprise 1건만 있으므로 startup 필터 시 1건
-        # 하지만 존재하지 않는 세그먼트로는 테스트 불가 (argparse가 choices 검증)
-        # 대신 enterprise 필터가 정상 작동하는지 확인
         main(["-i", str(sample_csv), "-o", str(output_dir), "-s", "startup"])
         files = list(output_dir.glob("*.txt"))
         assert len(files) == 1
