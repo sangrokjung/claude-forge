@@ -1,0 +1,30 @@
+{
+  "role_name": "reviewer",
+  "description": "리뷰어 역할 — 코드 리뷰와 보안 분석에 특화된 읽기 중심 역할",
+  "permissions": {
+    "allow": [
+      "Read(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "Task(*)",
+      "WebSearch",
+      "WebSearch(*)",
+      "mcp__context7__*",
+      "mcp__github__*"
+    ],
+    "deny": [
+      "Write(*)",
+      "Edit(*)",
+      "Bash(rm *)*",
+      "Bash(sudo:*)",
+      "Bash(chmod *)*",
+      "Bash(git push*)*",
+      "Bash(git commit*)*",
+      "Bash(npm *)*",
+      "Bash(eval *)*"
+    ]
+  },
+  "commands": ["code-review", "security-review", "explore"],
+  "agents": ["code-reviewer", "security-reviewer"],
+  "mcp": ["context7", "github"]
+}
