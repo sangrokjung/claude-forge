@@ -1,0 +1,11 @@
+company,contact,email,segment,phone,position
+삼성전자,김철수,cs.kim@samsung.com,enterprise,02-1234-5678,CTO
+현대자동차,박영희,yh.park@hyundai.com,enterprise,02-2345-6789,VP of Engineering
+LG에너지솔루션,이민수,ms.lee@lgenergy.com,enterprise,02-3456-7890,IT Director
+넥스트유니콘,정하나,hana@nextunicorn.kr,startup,010-1111-2222,CEO
+코드스페이스,최준혁,jh.choi@codespace.io,startup,010-2222-3333,CTO
+데이터플로우,한소영,sy.han@dataflow.kr,startup,010-3333-4444,CPO
+AI스튜디오,강민지,mj.kang@aistudio.dev,startup,010-4444-5555,Lead Engineer
+김지원,김지원,jiwon.kim@gmail.com,individual,010-5555-6666,프리랜서
+이승호,이승호,sh.lee@naver.com,individual,010-6666-7777,개인 개발자
+박서연,박서연,sy.park@kakao.com,individual,010-7777-8888,1인 기업가
