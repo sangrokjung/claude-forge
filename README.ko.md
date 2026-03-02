@@ -374,26 +374,39 @@ claude-forge/
 
 ## 🤖 에이전트
 
+각 에이전트는 UI에서 역할별 **색상**으로 구분됩니다:
+
 ### Opus (고성능 추론)
 
-| 에이전트 | 역할 |
-|:---------|:-----|
-| `planner` | 복잡한 기능의 구현 계획 수립, 의존성/리스크 분석 |
-| `architect` | 시스템 설계, 확장성, 기술 의사결정 |
-| `code-reviewer` | CRITICAL/HIGH/MEDIUM 이슈 분류 코드 리뷰 |
-| `security-reviewer` | OWASP Top 10 기반 보안 분석 |
-| `tdd-guide` | RED → GREEN → IMPROVE 테스트 주도 개발 |
-| `database-reviewer` | PostgreSQL/Supabase 스키마, 쿼리 최적화 |
+| 에이전트 | 색상 | 역할 |
+|:---------|:----:|:-----|
+| `planner` | blue | 복잡한 기능의 구현 계획 수립, 의존성/리스크 분석 |
+| `architect` | blue | 시스템 설계, 확장성, 기술 의사결정 |
+| `code-reviewer` | blue | CRITICAL/HIGH/MEDIUM 이슈 분류 코드 리뷰 |
+| `security-reviewer` | red | OWASP Top 10 기반 보안 분석 |
+| `tdd-guide` | cyan | RED → GREEN → IMPROVE 테스트 주도 개발 |
+| `database-reviewer` | blue | PostgreSQL/Supabase 스키마, 쿼리 최적화 |
 
 ### Sonnet (빠른 실행)
 
-| 에이전트 | 역할 |
-|:---------|:-----|
-| `build-error-resolver` | 빌드/TypeScript 오류 즉시 수정 |
-| `e2e-runner` | E2E 테스트 생성, 실행, 관리 |
-| `refactor-cleaner` | 데드 코드 제거, 중복 코드 정리 |
-| `doc-updater` | 문서/코드맵 자동 업데이트 |
-| `verify-agent` | 새 컨텍스트에서 빌드·테스트·린트 검증 |
+| 에이전트 | 색상 | 역할 |
+|:---------|:----:|:-----|
+| `build-error-resolver` | cyan | 빌드/TypeScript 오류 즉시 수정 |
+| `e2e-runner` | cyan | E2E 테스트 생성, 실행, 관리 |
+| `refactor-cleaner` | yellow | 데드 코드 제거, 중복 코드 정리 |
+| `doc-updater` | yellow | 문서/코드맵 자동 업데이트 |
+| `verify-agent` | cyan | 새 컨텍스트에서 빌드·테스트·린트 검증 |
+
+### 색상 체계
+
+| 색상 | 의미 |
+|:-----|:-----|
+| **blue** | 분석/리뷰 |
+| **cyan** | 테스트/검증 |
+| **yellow** | 유지보수/데이터 |
+| **red** | 보안/경고 |
+| **magenta** | 크리에이티브/리서치 |
+| **green** | 비즈니스/성공 |
 
 ---
 
@@ -489,15 +502,31 @@ claude-forge/
 <details>
 <summary><strong>에이전트 추가하기</strong></summary>
 
-`agents/` 디렉토리에 마크다운 파일을 생성하세요:
+`agents/` 디렉토리에 YAML frontmatter가 포함된 마크다운 파일을 생성하세요:
 
 ```markdown
-# my-agent.md
+---
+name: my-agent
+description: Use this agent when [트리거 조건]. Input: [입력]. Output: [출력].
+tools: ["Read", "Grep", "Glob"]
+model: sonnet
+memory: project
+color: blue
+---
 
-에이전트의 역할, 사용 가능한 도구, 행동 규칙을 기술합니다.
+You are an expert [역할]. Your mission is to [목표].
+
+## Process
+1. [단계 1]
+2. [단계 2]
+
+## Output Format
+[출력 형식]
 ```
 
-즉시 Task 서브에이전트 타입으로 사용 가능합니다.
+지원 frontmatter 필드: `name` (필수), `description` (필수), `model`, `color`, `tools`, `memory`, `maxTurns`, `isolation`.
+
+상세 필드 설명과 알려진 제한사항은 [reference/agents-config-ref.md](reference/agents-config-ref.md) 참조.
 
 </details>
 

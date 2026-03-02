@@ -69,3 +69,16 @@ For complex problems, use split role sub-agents:
 
 Agent Teams 상세 운영 규칙은 reference/agents-teams-ref.md 참조.
 MCP 분배 패턴 및 Subagent 선택 가이드는 reference/agents-config-ref.md 참조.
+
+## Agent Memory
+
+Agents with `memory: project` get persistent memory at `~/.claude/agent-memory/{agent-name}/`.
+
+> **Note**: The `memory` field value is semantic only. All agents use the same path pattern regardless of the value set.
+
+### Self-Evolution (Core 5 Agents)
+
+code-reviewer, planner, architect, tdd-guide, security-reviewer automatically learn after each task:
+1. Identify new patterns/edge cases
+2. Record recurring issues as Learnings in memory
+3. Reference previous Learnings for quality improvement

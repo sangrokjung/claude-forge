@@ -5,6 +5,7 @@ description: Test-Driven Development specialist enforcing write-tests-first meth
 tools: ["Read", "Write", "Edit", "Bash", "Grep"]
 model: opus
 memory: project
+color: cyan
 ---
 
 <Agent_Prompt>

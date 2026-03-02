@@ -344,26 +344,39 @@ claude-forge/
 
 ## 🤖 Agents
 
+Each agent has a **color** in the UI for quick visual identification:
+
 ### Opus Agents (6) -- Deep analysis & planning
 
-| Agent | Purpose |
-|:------|:--------|
-| **planner** | Implementation planning for complex features and refactoring |
-| **architect** | System design, scalability decisions, technical architecture |
-| **code-reviewer** | Quality, security, and maintainability review |
-| **security-reviewer** | OWASP Top 10, secrets, SSRF, injection detection |
-| **tdd-guide** | Test-driven development enforcement (RED → GREEN → IMPROVE) |
-| **database-reviewer** | PostgreSQL/Supabase query optimization, schema design |
+| Agent | Color | Purpose |
+|:------|:-----:|:--------|
+| **planner** | blue | Implementation planning for complex features and refactoring |
+| **architect** | blue | System design, scalability decisions, technical architecture |
+| **code-reviewer** | blue | Quality, security, and maintainability review |
+| **security-reviewer** | red | OWASP Top 10, secrets, SSRF, injection detection |
+| **tdd-guide** | cyan | Test-driven development enforcement (RED → GREEN → IMPROVE) |
+| **database-reviewer** | blue | PostgreSQL/Supabase query optimization, schema design |
 
 ### Sonnet Agents (5) -- Fast execution & automation
 
-| Agent | Purpose |
+| Agent | Color | Purpose |
+|:------|:-----:|:--------|
+| **build-error-resolver** | cyan | Fix build/TypeScript errors with minimal diffs |
+| **e2e-runner** | cyan | Generate and run Playwright E2E tests |
+| **refactor-cleaner** | yellow | Dead code cleanup using knip, depcheck, ts-prune |
+| **doc-updater** | yellow | Documentation and codemap updates |
+| **verify-agent** | cyan | Fresh-context build/lint/test verification |
+
+### Color Semantics
+
+| Color | Meaning |
 |:------|:--------|
-| **build-error-resolver** | Fix build/TypeScript errors with minimal diffs |
-| **e2e-runner** | Generate and run Playwright E2E tests |
-| **refactor-cleaner** | Dead code cleanup using knip, depcheck, ts-prune |
-| **doc-updater** | Documentation and codemap updates |
-| **verify-agent** | Fresh-context build/lint/test verification |
+| **blue** | Analysis & review |
+| **cyan** | Testing & verification |
+| **yellow** | Maintenance & data |
+| **red** | Security & critical |
+| **magenta** | Creative & research |
+| **green** | Business & success |
 
 ---
 
