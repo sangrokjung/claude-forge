@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block nav_links %}
+  <a href="/dashboard">Dashboard</a>
+  <a href="/results">Results</a>
+  <a href="/logout">Logout</a>
+{% endblock %}
+{% block content %}
+<h2>Dashboard</h2>
+<p style="margin-bottom:1rem; color:#6b7280;">Logged in as {{ user.email }}</p>
+
+{% if error %}
+  <div class="alert alert-error">{{ error }}</div>
+{% endif %}
+{% if success %}
+  <div class="alert alert-success">{{ success }}</div>
+{% endif %}
+{% if info %}
+  <div class="alert alert-info">{{ info }}</div>
+{% endif %}
+
+<div class="card">
+  <h3>Alert Configuration</h3>
+  <form method="post" action="/dashboard">
+    <div class="form-group">
+      <label for="recipients">Recipients (comma-separated, max 10)</label>
+      <textarea id="recipients" name="recipients" rows="2">{{ recipients }}</textarea>
+    </div>
+    <div class="form-group">
+      <label for="since_hours">Lookup window (hours)</label>
+      <input type="number" id="since_hours" name="since_hours" value="{{ since_hours }}" min="1" max="720">
+    </div>
+    <div class="form-group">
+      <label for="enabled_sources">Enabled sources (comma-separated)</label>
+      <input type="text" id="enabled_sources" name="enabled_sources" value="{{ enabled_sources }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Save Settings</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Actions</h3>
+  <form method="post" action="/test-email" style="display:inline;">
+    <button type="submit" class="btn btn-secondary">Send Test Email</button>
+  </form>
+  <form method="post" action="/run" style="display:inline; margin-left:0.5rem;">
+    <button type="submit" class="btn btn-primary">Run Monitoring</button>
+  </form>
+  <a href="/results" class="btn btn-secondary" style="margin-left:0.5rem;">View Results</a>
+</div>
+{% endblock %}

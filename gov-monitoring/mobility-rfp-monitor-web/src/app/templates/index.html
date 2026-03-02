@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Mobility RFP Monitor{% endblock %}
+{% block nav_links %}
+  <a href="/login">Login</a>
+  <a href="/register">Register</a>
+{% endblock %}
+{% block content %}
+<div class="card" style="text-align:center; padding:3rem;">
+  <h1>Mobility RFP Monitor</h1>
+  <p style="margin:1rem 0; color:#6b7280;">Korean government mobility RFP monitoring service</p>
+  <p>Automatically track K-Startup and KONEPS (G2B) procurement notices related to mobility, autonomous driving, EV, and smart transportation.</p>
+  <div style="margin-top:2rem;">
+    <a href="/register" class="btn btn-primary">Get Started</a>
+    <a href="/login" class="btn btn-secondary" style="margin-left:0.5rem;">Login</a>
+  </div>
+</div>
+{% endblock %}
