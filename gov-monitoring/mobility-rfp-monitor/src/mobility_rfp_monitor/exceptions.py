@@ -37,3 +37,37 @@ class SlackNotificationError(Exception):
         self.status_code = status_code
         self.detail = detail
         super().__init__(f"Slack notification failed HTTP {status_code}: {detail}")
+
+
+class EmailNotificationError(Exception):
+    """Raised when SMTP email delivery fails."""
+
+    def __init__(self, detail: str) -> None:
+        self.detail = detail
+        super().__init__(f"Email notification failed: {detail}")
+
+
+class DiscordNotificationError(Exception):
+    """Raised when the Discord webhook call fails."""
+
+    def __init__(self, status_code: int, detail: str) -> None:
+        self.status_code = status_code
+        self.detail = detail
+        super().__init__(f"Discord notification failed HTTP {status_code}: {detail}")
+
+
+class WebhookNotificationError(Exception):
+    """Raised when a generic webhook call fails."""
+
+    def __init__(self, status_code: int, detail: str) -> None:
+        self.status_code = status_code
+        self.detail = detail
+        super().__init__(f"Webhook notification failed HTTP {status_code}: {detail}")
+
+
+class ConfigError(Exception):
+    """Raised when configuration file is invalid or missing."""
+
+    def __init__(self, detail: str) -> None:
+        self.detail = detail
+        super().__init__(f"Configuration error: {detail}")
