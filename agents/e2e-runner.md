@@ -278,3 +278,63 @@ await page.waitForResponse(resp => resp.url().includes('/api/data'))
 ## Related Skills
 
 - e2e, frontend-testing, react-verify
+
+---
+
+## Blazor E2E (Playwright for .NET)
+
+Blazor Auto 프로젝트의 E2E 테스트는 **Microsoft.Playwright** (C# SDK)를 사용합니다.
+
+### 설치
+
+```bash
+dotnet add package Microsoft.Playwright
+dotnet tool install --global Microsoft.Playwright.CLI
+playwright install
+```
+
+### 기본 테스트 구조 (C#)
+
+```csharp
+// Tests/E2E/LoginTests.cs
+[TestFixture]
+public class LoginTests : PageTest
+{
+    [Test]
+    public async Task Login_WithValidCredentials_RedirectsToDashboard()
+    {
+        await Page.GotoAsync("http://localhost:5000/login");
+        await Page.FillAsync("[data-testid='email']", "test@example.com");
+        await Page.FillAsync("[data-testid='password']", "password");
+        await Page.ClickAsync("[data-testid='login-btn']");
+        await Page.WaitForURLAsync("**/dashboard");
+        await Expect(Page).ToHaveURLAsync(new Regex(".*/dashboard"));
+    }
+}
+```
+
+### Blazor 특화 대기 패턴
+
+```csharp
+// Blazor 렌더링 완료 대기 (JS Interop 완료 후)
+await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+// Blazor 상태 변경 후 UI 업데이트 대기
+await Page.WaitForSelectorAsync("[data-testid='result']", new() { State = WaitForSelectorState.Visible });
+
+// API 응답 대기
+await Page.WaitForResponseAsync(resp => resp.Url.Contains("/api/"));
+```
+
+### 셀렉터 규칙
+
+- `data-testid` 속성 우선 (`<button data-testid="submit-btn">`)
+- Blazor 컴포넌트에서는 `@attributes` 스프레드로 전달: `<button @attributes="AdditionalAttributes">`
+- CSS 클래스나 텍스트 기반 셀렉터 사용 금지
+
+### 테스트 실행
+
+```bash
+dotnet test --filter "Category=E2E"
+dotnet test --filter "FullyQualifiedName~LoginTests"
+```

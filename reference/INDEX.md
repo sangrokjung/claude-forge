@@ -18,7 +18,16 @@
 
 | 파일 | 용도 |
 |------|------|
-| ~/.claude/rules/testing.md | 테스트 전략 및 패턴 |
+| ~/.claude/rules/architecture-dotnet.md | Clean Architecture 레이어 규칙, DI 패턴 |
+| ~/.claude/rules/coding-style-dotnet.md | C# 코딩 스타일, 네이밍 규칙 |
+| ~/.claude/rules/frontend-blazor.md | Blazor 컴포넌트 패턴, HttpOnly 쿠키 인증 |
+| ~/.claude/rules/database-supabase.md | Supabase DB, RLS, EF Core 마이그레이션 |
+| ~/.claude/rules/security-dotnet.md | .NET 보안, OWASP, 시크릿 관리 |
+| ~/.claude/rules/testing-dotnet.md | xUnit, Moq, 테스트 전략 |
+| ~/.claude/rules/azure-deployment.md | Azure 배포 규칙 |
+| ~~testing.md~~ | **disabled** — testing-dotnet.md로 대체 |
+| ~~coding-style.md~~ | **disabled** — coding-style-dotnet.md로 대체 |
+| ~~security.md~~ | **disabled** — security-dotnet.md로 대체 |
 
 ## 참조 문서 (reference/ - 필요 시 Read 도구로 접근)
 

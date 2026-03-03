@@ -31,7 +31,7 @@ except:
 
 # 코드 파일만 대상 (md, txt, json, yaml 등 제외)
 case "$FILE_PATH" in
-    *.ts|*.tsx|*.js|*.jsx|*.py|*.go|*.rs|*.java|*.rb|*.php|*.swift|*.kt|*.sh)
+    *.ts|*.tsx|*.js|*.jsx|*.py|*.go|*.rs|*.java|*.rb|*.php|*.swift|*.kt|*.sh|*.cs|*.razor|*.cshtml)
         ;;
     *)
         exit 0

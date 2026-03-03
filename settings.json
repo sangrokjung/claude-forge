@@ -36,6 +36,8 @@
       "mcp__context7__*",
       "mcp__exa__*",
       "mcp__memory__*",
+      "mcp__supabase__*",
+      "mcp__azure__*",
       "mcp__github__*",
       "mcp__fetch__*",
       "mcp__jina-reader__*"

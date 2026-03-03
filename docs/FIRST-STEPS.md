@@ -99,6 +99,9 @@ claude             # Claude Code 실행
 
 **Claude Forge에서**: 보안 검사, 코드 품질 체크 등이 훅으로 자동 실행됩니다.
 
+> **Windows 사용자**: 훅은 bash 스크립트로 작성되어 있습니다. Git Bash 또는 WSL2가 필요합니다. → [Windows Hooks 설정 가이드](WINDOWS_HOOKS_SETUP.md)
+
+
 ---
 
 ### 린트 (Lint)

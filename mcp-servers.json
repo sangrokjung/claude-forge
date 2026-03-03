@@ -4,16 +4,44 @@
     "context7": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
       "env": {},
-      "description": "Real-time library documentation (React 19, Next.js 15, etc.)"
+      "description": "Real-time library documentation (.NET 10, Blazor, ASP.NET Core, React, Next.js, etc.)"
     },
     "memory": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
       "env": {},
       "description": "Persistent context across sessions (knowledge graph)"
+    },
+    "supabase": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "${SUPABASE_ACCESS_TOKEN}"
+      },
+      "description": "Supabase project management — tables, RLS, Edge Functions, migrations, branching"
+    },
+    "azure": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@azure/mcp@latest"
+      ],
+      "env": {},
+      "description": "Azure services (App Service, Key Vault, Storage, etc.) — 40+ Azure resource management"
     },
     "exa": {
       "type": "http",
@@ -23,7 +51,10 @@
     "github": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
       },
@@ -32,13 +63,18 @@
     "fetch": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["mcp-server-fetch"],
+      "args": [
+        "mcp-server-fetch"
+      ],
       "description": "Web content fetching (WebFetch replacement)"
     },
     "jina-reader": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "jina-mcp-tools"],
+      "args": [
+        "-y",
+        "jina-mcp-tools"
+      ],
       "description": "URL-to-markdown via Jina AI (token-efficient)"
     }
   }

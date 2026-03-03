@@ -41,6 +41,15 @@ SECURITY_PATTERNS = [
     r'config/security',
     r'security\.ts',
     r'security\.js',
+    r'appsettings',
+    r'program\.cs',
+    r'startup\.cs',
+    # .NET 인증/권한
+    r'controller\.cs',
+    r'middleware\.cs',
+    r'authorize',
+    r'identity',
+    r'blazorauth',
     # DB 보안
     r'rls',
     r'policy',

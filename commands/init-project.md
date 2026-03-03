@@ -1,7 +1,7 @@
 ---
 allowed-tools: Bash(git:*), Bash(mkdir:*), Read, Write, Glob
 description: 프로젝트 초기 설정 (v6)
-argument-hint: [프로젝트명] [--type next|vite|go|python|rust]
+argument-hint: [프로젝트명] [--type next|vite|go|python|rust|dotnet]
 ---
 
 # /init-project - 프로젝트 초기화 (v6)
@@ -24,11 +24,14 @@ argument-hint: [프로젝트명] [--type next|vite|go|python|rust]
 ```
 수집 항목:
   1. package.json / go.mod / Cargo.toml / pyproject.toml -> 기술 스택
+  1a. *.sln / *.csproj / global.json -> .NET 기술 스택 (Blazor/API)
   2. .git 존재 여부 -> Git 초기화 상태
   3. README.md -> 프로젝트 설명
   4. 기존 CLAUDE.md -> 이미 초기화 여부
   5. 디렉토리 구조 -> 아키텍처 패턴
 ```
+
+> `.sln` 파일이 발견되면 기술 스택을 `.NET`으로 자동 설정한다.
 
 기존 CLAUDE.md가 있으면 사용자에게 덮어쓰기/병합/취소를 확인한다.
 
@@ -48,9 +51,16 @@ argument-hint: [프로젝트명] [--type next|vite|go|python|rust]
 - [감지된 기술 스택]
 
 ## 빌드 & 테스트
-- 빌드: [npm run build / go build / ...]
-- 테스트: [npm test / go test / ...]
-- 린트: [eslint / golangci-lint / ...]
+<!-- .NET 프로젝트인 경우 -->
+- 빌드: `dotnet build`
+- 테스트: `dotnet test`
+- 린트: `dotnet format --verify-no-changes`
+- 마이그레이션: `dotnet ef migrations add [Name]`
+
+<!-- JS/TS 프로젝트인 경우 -->
+- 빌드: `npm run build`
+- 테스트: `npm test`
+- 린트: `eslint . / tsc --noEmit`
 
 ## 디렉토리 구조
 [주요 디렉토리와 역할]

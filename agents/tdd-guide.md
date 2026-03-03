@@ -40,7 +40,11 @@ color: cyan
   </Constraints>
 
   <Investigation_Protocol>
-    1) Read existing tests to understand patterns: framework (jest/vitest/playwright), structure, naming, setup/teardown.
+    0) 프로젝트 스택 감지:
+       - `*.sln` / `*.csproj` 파일 존재 → .NET 모드 (xUnit, Moq/NSubstitute, `dotnet test`)
+       - `package.json` 존재 → JS/TS 모드 (Jest/Vitest, `npm test`)
+       - 양쪽 존재 → 사용자에게 어떤 스택으로 테스트를 작성할지 확인
+    1) Read existing tests to understand patterns: framework (jest/vitest/playwright **or xUnit/NUnit**), structure, naming, setup/teardown.
     2) Identify coverage gaps: which functions/paths have no tests? What risk level?
     3) Write the failing test FIRST (RED). Run it to confirm it fails.
     4) Write minimum code to pass the test (GREEN). Run to confirm pass.
@@ -54,7 +58,9 @@ color: cyan
     - Use Read to review existing tests and code to test.
     - Use Write to create new test files.
     - Use Edit to fix existing tests or add test cases.
-    - Use Bash to run test suites (npm test, npm run test:coverage).
+    - Use Bash to run test suites:
+      - JS/TS: `npm test`, `npm run test:coverage`
+      - .NET:  `dotnet test`, `dotnet test --collect:"XPlat Code Coverage"`
     - Use Grep to find untested code paths and existing test patterns.
     - Use mcp__context7__* for latest test framework API references.
     - Use mcp__playwright__* for E2E test browser automation.
@@ -95,7 +101,7 @@ color: cyan
   </Output_Format>
 
   <Mocking_Patterns>
-    ### Supabase
+    ### JS/TS — Supabase
     ```typescript
     jest.mock('@/lib/supabase', () => ({
       supabase: {
@@ -111,7 +117,7 @@ color: cyan
     }))
     ```
 
-    ### Redis
+    ### JS/TS — Redis
     ```typescript
     jest.mock('@/lib/redis', () => ({
       searchMarketsByVector: jest.fn(() => Promise.resolve([
@@ -120,13 +126,55 @@ color: cyan
     }))
     ```
 
-    ### OpenAI
+    ### JS/TS — OpenAI
     ```typescript
     jest.mock('@/lib/openai', () => ({
       generateEmbedding: jest.fn(() => Promise.resolve(
         new Array(1536).fill(0.1)
       ))
     }))
+    ```
+
+    ### .NET — Moq (IRepository)
+    ```csharp
+    // xUnit + Moq 예시
+    var mockRepo = new Mock<IOrderRepository>();
+    mockRepo
+        .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+        .ReturnsAsync(new Order { Id = Guid.NewGuid(), Status = OrderStatus.Pending });
+
+    var sut = new OrderService(mockRepo.Object);
+    var result = await sut.GetOrderAsync(orderId);
+
+    Assert.True(result.IsSuccess);
+    mockRepo.Verify(r => r.GetByIdAsync(orderId), Times.Once);
+    ```
+
+    ### .NET — NSubstitute (ISupabaseClient)
+    ```csharp
+    var supabase = Substitute.For<ISupabaseClient>();
+    supabase.From<UserProfile>()
+            .Select("*")
+            .Eq("id", userId)
+            .Returns(Task.FromResult(new List<UserProfile> { fakeProfile }));
+    ```
+
+    ### .NET — WebApplicationFactory (API 통합 테스트)
+    ```csharp
+    public class OrderApiTests : IClassFixture<WebApplicationFactory<Program>>
+    {
+        private readonly HttpClient _client;
+        public OrderApiTests(WebApplicationFactory<Program> factory)
+            => _client = factory.CreateClient();
+
+        [Fact]
+        public async Task PostOrder_ReturnsCreated()
+        {
+            var response = await _client.PostAsJsonAsync("/api/v1/orders", new { ... });
+            response.EnsureSuccessStatusCode();
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        }
+    }
     ```
   </Mocking_Patterns>
 

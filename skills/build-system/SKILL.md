@@ -2,7 +2,7 @@
 name: build-system
 version: 1.0.0
 description: 프로젝트 빌드 시스템 자동 감지 및 실행 스킬
-last_updated: 2026-01-31
+last_updated: 2026-03-03
 ---
 
 # Build System Skill
@@ -15,6 +15,7 @@ last_updated: 2026-01-31
 
 | 빌드 시스템 | 감지 파일 | 빌드 명령어 | 테스트 명령어 |
 |------------|----------|------------|--------------|
+| **.NET** | `*.csproj` / `*.sln` | `dotnet build` | `dotnet test` |
 | npm | `package.json` | `npm run build` | `npm test` |
 | yarn | `yarn.lock` | `yarn build` | `yarn test` |
 | pnpm | `pnpm-lock.yaml` | `pnpm build` | `pnpm test` |
@@ -52,16 +53,17 @@ last_updated: 2026-01-31
 
 ## 감지 우선순위
 
-1. `package-lock.json` → npm
-2. `yarn.lock` → yarn
-3. `pnpm-lock.yaml` → pnpm
-4. `pyproject.toml` → poetry
-5. `requirements.txt` → pip
-6. `Cargo.toml` → cargo
-7. `go.mod` → go
-8. `build.gradle` → gradle
-9. `pom.xml` → maven
-10. `Makefile` → make
+1. `*.csproj` / `*.sln` → dotnet
+2. `package-lock.json` → npm
+3. `yarn.lock` → yarn
+4. `pnpm-lock.yaml` → pnpm
+5. `pyproject.toml` → poetry
+6. `requirements.txt` → pip
+7. `Cargo.toml` → cargo
+8. `go.mod` → go
+9. `build.gradle` → gradle
+10. `pom.xml` → maven
+11. `Makefile` → make
 
 ## 커스터마이징
 
@@ -74,4 +76,33 @@ last_updated: 2026-01-31
     "test_command": "npm run test:ci"
   }
 }
+```
+
+---
+
+## .NET 전용 명령어
+
+`.csproj` 또는 `.sln` 파일이 감지되면 아래 명령어를 사용합니다.
+
+| 목적 | 명령어 |
+|------|--------|
+| 빌드 | `dotnet build` |
+| 테스트 | `dotnet test` |
+| 포맷 검사 (린트) | `dotnet format --verify-no-changes` |
+| 포맷 자동 적용 | `dotnet format` |
+| EF 마이그레이션 생성 | `dotnet ef migrations add [Name]` |
+| DB 업데이트 | `dotnet ef database update` |
+| 실행 | `dotnet run --project [프로젝트경로]` |
+| 퍼블리시 | `dotnet publish -c Release` |
+
+### CLAUDE.md 기반 자동 인식
+
+CLAUDE.md에 아래와 같이 명시하면 `/handoff-verify`, `/auto` 등이 자동으로 참조합니다:
+
+```markdown
+## 빌드 & 검증 명령어
+- Build: `dotnet build`
+- Test: `dotnet test`
+- Lint: `dotnet format --verify-no-changes`
+- Migration: `dotnet ef migrations add [Name]`
 ```

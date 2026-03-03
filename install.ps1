@@ -53,6 +53,17 @@ function Test-Dependencies {
     if (-not (Get-Command "node" -ErrorAction SilentlyContinue)) { $missing += "nodejs" }
     if (-not (Get-Command "git" -ErrorAction SilentlyContinue)) { $missing += "git" }
 
+    # .NET SDK 확인 (선택적 — .NET 프로젝트 사용 시)
+    if (-not (Get-Command "dotnet" -ErrorAction SilentlyContinue)) {
+        Write-Host "[참고] .NET SDK가 설치되지 않았습니다. .NET 프로젝트 사용 시 필요합니다." -ForegroundColor Yellow
+        Write-Host "       설치: winget install Microsoft.DotNet.SDK.10" -ForegroundColor Yellow
+        Write-Host ""
+    }
+    else {
+        $dotnetVersion = (dotnet --version 2>$null)
+        Write-Host "[OK] .NET SDK 확인: $dotnetVersion" -ForegroundColor Green
+    }
+
     if ($missing.Count -gt 0) {
         Write-Host "설치되지 않은 프로그램이 있습니다: $($missing -join ', ')" -ForegroundColor Red
         Write-Host ""

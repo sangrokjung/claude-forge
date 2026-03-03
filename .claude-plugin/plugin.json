@@ -2,8 +2,8 @@
   "name": "claude-forge",
   "version": "1.0.0",
   "description": "Production-grade configuration framework for Claude Code",
-  "author": "sangrokjung",
-  "homepage": "https://github.com/sangrokjung/claude-forge",
+  "author": "daeha76",
+  "homepage": "https://github.com/daeha76/claude-forge",
   "license": "MIT",
   "engines": {
     "claude-code": ">=1.0.0"

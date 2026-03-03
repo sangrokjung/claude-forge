@@ -12,7 +12,10 @@
 
 **왜?** 하드코딩된 시크릿은 커밋 한 번으로 영구 노출된다. git history에서 완전 삭제는 사실상 불가능.
 
-**어떻게?** `process.env`로만 접근하고, 미설정 시 즉시 throw하라.
+**어떻게?** 환경 변수 또는 시크릿 관리 도구로만 접근하고, 미설정 시 즉시 throw하라.
+- JS/TS: `process.env`
+- .NET: `IConfiguration`, User Secrets, Azure Key Vault
+- 공통: `.env` 파일은 `.gitignore`에 반드시 포함
 
 ## 3. 테스트 먼저 (TDD)
 
@@ -36,7 +39,10 @@
 
 **왜?** 내부 코드는 신뢰해도 되지만, 사용자 입력과 외부 API 응답은 신뢰할 수 없다.
 
-**어떻게?** zod 스키마로 입력을 검증하고, 파라미터화된 쿼리로 SQL 인젝션을 차단하라.
+**어떻게?** 입력 스키마로 검증하고, 파라미터화된 쿼리로 SQL 인젝션을 차단하라.
+- JS/TS: `zod` 스키마
+- .NET: `FluentValidation`, DataAnnotations, `ModelState`
+- 공통: ORM의 파라미터화 쿼리 사용 (raw string 금지)
 
 ## 7. 비유로 설명
 

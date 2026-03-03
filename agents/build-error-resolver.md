@@ -30,14 +30,18 @@ color: cyan
   <Constraints>
     - Fix with minimal diff. Do not refactor, rename variables, add features, optimize, or redesign.
     - Do not change logic flow unless it directly fixes the build error.
-    - Detect language/framework from manifest files (package.json, Cargo.toml, go.mod, pyproject.toml) before choosing tools.
+    - Detect language/framework from manifest files (`package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, `*.csproj`, `*.sln`) before choosing tools.
     - Track progress: "X/Y errors fixed" after each fix.
-    - Use build CLI output (tsc --noEmit, next build) as primary diagnostic source.
+    - Use build CLI output as primary diagnostic source.
   </Constraints>
 
   <Investigation_Protocol>
     1) Detect project type from manifest files.
-    2) Collect ALL errors: run language-specific build command (tsc --noEmit, next build, cargo check, go build).
+    2) Collect ALL errors: run language-specific build command.
+       - Node.js: `tsc --noEmit`, `next build`
+       - **.NET**: `dotnet build` (컴파일 에러 포함)
+       - Go: `go build ./...`
+       - Rust: `cargo check`
     3) Categorize errors: type inference, missing definitions, import/export, configuration.
     4) Fix each error with the minimal change: type annotation, null check, import fix, dependency addition.
     5) Verify fix after each change: re-run build command on modified file.
@@ -75,6 +79,15 @@ color: cyan
   </Output_Format>
 
   <Project_Specific_Patterns>
+    ### .NET / C# (Blazor + Clean Architecture)
+    - **CS0246** (Type not found): `using` 문 누락 또는 프로젝트 참조 누락 → `<ProjectReference>` 추가
+    - **CS0103** (Name not found): 네임스페이스 불일치 또는 `@inject` 선언 누락
+    - **CS8600/CS8602** (Nullable): null 허용 타입에 `?` 추가 또는 null 체크 삽입
+    - **CS0234** (Namespace not found): NuGet 패키지 미설치 → `dotnet add package [name]`
+    - **NETSDK1045** (SDK 버전): `global.json`의 SDK 버전 확인
+    - Blazor `@inject` 오류: 서비스가 `Program.cs`에 등록되지 않음 → DI 등록 추가
+    - EF Core 마이그레이션 충돌: `dotnet ef migrations remove` 후 재생성
+
     ### Next.js 15 + React 19
     - FC deprecated: Use plain function components with typed props
     - Server/Client component boundaries: 'use client' directive placement

@@ -54,14 +54,23 @@ color: cyan
        c) Check project config files (CLAUDE.md, spec.md, prompt_plan.md)
        d) Read handoff.md "verification settings" section (CLI flags override)
 
-    2) Verification Pipeline (Node.js):
+    2) Verification Pipeline:
+       **Node.js:**
        a) TypeCheck: `[pm] run typecheck` or `npx tsc --noEmit`
        b) Lint: `[pm] run lint` or `npx eslint .`
        c) Build: `[pm] run build`
        d) Test: `[pm] run test` or `npx vitest run` or `npx jest`
-       (Go: `go build/vet/test` + `golangci-lint run`)
-       (Rust: `cargo check/clippy/test`)
-       (Python: `py_compile` + `ruff/flake8` + `pytest`)
+
+       **.NET** (감지: `*.csproj` / `*.sln` 존재):
+       a) TypeCheck/Build: `dotnet build` (C# 컴파일이 타입 체크 포함)
+       b) Lint/Format: `dotnet format --verify-no-changes`
+       c) Test: `dotnet test --logger "console;verbosity=normal"`
+       d) Coverage (--coverage): `dotnet test --collect:"XPlat Code Coverage"`
+       e) EF Migration 확인: `dotnet ef migrations list` (ef tool 설치 시)
+
+       **(Go: `go build/vet/test` + `golangci-lint run`)**
+       **(Rust: `cargo check/clippy/test`)**
+       **(Python: `py_compile` + `ruff/flake8` + `pytest`)**
 
     3) Error Classification:
        - **Fixable**: missing imports, lint format, unused imports/variables, simple type errors, missing return types, simple null checks

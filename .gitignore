@@ -25,6 +25,19 @@ __pycache__/
 venv/
 .venv/
 
+# .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.nupkg
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.local.json
+*.pfx
+launchSettings.json
+
 # Logs
 *.log
 
