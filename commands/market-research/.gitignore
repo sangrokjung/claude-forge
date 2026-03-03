@@ -1,0 +1,6 @@
+data/products.jsonl
+data/analyzed.jsonl
+data/snapshots/
+data/reports/
+__pycache__/
+*.pyc
