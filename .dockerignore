@@ -1,0 +1,14 @@
+**/.git
+**/.vs
+**/.idea
+**/bin
+**/obj
+**/*.user
+**/.env
+**/.env.*
+**/appsettings.*.json
+!**/appsettings.Production.json
+**/node_modules
+**/*.log
+**/TestResults
+**/coverage

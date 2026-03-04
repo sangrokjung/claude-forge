@@ -1,37 +1,47 @@
 {
-  "name": "Claude Code Dev Environment",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+  "name": "Claude Forge .NET Dev Environment",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:10.0",
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
   },
   "customizations": {
     "vscode": {
       "extensions": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "ms-vscode.vscode-typescript-next",
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.vscode-dotnet-runtime",
         "bradlc.vscode-tailwindcss",
-        "ms-playwright.playwright"
+        "ms-azuretools.vscode-docker",
+        "ms-playwright.playwright",
+        "streetsidesoftware.code-spell-checker"
       ],
       "settings": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.codeActionsOnSave": {
-          "source.fixAll.eslint": "explicit"
+        "[csharp]": {
+          "editor.defaultFormatter": "ms-dotnettools.csharp"
         },
-        "typescript.preferences.importModuleSpecifier": "non-relative"
+        "dotnet.defaultSolution": "*.sln"
       }
     }
   },
-  "forwardPorts": [3000, 3001, 5432, 8080],
-  "postCreateCommand": "bash .devcontainer/post-create.sh",
-  "remoteUser": "node",
+  "forwardPorts": [5000, 5001, 8080, 5432],
+  "portsAttributes": {
+    "5000": { "label": "HTTP" },
+    "5001": { "label": "HTTPS" },
+    "8080": { "label": "App (Docker)" },
+    "5432": { "label": "PostgreSQL" }
+  },
+  "postCreateCommand": "bash setup/devcontainer/post-create.sh",
+  "remoteUser": "vscode",
   "containerEnv": {
-    "TZ": "Asia/Seoul"
+    "TZ": "Asia/Seoul",
+    "ASPNETCORE_ENVIRONMENT": "Development",
+    "ASPNETCORE_URLS": "http://+:5000"
   },
   "mounts": [
-    "source=${localEnv:HOME}/.claude,target=/home/node/.claude,type=bind,consistency=cached"
+    "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached"
   ]
 }

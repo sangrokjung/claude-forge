@@ -1,0 +1,86 @@
+name: Deploy to Self-hosted Docker
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  # ── 1단계: 이미지 빌드 & GitHub Container Registry 푸시 ───────
+  build-and-push:
+    name: Build & Push to GHCR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ env.IMAGE_TAG }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-to: type=inline
+
+  # ── 2단계: 서버에 SSH로 배포 ──────────────────────────────────
+  deploy:
+    name: Deploy via SSH
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: production
+
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            set -e
+            cd ${{ secrets.DEPLOY_PATH }}
+
+            # 최신 이미지 Pull
+            echo "${{ secrets.GITHUB_TOKEN }}" | \
+              docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            export IMAGE_TAG=${{ needs.build-and-push.outputs.image_tag }}
+            docker compose pull app
+
+            # 롤링 재시작 (인스턴스 하나씩 교체)
+            docker compose up -d --no-deps --scale app=${{ vars.APP_REPLICAS || 2 }} app
+
+            # 헬스체크 대기
+            sleep 15
+            curl -f http://localhost/health || exit 1
+
+            # 미사용 이미지 정리
+            docker image prune -f
+
+            echo "✅ Deployed $IMAGE_TAG"
+
+      - name: Notify failure
+        if: failure()
+        run: echo "❌ Deployment failed! Check server logs."

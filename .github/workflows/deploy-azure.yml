@@ -1,0 +1,111 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deploy environment'
+        required: true
+        default: 'production'
+        type: choice
+        options: [production, staging]
+
+env:
+  ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+  IMAGE_NAME: ${{ secrets.ACR_LOGIN_SERVER }}/app
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  # ── 1단계: 빌드 & 이미지 푸시 ────────────────────────────────
+  build-and-push:
+    name: Build & Push to ACR
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ env.IMAGE_TAG }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build & push image
+        run: |
+          docker build -t $IMAGE_NAME:$IMAGE_TAG -t $IMAGE_NAME:latest .
+          docker push $IMAGE_NAME:$IMAGE_TAG
+          docker push $IMAGE_NAME:latest
+
+  # ── 2단계: Staging 배포 ───────────────────────────────────────
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: staging
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to staging slot
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          slot-name: staging
+          images: ${{ env.IMAGE_NAME }}:${{ needs.build-and-push.outputs.image_tag }}
+
+      - name: Health check (staging)
+        run: |
+          echo "Waiting for staging to warm up..."
+          sleep 30
+          curl -f https://${{ secrets.AZURE_WEBAPP_NAME }}-staging.azurewebsites.net/health \
+            || (echo "Health check failed!" && exit 1)
+
+  # ── 3단계: Production 배포 (슬롯 스왑) ───────────────────────
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-and-push, deploy-staging]
+    environment: production
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # staging → production 슬롯 스왑 (무중단 배포)
+      - name: Swap slots (staging → production)
+        run: |
+          az webapp deployment slot swap \
+            --name ${{ secrets.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --slot staging \
+            --target-slot production
+
+      - name: Health check (production)
+        run: |
+          sleep 15
+          curl -f https://${{ secrets.AZURE_WEBAPP_NAME }}.azurewebsites.net/health \
+            || (echo "Production health check failed! Rolling back..." \
+                && az webapp deployment slot swap \
+                     --name ${{ secrets.AZURE_WEBAPP_NAME }} \
+                     --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+                     --slot staging --target-slot production \
+                && exit 1)
+
+      - name: Notify success
+        run: echo "✅ Deployed ${{ env.IMAGE_TAG }} to production"
