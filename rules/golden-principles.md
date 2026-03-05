@@ -2,103 +2,80 @@
 
 > 11 core principles for writing clean, maintainable code.
 
-## 1. 불변성 (Immutability)
+## 1. Immutability
 
-**왜?** 변이(mutation)는 버그의 온상. 어디서 값이 바뀌었는지 추적이 불가능해진다.
+**Why?** Mutation is a breeding ground for bugs. It's impossible to track where a value changed.
 
-**어떻게?** spread operator로 새 객체를 만들어라. 원본을 절대 수정하지 마라.
+**How?** Use spread operators to create new objects. Never modify the original.
 
-## 2. 시크릿 환경 변수화
+## 2. Secrets in Environment Variables
 
-**왜?** 하드코딩된 시크릿은 커밋 한 번으로 영구 노출된다. git history에서 완전 삭제는 사실상 불가능.
+Never hardcode secrets. Use `process.env` only; throw immediately if unset.
 
-**어떻게?** `process.env`로만 접근하고, 미설정 시 즉시 throw하라.
+## 3. Test First (TDD)
 
-## 3. 테스트 먼저 (TDD)
+**Why?** Writing tests after implementation leads to "tests that only pass." You miss failure cases.
 
-**왜?** 구현 후 테스트를 짜면 "통과하는 테스트"만 만들게 된다. 실패 케이스를 놓친다.
+**How?** RED (failing test) -> GREEN (minimal implementation) -> IMPROVE (refactoring). 80%+ coverage.
 
-**어떻게?** RED(실패 테스트) -> GREEN(최소 구현) -> IMPROVE(리팩토링). 커버리지 80% 이상.
+## 4. Conclusion First, Reasoning Second
 
-## 4. 결론 먼저, 근거 나중
+Lead with the conclusion in the first sentence. Add "because..." after.
 
-**왜?** 긴 설명 후 결론이 나오면 독자가 핵심을 놓친다. 시간도 낭비.
+## 5. Small Files, Small Functions
 
-**어떻게?** 첫 문장에 결론을 쓰고, 그 다음에 "왜냐하면"을 붙여라.
+File: 800 lines max. Function: 50 lines max. Nesting: 4 levels max. Split if exceeded.
 
-## 5. 작은 파일, 작은 함수
+## 6. Validate at System Boundaries
 
-**왜?** 800줄짜리 파일은 누구도 전체를 파악할 수 없다. 변경 영향 범위도 커진다.
+Trust internal code, but validate user input and external API responses (e.g., zod schemas, parameterized queries).
 
-**어떻게?** 파일 800줄, 함수 50줄, 중첩 4단계가 한계. 넘으면 분리하라.
+## 7. Explain with Analogies
 
-## 6. 시스템 경계에서 검증
+Everyday analogy first (1-2 sentences), then technical explanation.
 
-**왜?** 내부 코드는 신뢰해도 되지만, 사용자 입력과 외부 API 응답은 신뢰할 수 없다.
+## 8. Context 50% Rule
 
-**어떻게?** zod 스키마로 입력을 검증하고, 파라미터화된 쿼리로 SQL 인젝션을 차단하라.
+Complete work within 50% of the context window. Split large tasks into new sessions.
 
-## 7. 비유로 설명
+## 9. HARD-GATE: No Coding Without Design
 
-**왜?** 추상적 기술 개념은 비유 없이 전달하면 이해율이 급락한다.
+Run `/plan` first if any of these apply: new feature (3+ files), architecture change, API endpoint change, DB schema change. No code until the user approves the plan. Exception: simple fixes (1-2 files, typo/bug patches).
 
-**어떻게?** 일상 비유 1-2문장 먼저 -> 기술적 설명 순서로 말하라.
+## 10. Evidence-Based Completion
 
-## 8. 컨텍스트 50% 규칙
+**Why?** "It's done" without evidence is a lie. LLMs tend to declare completion without execution.
 
-**왜?** 컨텍스트 윈도우가 포화되면 Claude가 초기 지시를 잊고, 품질이 급격히 저하된다. 마치 책상 위에 서류를 끝없이 쌓으면 맨 아래 서류를 찾을 수 없는 것과 같다.
+**How?** Before claiming completion:
+1. Show test results (pass/fail count, coverage)
+2. Confirm build success by running it
+3. Check requirements against a checklist with evidence
 
-**어떻게?** 작업은 컨텍스트의 50% 이내에서 완료하라. 큰 작업은 단계별로 나누어 새 세션에서 실행하라.
+**Banned**: "This should work", "No issues expected" — speculative completion claims
+**Required**: "12 tests passed", "Build success (0 errors)" — execution evidence
 
-## 9. HARD-GATE: 설계 없는 코딩 금지
+## 11. SDD Review Enforcement
 
-**왜?** LLM은 "빠른 구현"을 합리화하여 설계 없이 코딩을 시작하려 한다. 결과: 방향 틀린 구현, 전체 재작성.
-
-**어떻게?** 다음 조건 중 하나라도 해당하면 `/plan`을 먼저 실행하라:
-- 새 기능 구현 (3개 이상 파일 변경 예상)
-- 아키텍처 변경
-- API 엔드포인트 추가/변경
-- DB 스키마 변경
-
-사용자가 계획을 승인하기 전까지 코드를 작성하지 마라. 단순 수정(1-2 파일, 타이포/버그 패치)은 예외.
-
-## 10. 증거 기반 완료 (Evidence-Based Completion)
-
-**왜?** "완료했습니다"라는 주장은 증거가 없으면 거짓이다. LLM은 실행 없이 완료를 선언하는 경향이 있다.
-
-**어떻게?** 작업 완료 선언 전에 반드시:
-1. 테스트 실행 결과를 직접 보여라 (통과/실패 수, 커버리지)
-2. 빌드 성공 여부를 실행하여 확인하라
-3. 요구사항 체크리스트를 증거와 함께 하나씩 확인하라
-
-**금지**: "이렇게 하면 작동할 것입니다", "문제없을 것입니다" — 추측성 완료 선언
-**필수**: "테스트 12개 통과", "빌드 성공 (0 errors)" — 실행 증거 제시
-
-## 11. SDD 리뷰 강제
-
-**왜?** 서브에이전트가 구현한 코드를 리뷰 없이 넘기면 스펙 이탈과 품질 저하가 누적된다.
-
-**어떻게?** subagent-driven-development 사용 시:
-1. 스펙 준수 검증 먼저 — 통과 전 코드 품질 리뷰 진행 금지
-2. 이슈 발견 = 미완료 — 리뷰어가 이슈 발견하면 구현자가 수정 후 반드시 재리뷰
-3. "충분히 가깝다"는 통하지 않는다 — 스펙 리뷰어가 이슈 = 태스크 미완료
+When using subagent-driven development: spec compliance first, issues found = not done, "close enough" doesn't count.
 
 ---
 
-## 합리화 방지 (이 변명은 통하지 않는다)
+## Anti-Rationalization (These excuses don't work)
 
-| 원칙 | 변명 | 현실 |
-|------|------|------|
-| TDD | "너무 단순해서 테스트 불필요" | 단순한 코드도 깨진다. 테스트는 30초면 된다 |
-| TDD | "나중에 테스트 추가하겠다" | 나중에 쓴 테스트는 통과하는 것만 만든다 |
-| TDD | "TDD가 느리다" | TDD가 디버깅보다 빠르다 |
-| 불변성 | "성능 때문에 mutation 필요" | 프로파일링으로 증명한 후에만 mutation 허용 |
-| 시크릿 | "테스트 환경이라 괜찮다" | 테스트 시크릿도 커밋되면 영구 노출 |
-| 파일크기 | "나눌 만큼 작다" | 400줄 넘으면 분리 검토 의무 |
-| 경계검증 | "내부 함수라 검증 불필요" | 시스템 경계 판단은 당신이 아닌 설계자의 몫 |
-| 비유 | "기술자에게 비유 불필요" | 프로젝트 규칙이다. 예외 없음 |
-| 결론먼저 | "맥락 없이 결론이 어렵다" | 결론 한 줄 먼저, 맥락은 그 다음 |
-| 컨텍스트 | "아직 여유 있다" | 50% 넘으면 새 세션. 예외 없음 |
-| HARD-GATE | "빠른 수정이라 계획 불필요" | 3파일 이상 변경이면 계획 먼저 |
-| 증거기반 | "이미 잘 작동한다" | 증거 없이 완료 주장은 거짓. 실행 결과를 보여라 |
-| SDD | "리뷰 건너뛰고 다음 태스크로" | 리뷰 미통과 = 태스크 미완료. 예외 없음 |
+| Principle | Excuse | Reality |
+|-----------|--------|---------|
+| TDD | "Too simple to need tests" | Simple code breaks too. Tests take 30 seconds |
+| TDD | "I'll add tests later" | Tests written later only cover happy paths |
+| TDD | "TDD is slow" | TDD is faster than debugging |
+| Immutability | "Need mutation for performance" | Only after profiling proves it |
+| Secrets | "It's just the test environment" | Test secrets in commits are permanently exposed |
+| File size | "It's small enough" | Review for splitting at 400+ lines |
+| Boundary | "Internal function, no validation needed" | System boundary decisions belong to the designer |
+| Analogy | "Unnecessary for technical audiences" | Project rule. No exceptions |
+| Conclusion | "Hard to conclude without context" | One-line conclusion first, context after |
+| Context | "Still have room left" | Over 50% = new session. No exceptions |
+| HARD-GATE | "Quick fix, no plan needed" | 3+ files changed = plan first |
+| Evidence | "It already works fine" | Claims without evidence are false. Show execution results |
+| SDD | "Skip review, move to next task" | Unreviewed = incomplete. No exceptions |
+| Ralph Loop | "Let me just try one more approach" | Stop. Plan first, then execute once |
+| /simplify | "The complexity is necessary" | Run /simplify. If it finds reduction, it wasn't necessary |

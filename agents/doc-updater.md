@@ -159,11 +159,11 @@ docs/CODEMAPS/
 
 ### Codemap Format
 
-각 codemap은 `Last Updated` 타임스탬프, Architecture (ASCII 다이어그램), Key Modules 테이블 (`Module | Purpose | Exports | Dependencies`), Data Flow, External Dependencies, Related Areas 섹션으로 구성. 500줄 이하 유지.
+Each codemap includes `Last Updated` timestamp, Architecture (ASCII diagram), Key Modules table (`Module | Purpose | Exports | Dependencies`), Data Flow, External Dependencies, and Related Areas sections. Keep under 500 lines.
 
-## 문서 업데이트 트리거
+## Documentation Update Triggers
 
-새 주요 기능, API 변경, 의존성 추가/제거, 아키텍처 변경, 셋업 프로세스 변경 시 반드시 업데이트. 버그 수정이나 리팩토링(API 불변)은 선택.
+Must update on: new major features, API changes, dependency additions/removals, architecture changes, setup process changes. Optional for: bug fixes, refactoring (unchanged API).
 
 ---
 

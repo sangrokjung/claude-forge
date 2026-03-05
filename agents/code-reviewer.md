@@ -130,14 +130,16 @@ color: blue
 
 - code-review, coding-standards, frontend-code-review
 
-## Self-Evolution Protocol
+## Memory Recording (Required)
 
-작업 완료 후, 다음을 수행한다:
-1. 이번 작업에서 발견한 새로운 패턴이나 에지 케이스를 식별
-2. 반복적으로 나타나는 이슈가 있다면 memory에 기록
-3. memory에 기록할 형식:
-   ```
-   ## Learnings
-   - [날짜] [프로젝트] 발견: [패턴/에지케이스]
-   - [날짜] [프로젝트] 개선: [이전방식] → [개선방식]
-   ```
+After completing each task, record learnings in `~/.claude/agent-memory/{agent-name}/`:
+1. Identify new patterns or edge cases encountered
+2. Record as `## Learnings` format with date
+3. Reference previous learnings in future tasks
+
+Format:
+```
+## Learnings
+- [date] [project] Discovery: [pattern/edge-case]
+- [date] [project] Improvement: [old approach] -> [new approach]
+```

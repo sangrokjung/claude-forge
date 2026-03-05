@@ -34,3 +34,13 @@ If security issue found:
 3. Fix CRITICAL issues before continuing
 4. Rotate any exposed secrets
 5. Review entire codebase for similar issues
+
+## Remote Session Security
+
+When using Claude Code remote sessions (e.g., `claude --remote`):
+
+- **Never share session URLs** in public channels (Slack, Discord, GitHub issues)
+- **Terminate idle sessions** — close remote sessions when not actively in use
+- **Use VPN** when connecting to remote sessions over untrusted networks
+- **Restrict session access** — only share session URLs with authorized team members via secure channels
+- **Review session logs** — periodically check for unauthorized access or unexpected commands

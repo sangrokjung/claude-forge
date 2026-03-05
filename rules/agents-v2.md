@@ -1,13 +1,13 @@
 # Agent Orchestration
 
-> 팀 운영 상세: reference/agents-teams-ref.md
-> MCP/설정 상세: reference/agents-config-ref.md
+> Team operations: reference/agents-teams-ref.md
+> MCP/config: reference/agents-config-ref.md
 
 ## Available Agents
 
 Located in `~/.claude/agents/`:
 
-### 개발 에이전트
+### Development Agents
 
 | Agent | Purpose | Model | When to Use |
 |-------|---------|-------|-------------|
@@ -21,7 +21,17 @@ Located in `~/.claude/agents/`:
 | refactor-cleaner | Dead code cleanup | sonnet | Code maintenance |
 | doc-updater | Documentation | sonnet | Updating docs |
 | database-reviewer | PostgreSQL/Supabase DB | opus | Schema, query optimization |
-| verify-agent | Fresh-context 검증 | sonnet | /handoff-verify 서브에이전트 |
+| verify-agent | Fresh-context verification | sonnet | /handoff-verify subagent |
+
+## Built-in Skills
+
+Claude Code includes built-in slash commands that should be used when appropriate:
+
+| Skill | Purpose | When to Use |
+|-------|---------|-------------|
+| `/simplify` | Reduce code complexity | After implementation, during refactoring |
+| `/batch` | Process multiple files/tasks | Repetitive operations across files |
+| `/rc` | Run configuration commands | Project setup, config changes |
 
 ## Immediate Agent Usage
 
@@ -57,18 +67,18 @@ For complex problems, use split role sub-agents:
 
 ## Subagents vs Agent Teams
 
-서로 통신이 필요한지에 따라 선택:
+Choose based on whether communication between agents is needed:
 
 | | Subagents | Agent Teams |
 |---|---|---|
-| 컨텍스트 | 자체 윈도우; 결과만 호출자에 반환 | 자체 윈도우; 완전 독립 |
-| 통신 | 메인 에이전트에게만 보고 | 리더 경유 기본 (hub-and-spoke). 기술 조율만 peer-to-peer 예외 |
-| 조율 | 메인 에이전트가 관리 | 리더가 조율 + 공유 작업 목록 보조 |
-| 최적 용도 | 결과만 중요한 집중 작업 | 논의/협업이 필요한 복잡한 작업 |
-| 토큰 비용 | 낮음 (결과 요약) | 높음 (각 팀원 별도 인스턴스) |
+| Context | Own window; returns results to caller only | Own window; fully independent |
+| Communication | Reports to main agent only | Hub-and-spoke via leader. Peer-to-peer only for technical coordination |
+| Coordination | Main agent manages | Leader coordinates + shared task list |
+| Best for | Focused tasks where only results matter | Complex tasks requiring discussion/collaboration |
+| Token cost | Low (result summaries) | High (separate instance per member) |
 
-Agent Teams 상세 운영 규칙은 reference/agents-teams-ref.md 참조.
-MCP 분배 패턴 및 Subagent 선택 가이드는 reference/agents-config-ref.md 참조.
+See reference/agents-teams-ref.md for detailed team operation rules.
+See reference/agents-config-ref.md for MCP distribution and subagent selection guide.
 
 ## Agent Memory
 

@@ -134,10 +134,10 @@ color: blue
 
 ## Index Patterns
 
-### 1. WHERE/JOIN/FK 컬럼에 인덱스 필수 (100-1000x 성능 향상)
+### 1. Index Required on WHERE/JOIN/FK Columns (100-1000x Performance)
 
 ```sql
--- FK에 반드시 인덱스: CREATE INDEX orders_customer_id_idx ON orders (customer_id);
+-- Always index FKs: CREATE INDEX orders_customer_id_idx ON orders (customer_id);
 ```
 
 ### 2. Choose the Right Index Type
@@ -149,40 +149,40 @@ color: blue
 | **BRIN** | Large time-series tables | Range queries on sorted data |
 | **Hash** | Equality only | `=` (marginally faster than B-tree) |
 
-### 3. Composite Index — equality 컬럼 먼저, range 컬럼 뒤에
+### 3. Composite Index — Equality Columns First, Range Columns Last
 
 ```sql
 CREATE INDEX orders_status_created_idx ON orders (status, created_at);
--- Leftmost prefix: (status) 또는 (status, created_at) 쿼리에 사용됨
--- (created_at) 단독 쿼리에는 사용 안 됨
+-- Leftmost prefix: used for (status) or (status, created_at) queries
+-- NOT used for (created_at) standalone queries
 ```
 
-### 4. Covering Index — INCLUDE로 table lookup 회피 (2-5x)
+### 4. Covering Index — Avoid Table Lookup with INCLUDE (2-5x)
 
 ```sql
 CREATE INDEX users_email_idx ON users (email) INCLUDE (name, created_at);
 ```
 
-### 5. Partial Index — 조건부 인덱스로 크기 5-20x 축소
+### 5. Partial Index — Conditional Index, 5-20x Smaller
 
 ```sql
 CREATE INDEX users_active_email_idx ON users (email) WHERE deleted_at IS NULL;
--- 패턴: WHERE deleted_at IS NULL | WHERE status = 'pending' | WHERE sku IS NOT NULL
+-- Patterns: WHERE deleted_at IS NULL | WHERE status = 'pending' | WHERE sku IS NOT NULL
 ```
 
 ---
 
 ## Schema Design Quick Reference
 
-| 항목 | 올바른 선택 | 피해야 할 선택 |
-|------|------------|---------------|
-| ID 타입 | `bigint GENERATED ALWAYS AS IDENTITY` | `int` (2.1B 오버플로우) |
-| 분산 ID | UUIDv7 (`uuid_generate_v7()`) | Random UUID (`gen_random_uuid()` — 인덱스 단편화) |
-| 문자열 | `text` | `varchar(255)` (이유 없는 제한) |
-| 시간 | `timestamptz` | `timestamp` (타임존 누락) |
-| 금액 | `numeric(10,2)` | `float` (정밀도 손실) |
-| 식별자 | `lowercase_snake_case` | `"CamelCase"` (인용 필수) |
-| 파티셔닝 | >100M rows 시 `PARTITION BY RANGE` | 대량 DELETE |
+| Item | Correct Choice | Avoid |
+|------|---------------|-------|
+| ID type | `bigint GENERATED ALWAYS AS IDENTITY` | `int` (2.1B overflow) |
+| Distributed ID | UUIDv7 (`uuid_generate_v7()`) | Random UUID (`gen_random_uuid()` — index fragmentation) |
+| Strings | `text` | `varchar(255)` (arbitrary limit) |
+| Timestamps | `timestamptz` | `timestamp` (missing timezone) |
+| Money | `numeric(10,2)` | `float` (precision loss) |
+| Identifiers | `lowercase_snake_case` | `"CamelCase"` (requires quoting) |
+| Partitioning | `PARTITION BY RANGE` for >100M rows | Mass DELETE |
 
 ---
 
@@ -227,57 +227,57 @@ CREATE INDEX orders_user_id_idx ON orders (user_id);
 
 ### 3. Least Privilege
 
-`GRANT ALL` 금지. 역할별 최소 권한만 부여: `GRANT SELECT ON specific_tables TO app_readonly`. `REVOKE ALL ON SCHEMA public FROM public` 기본.
+Never use `GRANT ALL`. Grant minimum privileges per role: `GRANT SELECT ON specific_tables TO app_readonly`. Default: `REVOKE ALL ON SCHEMA public FROM public`.
 
 ---
 
 ## Connection & Concurrency
 
-- **Connection limit formula:** `(RAM_MB / 5MB) - reserved`. Pooling: transaction mode 기본, pool size `(CPU_cores * 2) + spindle_count`
+- **Connection limit formula:** `(RAM_MB / 5MB) - reserved`. Pooling: transaction mode default, pool size `(CPU_cores * 2) + spindle_count`
 - **Idle timeout:** `idle_in_transaction_session_timeout = '30s'`, `idle_session_timeout = '10min'`
-- **트랜잭션 최소화:** 외부 API 호출은 트랜잭션 바깥에서. 락은 밀리초 단위로
-- **데드락 방지:** 일관된 락 순서 (`ORDER BY id FOR UPDATE`)
-- **큐 패턴:** `FOR UPDATE SKIP LOCKED` (10x 처리량)
+- **Minimize transactions:** External API calls outside transactions. Keep locks to milliseconds
+- **Deadlock prevention:** Consistent lock ordering (`ORDER BY id FOR UPDATE`)
+- **Queue pattern:** `FOR UPDATE SKIP LOCKED` (10x throughput)
 
 ---
 
-## N+1 감지 & Data Access Patterns
+## N+1 Detection & Data Access Patterns
 
-### N+1 제거 (CRITICAL)
+### Eliminate N+1 (CRITICAL)
 ```sql
--- BAD: N+1 — 100개 ID마다 개별 쿼리
+-- BAD: N+1 — individual query per ID
 SELECT id FROM users WHERE active = true;
 SELECT * FROM orders WHERE user_id = 1;  -- x100
 
--- GOOD: ANY 또는 JOIN으로 단일 쿼리
+-- GOOD: Single query with ANY or JOIN
 SELECT * FROM orders WHERE user_id = ANY(ARRAY[1, 2, 3, ...]);
 SELECT u.id, u.name, o.* FROM users u
 LEFT JOIN orders o ON o.user_id = u.id WHERE u.active = true;
 ```
 
-### 기타 패턴
-- **Batch insert:** 개별 INSERT 대신 VALUES 다중행 또는 `COPY` (10-50x 빠름)
-- **Cursor pagination:** `WHERE id > $cursor ORDER BY id LIMIT 20` (OFFSET 금지 — 깊은 페이지에서 느림)
-- **UPSERT:** `ON CONFLICT DO UPDATE` (race condition 방지)
+### Other Patterns
+- **Batch insert:** Multi-row VALUES or `COPY` instead of individual INSERTs (10-50x faster)
+- **Cursor pagination:** `WHERE id > $cursor ORDER BY id LIMIT 20` (never OFFSET — slow on deep pages)
+- **UPSERT:** `ON CONFLICT DO UPDATE` (prevents race conditions)
 
 ---
 
-## EXPLAIN ANALYZE 워크플로우
+## EXPLAIN ANALYZE Workflow
 
 ```sql
 EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
 SELECT * FROM orders WHERE customer_id = 123;
 ```
 
-| Indicator | 문제 | 해결 |
-|-----------|------|------|
-| `Seq Scan` on large table | 인덱스 누락 | 필터 컬럼에 인덱스 추가 |
-| `Rows Removed by Filter` 높음 | 낮은 선택도 | WHERE 절 점검 |
-| `Buffers: read >> hit` | 캐시 미스 | `shared_buffers` 증가 |
-| `Sort Method: external merge` | 메모리 부족 | `work_mem` 증가 |
+| Indicator | Problem | Solution |
+|-----------|---------|----------|
+| `Seq Scan` on large table | Missing index | Add index on filter columns |
+| `Rows Removed by Filter` high | Low selectivity | Review WHERE clause |
+| `Buffers: read >> hit` | Cache miss | Increase `shared_buffers` |
+| `Sort Method: external merge` | Insufficient memory | Increase `work_mem` |
 
-느린 쿼리 찾기: `pg_stat_statements` 활성화 후 `mean_exec_time DESC` 또는 `calls DESC` 정렬.
-통계 최신화: `ANALYZE table_name`. 고빈도 테이블은 `autovacuum_vacuum_scale_factor = 0.05` 설정.
+Find slow queries: Enable `pg_stat_statements`, sort by `mean_exec_time DESC` or `calls DESC`.
+Update statistics: `ANALYZE table_name`. High-frequency tables: `autovacuum_vacuum_scale_factor = 0.05`.
 
 ---
 
@@ -286,12 +286,12 @@ SELECT * FROM orders WHERE customer_id = 123;
 ```sql
 -- GIN: containment (@>, ?, @@)
 CREATE INDEX attrs_gin ON products USING gin (attributes);
--- Expression index: 특정 키
+-- Expression index: specific key
 CREATE INDEX brand_idx ON products ((attributes->>'brand'));
--- jsonb_path_ops: @>만 지원, 2-3x 작은 인덱스
+-- jsonb_path_ops: @> only, 2-3x smaller index
 CREATE INDEX attrs_pathops ON products USING gin (attributes jsonb_path_ops);
 
--- Full-text: generated tsvector + GIN 인덱스
+-- Full-text: generated tsvector + GIN index
 ALTER TABLE articles ADD COLUMN search_vector tsvector
   GENERATED ALWAYS AS (to_tsvector('english', coalesce(title,'') || ' ' || coalesce(content,''))) STORED;
 CREATE INDEX search_idx ON articles USING gin (search_vector);

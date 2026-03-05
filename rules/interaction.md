@@ -63,11 +63,15 @@ Before writing code that uses a library/framework, **always query context7 MCP**
 - Basic language syntax (JavaScript, Python fundamentals)
 - Project-internal code (not a context7 target)
 
-## Web Fetching
+## Web Fetching (CRITICAL)
 
-Prefer MCP-based fetch tools over built-in WebFetch when available:
+**NEVER use the built-in WebFetch tool.** Site response delays can freeze the entire session.
 
-| Use Case | Tool | Note |
-|----------|------|------|
-| Fetch web content | `mcp__fetch__fetch` | Stable, free |
-| Convert URL to markdown | `mcp__jina-reader__*` | Token-efficient, clean output |
+Use MCP-based alternatives instead:
+
+| Priority | Tool | Use Case |
+|----------|------|----------|
+| 1st | `mcp__jina-reader__*` | Token-efficient, clean markdown output |
+| 2nd | `mcp__fetch__fetch` | Fallback if Jina fails, free |
+
+No exceptions — WebFetch is denied in all scenarios.

@@ -199,7 +199,7 @@ playwright.config.ts
 ## Page Object Model Pattern
 
 ```typescript
-// pages/MarketsPage.ts — POM 핵심: locator를 constructor에서 선언, 메서드로 행위 캡슐화
+// pages/MarketsPage.ts — POM: declare locators in constructor, encapsulate behavior in methods
 export class MarketsPage {
   readonly searchInput: Locator
   readonly marketCards: Locator
@@ -222,12 +222,12 @@ export class MarketsPage {
 }
 ```
 
-테스트에서는 `Arrange-Act-Assert` 패턴으로 POM 메서드 호출. 실패 시 `page.screenshot()` 캡처.
+In tests, call POM methods using `Arrange-Act-Assert` pattern. Capture `page.screenshot()` on failure.
 
-## Playwright Config 핵심 설정
+## Playwright Config Essentials
 
 ```typescript
-// playwright.config.ts 필수 설정
+// playwright.config.ts required settings
 {
   testDir: './tests/e2e',
   fullyParallel: true,
@@ -247,18 +247,18 @@ export class MarketsPage {
 ## Flaky Test Management
 
 ```bash
-# 안정성 검증: 최소 5회 반복 실행
+# Stability check: run at least 5 times
 npx playwright test path/to.spec.ts --repeat-each=5
 ```
 
-**Quarantine:** `test.fixme(true, 'Flaky - Issue #XXX')` 또는 `test.skip(process.env.CI, 'Flaky in CI - Issue #XXX')`
+**Quarantine:** `test.fixme(true, 'Flaky - Issue #XXX')` or `test.skip(process.env.CI, 'Flaky in CI - Issue #XXX')`
 
-**Flakiness 원인 통합 — 모두 "구체적 조건 대기"로 해결:**
+**Root causes of flakiness — all solved by "wait for specific conditions":**
 ```typescript
-// FLAKY: waitForTimeout, page.click (auto-wait 없음), 애니메이션 중 클릭
-await page.waitForTimeout(5000)  // 절대 금지
+// FLAKY: waitForTimeout, page.click (no auto-wait), clicking during animations
+await page.waitForTimeout(5000)  // NEVER do this
 
-// STABLE: locator 사용 (auto-wait), waitForResponse, waitFor({ state: 'visible' })
+// STABLE: use locators (auto-wait), waitForResponse, waitFor({ state: 'visible' })
 await page.locator('[data-testid="btn"]').click()
 await page.waitForResponse(resp => resp.url().includes('/api/data'))
 ```
@@ -266,7 +266,7 @@ await page.waitForResponse(resp => resp.url().includes('/api/data'))
 ## Artifact & CI/CD
 
 - **Screenshot:** `page.screenshot({ path: 'artifacts/name.png' })`, `fullPage: true`, locator `.screenshot()`
-- **Video/Trace:** playwright.config.ts의 `video: 'retain-on-failure'`, `trace: 'on-first-retry'`
+- **Video/Trace:** In playwright.config.ts: `video: 'retain-on-failure'`, `trace: 'on-first-retry'`
 - **CI:** `npx playwright install --with-deps` → `npx playwright test` → `actions/upload-artifact` (playwright-report/)
 
 ---

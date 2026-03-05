@@ -31,7 +31,7 @@
 
 ## What is Claude Forge?
 
-Claude Forge is an open-source development environment for Claude Code that provides 11 specialized agents, 36 slash commands, 15 skill workflows, and 14 automation hooks. Often described as "oh-my-zsh for Claude Code", it transforms Claude Code from a basic CLI into a full-featured development environment. One install gives you agents, commands, skills, hooks, and 8 rule files -- all pre-wired and ready to go.
+Claude Forge is an open-source development environment for Claude Code that provides 11 specialized agents, 40 slash commands, 15 skill workflows, and 15 automation hooks. Often described as "oh-my-zsh for Claude Code", it transforms Claude Code from a basic CLI into a full-featured development environment. One install gives you agents, commands, skills, hooks, and 9 rule files -- all pre-wired and ready to go.
 
 > Think of it as **oh-my-zsh for Claude Code**: the same way oh-my-zsh enhances your terminal, Claude Forge supercharges your AI coding assistant.
 
@@ -54,6 +54,14 @@ claude
 `install.sh` symlinks everything to `~/.claude/`, so `git pull` updates instantly.
 
 > If you find Claude Forge useful, please consider giving it a [star](https://github.com/sangrokjung/claude-forge/stargazers) -- it helps others discover this project.
+
+### What's New in v2.1
+
+| Change | Description |
+|:-------|:------------|
+| **Verification Rules** | New `verification.md` rule enforces evidence-based completion -- no claims without fresh test/build output. |
+| **Agent Self-Evolution** | Core 5 agents (planner, architect, code-reviewer, security-reviewer, tdd-guide) now record learnings in `~/.claude/agent-memory/` after each task. |
+| **Hook Sync** | Added `forge-update-check.sh` (session start update notification) and `observe.sh` (continuous learning observation). |
 
 ### New here?
 
@@ -167,7 +175,7 @@ Most developers either use Claude Code with no customization or spend hours asse
 | Feature | Claude Forge | Basic `.claude/` Setup | Individual Plugins |
 |:--------|:------------|:-----------------------|:-------------------|
 | **Agents** | 11 pre-configured (Opus + Sonnet) | Manual setup required | Varies by plugin |
-| **Slash Commands** | 36 ready-to-use | None | Per-plugin basis |
+| **Slash Commands** | 40 ready-to-use | None | Per-plugin basis |
 | **Skill Workflows** | 15 multi-step pipelines | None | Per-plugin basis |
 | **Security** | 6-layer automated hooks | None by default | Per-plugin basis |
 | **Installation** | 5 min, one command | Hours of manual config | Per-plugin install |
@@ -185,10 +193,10 @@ Most developers either use Claude Code with no customization or spend hours asse
 | Category | Count | Highlights |
 |:--------:|:-----:|:-----------|
 | **Agents** | 11 | `planner` `architect` `code-reviewer` `security-reviewer` `tdd-guide` `database-reviewer` + 5 more |
-| **Commands** | 36 | `/commit-push-pr` `/handoff-verify` `/explore` `/tdd` `/plan` `/orchestrate` `/security-review` ... |
+| **Commands** | 40 | `/commit-push-pr` `/handoff-verify` `/explore` `/tdd` `/plan` `/orchestrate` `/security-review` ... |
 | **Skills** | 15 | `build-system` `security-pipeline` `eval-harness` `team-orchestrator` `session-wrap` ... |
-| **Hooks** | 14 | Secret filtering, remote command guard, DB protection, security auto-trigger, rate limiting ... |
-| **Rules** | 8 | `coding-style` `security` `git-workflow` `golden-principles` `agents` `interaction` ... |
+| **Hooks** | 15 | Secret filtering, remote command guard, DB protection, security auto-trigger, rate limiting ... |
+| **Rules** | 9 | `coding-style` `security` `git-workflow` `golden-principles` `agents` `interaction` `verification` ... |
 | **MCP Servers** | 6 | `context7` `memory` `exa` `github` `fetch` `jina-reader` |
 
 ---
@@ -266,10 +274,10 @@ vim ~/.claude/settings.local.json
 graph TB
     subgraph REPO["claude-forge (git repo)"]
         A["agents/ (11)"]
-        C["commands/ (36)"]
+        C["commands/ (40)"]
         S["skills/ (15)"]
-        H["hooks/ (14)"]
-        R["rules/ (8)"]
+        H["hooks/ (15)"]
+        R["rules/ (9)"]
         SC["scripts/"]
         CC["cc-chips/"]
         K["knowledge/"]
@@ -310,12 +318,12 @@ claude-forge/
   ├── agents/               Agent definitions (11 .md files)
   ├── cc-chips/             Status bar submodule
   ├── cc-chips-custom/      Custom status bar overlay
-  ├── commands/             Slash commands (28 .md + 8 SKILL dirs)
+  ├── commands/             Slash commands (32 .md + 8 SKILL dirs)
   ├── docs/                 Screenshots, diagrams
-  ├── hooks/                Event-driven shell scripts (14)
+  ├── hooks/                Event-driven shell scripts (15)
   ├── knowledge/            Knowledge base entries
   ├── reference/            Reference documentation
-  ├── rules/                Auto-loaded rule files (8)
+  ├── rules/                Auto-loaded rule files (9)
   ├── scripts/              Utility scripts
   ├── setup/                Installation guides + templates
   ├── skills/               Multi-step skill workflows (15)
@@ -405,7 +413,7 @@ Each agent has a **color** in the UI for quick visual identification:
 ## 📋 All Claude Forge Commands
 
 <details>
-<summary><strong>36 Commands (click to expand)</strong></summary>
+<summary><strong>40 Commands (click to expand)</strong></summary>
 
 #### Core Workflow
 
@@ -526,14 +534,14 @@ Each agent has a **color** in the UI for quick visual identification:
 <details>
 <summary><strong>What is Claude Forge?</strong></summary>
 
-Claude Forge is an open-source development environment for Claude Code. It bundles 11 specialized agents, 36 slash commands, 15 skill workflows, 14 automation hooks, and 8 rule files into a single install. Think of it as "oh-my-zsh for Claude Code" -- it turns the basic Claude Code CLI into a fully equipped coding environment with built-in workflows for planning, TDD, security review, and deployment.
+Claude Forge is an open-source development environment for Claude Code. It bundles 11 specialized agents, 40 slash commands, 15 skill workflows, 15 automation hooks, and 9 rule files into a single install. Think of it as "oh-my-zsh for Claude Code" -- it turns the basic Claude Code CLI into a fully equipped coding environment with built-in workflows for planning, TDD, security review, and deployment.
 
 </details>
 
 <details>
 <summary><strong>How is Claude Forge different from other Claude Code plugins?</strong></summary>
 
-Most Claude Code plugins solve one problem at a time. Claude Forge is a **complete development environment** -- agents, commands, skills, hooks, and rules that work together as a cohesive system. Instead of assembling individual plugins and configuring each one, Claude Forge gives you a pre-wired pipeline: `/plan` feeds into `/tdd`, which feeds into `/code-review`, which feeds into `/handoff-verify`, which feeds into `/commit-push-pr`. The 6-layer security hook system also runs automatically without extra configuration.
+Most Claude Code plugins solve one problem at a time. Claude Forge is a **complete development environment** -- 11 agents, 40 commands, 15 skills, 15 hooks, and 9 rules that work together as a cohesive system. Instead of assembling individual plugins and configuring each one, Claude Forge gives you a pre-wired pipeline: `/plan` feeds into `/tdd`, which feeds into `/code-review`, which feeds into `/handoff-verify`, which feeds into `/commit-push-pr`. The 6-layer security hook system also runs automatically without extra configuration.
 
 </details>
 
@@ -568,13 +576,14 @@ Yes. Run `install.ps1` in PowerShell as Administrator. Windows uses file copies 
 <details>
 <summary><strong>How does Claude Forge handle memory across sessions?</strong></summary>
 
-Claude Forge uses a 3-layer memory system:
+Claude Forge uses a 4-layer memory system:
 
 1. **Project docs** (`CLAUDE.md`, `prompt_plan.md`, `spec.md`) -- Project-level instructions and plans that persist in the repository. `/sync` keeps these up to date.
 2. **Rule files** (`rules/`) -- Coding style, security, workflow conventions loaded automatically each session.
 3. **MCP memory server** -- A persistent knowledge graph that stores entities and relations across sessions.
+4. **Agent memory** (`~/.claude/agent-memory/`) -- Core agents record learnings after each task, improving their recommendations over time through Self-Evolution.
 
-Running `/sync` at session start ensures layers 1 and 2 are current. The MCP memory server (layer 3) persists automatically.
+Running `/sync` at session start ensures layers 1 and 2 are current. The MCP memory server (layer 3) and agent memory (layer 4) persist automatically.
 
 </details>
 
