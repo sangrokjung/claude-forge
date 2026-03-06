@@ -1,0 +1,50 @@
+sources:
+  kstartup:
+    enabled: true
+    base_url: "https://api.odcloud.kr/api/3044610/v1"
+    path: "uddi:6463046e-cd88-45c0-9f8d-c76e296fd6cc"
+    service_key_env: DATA_GO_KR_API_KEY
+    service_key_param: serviceKey
+    params:
+      perPage: 100
+    response_data_path: "data"
+    field_mapping:
+      title:
+        candidates: ["공고명", "pbancNm", "title"]
+      summary:
+        candidates: ["과제명", "taskName"]
+      agency:
+        candidates: ["전문기관명", "관리기관명"]
+      published_at:
+        candidates: ["사업년도", "publishedAt"]
+      item_id:
+        candidates: ["과제명"]
+        composite: "{과제명}-{사업년도}"
+
+  g2b_bid:
+    enabled: true
+    base_url: "https://apis.data.go.kr/1230000/BidPublicInfoService"
+    path: "getBidPblancListInfoServc"
+    service_key_env: DATA_GO_KR_API_KEY
+    service_key_param: serviceKey
+    params:
+      numOfRows: 100
+      pageNo: 1
+      type: json
+    date_params:
+      since_param: inqryBgnDt
+      until_param: inqryEndDt
+      format: "%Y%m%d%H%M"
+    response_data_path: "response.body.items"
+    field_mapping:
+      title:
+        candidates: ["bidNtceNm", "ntceNm"]
+      agency:
+        candidates: ["ntceInsttNm", "dminsttNm"]
+      url:
+        candidates: ["bidNtceDtlUrl", "ntceDtlUrl"]
+      published_at:
+        candidates: ["bidNtceDt"]
+      item_id:
+        candidates: ["bidNtceNo"]
+        composite: "{bidNtceNo}-{bidNtceOrd}"

@@ -1,0 +1,73 @@
+app:
+  name: mobility-rfp-monitor
+  timezone: Asia/Seoul
+  log_level: INFO
+
+state:
+  backend: json
+  path: .state.json
+
+monitor:
+  since_hours: 48
+  max_items_per_source: 200
+  keywords: ["모빌리전트", "MaaS", "스마트시티", "수요응답형"]
+  match:
+    mode: any
+    case_insensitive: true
+    fields: [title, summary, agency, body]
+
+sources:
+  kstartup:
+    enabled: true
+    provider: data-go-kr
+    dataset_url: "https://www.data.go.kr/data/15125364/openapi.do"
+    service_key_env: KSTARTUP_SERVICE_KEY
+
+  g2b_bid_notice:
+    enabled: true
+    provider: data-go-kr
+    dataset_url: "https://www.data.go.kr/data/15129394/openapi.do"
+    service_key_env: G2B_SERVICE_KEY
+
+  g2b_pre_spec:
+    enabled: true
+    provider: data-go-kr
+    dataset_url: "https://www.data.go.kr/data/15129437/openapi.do"
+    service_key_env: G2B_SERVICE_KEY
+
+# ── 알림 채널 설정 ──────────────────────────────────────────────
+# 각 채널의 enabled: true로 활성화. 환경변수(*_env)로 시크릿 주입.
+channels:
+  slack:
+    enabled: true
+    webhook_url_env: SLACK_WEBHOOK_URL  # https://hooks.slack.com/services/T.../B.../...
+
+  email:
+    enabled: true
+    transport: smtp
+    smtp:
+      host_env: SMTP_HOST       # smtp.gmail.com
+      port_env: SMTP_PORT       # 587
+      user_env: SMTP_USER       # mcontact2030@gmail.com
+      pass_env: SMTP_PASS       # App Password (not account password)
+      use_starttls: true
+    message:
+      from_env: SMTP_USER
+      to_env: MAIL_TO           # "user1@example.com,user2@example.com"
+      subject_prefix: "[모빌리티 공고 모니터]"
+      max_items_per_email: 30
+      include_keyword_hits: true
+
+  discord:
+    enabled: false
+    webhook_url_env: DISCORD_WEBHOOK_URL  # https://discord.com/api/webhooks/.../...
+
+  webhook:
+    enabled: false
+    url_env: WEBHOOK_URL        # https://your-server.com/api/rfp-alerts
+    headers:
+      Authorization: "Bearer ${WEBHOOK_TOKEN}"
+      X-Source: "mobility-rfp-monitor"
+
+runtime:
+  dry_run: false

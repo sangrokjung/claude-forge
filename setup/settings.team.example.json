@@ -1,0 +1,42 @@
+{
+  "team_name": "my-team",
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "Task(*)",
+      "NotebookEdit(*)",
+      "WebSearch",
+      "WebSearch(*)",
+      "mcp__context7__*",
+      "mcp__memory__*",
+      "mcp__github__*",
+      "mcp__fetch__*"
+    ],
+    "deny": [
+      "WebFetch",
+      "WebFetch(*)",
+      "Bash(rm -rf /)*",
+      "Bash(rm -rf ~)*",
+      "Bash(rm -rf .)*",
+      "Bash(rm -rf *)*",
+      "Bash(sudo:*)",
+      "Bash(chmod 777:*)",
+      "Bash(git push --force*main)*",
+      "Bash(git push -f*main)*",
+      "Bash(git push --force*master)*",
+      "Bash(git push -f*master)*",
+      "Bash(npm publish)*",
+      "Bash(eval *)*"
+    ]
+  },
+  "enforced_rules": [
+    "rules/security.md",
+    "rules/coding-style.md"
+  ],
+  "mcp_servers": {}
+}
