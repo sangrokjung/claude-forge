@@ -39,6 +39,32 @@ Claude Forge is an open-source development environment for Claude Code that prov
 
 ## ⚡ Quick Start
 
+### Install as Plugin (Recommended)
+
+The easiest way to install Claude Forge is through the Claude Code plugin system:
+
+```bash
+# Add Claude Forge as a marketplace
+/plugin marketplace add sangrokjung/claude-forge
+
+# Install the plugin
+/plugin install claude-forge@claude-forge
+```
+
+Or install directly from GitHub:
+```bash
+claude plugin install github:sangrokjung/claude-forge
+```
+
+To update:
+```bash
+/plugin marketplace update claude-forge
+```
+
+### Install via Git Clone
+
+For development or customization, clone the repository:
+
 ```bash
 # 1. Clone
 git clone --recurse-submodules https://github.com/sangrokjung/claude-forge.git
