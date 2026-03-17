@@ -378,6 +378,81 @@ claude-forge/
 
 ---
 
+## 🔀 Agent Router System
+
+The Agent Router is a **forced delegation system** that ensures specialized agents handle their domain tasks instead of Claude doing everything directly. Without this, Claude defaults to handling all tasks itself -- even when a specialized agent would produce better results.
+
+### How It Works
+
+```mermaid
+graph LR
+    U["User Message"] --> SP["using-superpowers<br><small>1% rule: MUST check skills</small>"]
+    SP --> AR["agent-router<br><small>Domain match check</small>"]
+    AR -->|"Match found"| A["Agent Tool<br><small>Spawn specialist</small>"]
+    AR -->|"No match"| D["Direct Response"]
+    A --> R["Specialist Result"]
+
+    style U fill:#1a1a2e,stroke:#fff,color:#fff
+    style SP fill:#e94560,stroke:#fff,color:#fff
+    style AR fill:#533483,stroke:#fff,color:#fff
+    style A fill:#0f3460,stroke:#fff,color:#fff
+    style D fill:#16213e,stroke:#fff,color:#fff
+    style R fill:#0f3460,stroke:#fff,color:#fff
+```
+
+### The Forcing Chain
+
+| Layer | Mechanism | Role |
+|:------|:----------|:-----|
+| **system-reminder** | Lists `agent-router` skill description every turn | Visibility |
+| **using-superpowers** | "1% chance a skill applies? You MUST invoke it" | Forcing |
+| **agent-router** | Routing table: keyword → agent mapping | Delegation |
+| **agents-v2.md** | Priority rules and team management | Orchestration |
+
+### Routing Table (33 Agents)
+
+| Domain | Keywords | Agent |
+|:-------|:---------|:------|
+| Planning | implementation plan, complex feature | `planner` |
+| Code Review | code review, review this | `code-reviewer` |
+| Architecture | architecture, tech debt, scalability | `architect` |
+| TDD | test first, TDD, red-green | `tdd-guide` |
+| Legal | contract, NDA, law, court ruling | `contract-legal` |
+| Finance | tax, accounting, VAT, income tax | `financial-accountant` |
+| Patent | patent, invention, trademark, IP | `patent-attorney` |
+| SEO | SEO, GEO, AEO, search ranking | `seo-geo-aeo-strategist` |
+| Strategy | product strategy, business plan, roadmap | `product-strategist` |
+| Copywriting | copy, headline, CTA, ad copy | `copywriting` |
+| Quotation | estimate, quote, pricing | `quotation` |
+| Gov Support | government grant, subsidy, TIPS | `gov-support-strategist` |
+| Ads | ad optimization, ROAS | `ad-optimizer-team` |
+| Growth | marketing strategy, growth | `performance-growth-marketer` |
+| Content | content planning, YouTube | `qjc-content` |
+| CRM | sales, leads, CRM, pipeline | `crm-manager` |
+| Design | UI, UX, landing page, dashboard | `web-designer` |
+| Video | Remotion, video production | `remotion-creator` |
+| Research | research, market analysis | `researcher` |
+| AI Research | AI research, paper survey, SOTA | `ai-researcher` |
+| Storytelling | brand story, narrative, pitch deck | `storyteller` |
+
+> **Team sub-agents** (ad-compass, ad-scout-google, ad-scout-meta, action-architect, folder-hunter, mail-scout) are managed by their parent team agents and are not directly routed.
+
+### Anti-Recursion Guard
+
+Both `using-superpowers` and `agent-router` include `<SUBAGENT-STOP>` guards to prevent infinite recursion when an agent is already running inside a subagent context.
+
+### Customization
+
+Edit `commands/agent-router.md` to add your own agents to the routing table:
+
+```markdown
+| my custom keyword | my-custom-agent |
+```
+
+The router will automatically delegate matching requests to your agent.
+
+---
+
 ## 🛡 Claude Code Automation Hooks
 
 ### Security Hooks

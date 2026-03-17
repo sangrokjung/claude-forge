@@ -388,6 +388,75 @@ claude-forge/
 
 ---
 
+## 🔀 에이전트 라우터 시스템
+
+에이전트 라우터는 전문 에이전트가 자신의 도메인 작업을 처리하도록 **강제 위임하는 시스템**입니다. 이 시스템이 없으면 Claude는 전문 에이전트가 존재하더라도 모든 작업을 직접 처리합니다.
+
+### 동작 원리
+
+```mermaid
+graph LR
+    U["사용자 메시지"] --> SP["using-superpowers<br><small>1% 규칙: 스킬 체크 강제</small>"]
+    SP --> AR["agent-router<br><small>도메인 매칭</small>"]
+    AR -->|"매칭"| A["Agent Tool<br><small>전문가 스폰</small>"]
+    AR -->|"매칭 없음"| D["직접 응답"]
+    A --> R["전문가 결과"]
+
+    style U fill:#1a1a2e,stroke:#fff,color:#fff
+    style SP fill:#e94560,stroke:#fff,color:#fff
+    style AR fill:#533483,stroke:#fff,color:#fff
+    style A fill:#0f3460,stroke:#fff,color:#fff
+    style D fill:#16213e,stroke:#fff,color:#fff
+    style R fill:#0f3460,stroke:#fff,color:#fff
+```
+
+### 강제 체인
+
+| 계층 | 메커니즘 | 역할 |
+|:-----|:---------|:-----|
+| **system-reminder** | 매 턴 `agent-router` 스킬 description 노출 | 가시성 |
+| **using-superpowers** | "1%라도 스킬이 해당되면 반드시 호출" | 강제 |
+| **agent-router** | 라우팅 테이블: 키워드 → 에이전트 매핑 | 위임 |
+| **agents-v2.md** | 우선순위 규칙 + 팀 관리 | 오케스트레이션 |
+
+### 라우팅 테이블 (33개 에이전트)
+
+| 도메인 | 키워드 | 에이전트 |
+|:-------|:-------|:---------|
+| 구현 계획 | 구현 계획, 복잡한 기능, 설계 | `planner` |
+| 코드 리뷰 | 코드 리뷰, 코드 검토 | `code-reviewer` |
+| 아키텍처 | 아키텍처, 기술 부채, 설계 판단 | `architect` |
+| 법무 | 계약, 계약서, NDA, 법률, 판례 | `contract-legal` |
+| 재무 | 세금, 세무, 회계, 부가세, 절세 | `financial-accountant` |
+| 특허 | 특허, 발명, 청구항, 상표, IP | `patent-attorney` |
+| SEO | SEO, GEO, AEO, 검색 노출 | `seo-geo-aeo-strategist` |
+| 기획 | 제품 전략, 사업 전략, 로드맵 | `product-strategist` |
+| 카피 | 카피, 헤드라인, CTA, 광고 문구 | `copywriting` |
+| 견적 | 견적, 견적서, 가격 제안 | `quotation` |
+| 정부지원 | 정부지원, 보조금, 사업계획서, TIPS | `gov-support-strategist` |
+| 광고 | 광고 최적화, ROAS, 광고 분석 | `ad-optimizer-team` |
+| CRM | 영업, 세일즈, 리드, 파이프라인 | `crm-manager` |
+| 디자인 | UI, UX, 랜딩페이지, 대시보드 | `web-designer` |
+| 리서치 | 조사, 리서치, 시장 조사, 동향 분석 | `researcher` |
+| AI 연구 | AI 연구, 논문 분석, SOTA | `ai-researcher` |
+| 스토리텔링 | 브랜드 스토리, 내러티브, 피치덱 | `storyteller` |
+
+> **팀 하위 에이전트** (ad-compass, ad-scout-google 등)는 상위 팀 에이전트가 관리하므로 직접 라우팅하지 않습니다.
+
+### 재귀 방지
+
+`using-superpowers`와 `agent-router` 모두 `<SUBAGENT-STOP>` 가드를 포함하여 서브에이전트 내부에서 무한 재귀를 방지합니다.
+
+### 커스터마이징
+
+`commands/agent-router.md`를 편집하여 자신만의 에이전트를 라우팅 테이블에 추가하세요:
+
+```markdown
+| 나만의 키워드 | my-custom-agent |
+```
+
+---
+
 ## 🛡 자동화 훅
 
 ### 보안 훅
