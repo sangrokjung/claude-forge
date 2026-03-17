@@ -1,0 +1,27 @@
+{
+  "role_name": "readonly",
+  "description": "읽기 전용 역할 — 코드 탐색과 검색만 가능한 최소 권한 역할",
+  "permissions": {
+    "allow": [
+      "Read(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "mcp__context7__*"
+    ],
+    "deny": [
+      "Write(*)",
+      "Edit(*)",
+      "Bash(*)",
+      "Task(*)",
+      "NotebookEdit(*)",
+      "Skill(*)",
+      "mcp__github__*",
+      "mcp__memory__*",
+      "mcp__fetch__*",
+      "mcp__exa__*"
+    ]
+  },
+  "commands": ["explore", "show-setup"],
+  "agents": [],
+  "mcp": ["context7"]
+}

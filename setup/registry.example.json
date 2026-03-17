@@ -1,0 +1,38 @@
+{
+  "registries": [
+    {
+      "name": "company-skills",
+      "url": "https://github.com/my-org/claude-forge-skills.git",
+      "auth": "ssh",
+      "skills": [
+        {
+          "name": "custom-review",
+          "version": "1.2.0",
+          "required": true,
+          "path": "skills/custom-review"
+        },
+        {
+          "name": "deploy-checklist",
+          "version": "0.9.1",
+          "required": false,
+          "path": "skills/deploy-checklist"
+        }
+      ]
+    },
+    {
+      "name": "team-alpha-skills",
+      "url": "git@github.com:my-org/team-alpha-skills.git",
+      "auth": "ssh",
+      "skills": [
+        {
+          "name": "api-testing",
+          "version": "2.0.0",
+          "required": true,
+          "path": "skills/api-testing"
+        }
+      ]
+    }
+  ],
+  "auto_update": true,
+  "verify_signatures": false
+}

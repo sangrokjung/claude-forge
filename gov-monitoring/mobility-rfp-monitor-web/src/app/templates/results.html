@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Results{% endblock %}
+{% block nav_links %}
+  <a href="/dashboard">Dashboard</a>
+  <a href="/results">Results</a>
+  <a href="/logout">Logout</a>
+{% endblock %}
+{% block content %}
+<h2>Monitoring Results</h2>
+
+{% if not run_data %}
+  <div class="card"><p>No monitoring runs yet. Go to <a href="/dashboard">Dashboard</a> to start.</p></div>
+{% endif %}
+
+{% for item in run_data %}
+<div class="card">
+  <h3>Run #{{ item.run.id }} ({{ item.run.run_type }}) — {{ item.run.created_at.strftime('%Y-%m-%d %H:%M') if item.run.created_at else '' }}</h3>
+  <p>
+    Fetched: {{ item.run.total_fetched }} |
+    Matched: {{ item.run.keyword_matched }} |
+    New: {{ item.run.new_items }} |
+    Notified: {{ item.run.notified }} |
+    Status: {{ item.run.status }}
+  </p>
+  {% if item.run.error_detail %}
+    <div class="alert alert-error">{{ item.run.error_detail }}</div>
+  {% endif %}
+  {% if item.notices %}
+  <table>
+    <thead>
+      <tr><th>Title</th><th>Source</th><th>Agency</th><th>Published</th><th>Keywords</th></tr>
+    </thead>
+    <tbody>
+      {% for n in item.notices %}
+      <tr>
+        <td>{% if n.url %}<a href="{{ n.url }}" target="_blank">{{ n.title }}</a>{% else %}{{ n.title }}{% endif %}</td>
+        <td>{{ n.source }}</td>
+        <td>{{ n.agency }}</td>
+        <td>{{ n.published_at }}</td>
+        <td>{{ n.matched_keywords }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endfor %}
+{% endblock %}

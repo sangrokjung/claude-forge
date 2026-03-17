@@ -151,7 +151,39 @@ link_files() {
     done
 }
 
-# 5. Apply CC CHIPS custom overlay
+# 5. Apply team settings (if settings.team.json exists)
+apply_team_settings() {
+    echo ""
+
+    # Source the merge library
+    # shellcheck source=scripts/merge-settings.sh
+    source "$REPO_DIR/scripts/merge-settings.sh"
+
+    if ! has_team_settings "$REPO_DIR"; then
+        echo -e "${YELLOW}No settings.team.json found — skipping team settings${NC}"
+        return 0
+    fi
+
+    local team_name
+    team_name=$(get_team_name "$REPO_DIR")
+    echo "Applying team settings (team: $team_name)..."
+
+    local merged
+    merged=$(merge_settings "$REPO_DIR")
+
+    if [ -z "$merged" ] || [ "$merged" = "{}" ]; then
+        echo -e "${RED}Failed to merge team settings${NC}"
+        return 1
+    fi
+
+    # Write merged settings (not a symlink — it's a generated file)
+    rm -f "$CLAUDE_DIR/settings.json" 2>/dev/null || true
+    echo "$merged" | jq '.' > "$CLAUDE_DIR/settings.json"
+
+    echo -e "${GREEN}Team settings applied (team: $team_name)${NC}"
+}
+
+# 6. Apply CC CHIPS custom overlay (renumbered from 5)
 apply_cc_chips_custom() {
     local custom_dir="$REPO_DIR/cc-chips-custom"
     if [ -d "$custom_dir" ]; then
@@ -457,10 +489,27 @@ install_work_tracker() {
 
 # Main
 main() {
+    # Parse flags (Phase 2 stub: --role)
+    local role=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --role)
+                role="${2:-}"
+                shift 2
+                # Phase 2: role-based settings will be applied here
+                echo -e "${YELLOW}--role flag detected (role=$role). Role-based settings coming in Phase 2.${NC}"
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+
     check_deps
     init_submodules
     backup
     link_files
+    apply_team_settings
     apply_cc_chips_custom
 
     if verify; then

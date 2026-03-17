@@ -1,0 +1,40 @@
+{
+  "role_name": "admin",
+  "description": "관리자 역할 — 모든 권한을 가진 최상위 역할",
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "Task(*)",
+      "NotebookEdit(*)",
+      "WebSearch",
+      "WebSearch(*)",
+      "Skill(*)",
+      "ToolSearch(*)",
+      "SendMessage(*)",
+      "TaskCreate(*)",
+      "TaskUpdate(*)",
+      "TaskGet(*)",
+      "TaskList(*)",
+      "mcp__context7__*",
+      "mcp__memory__*",
+      "mcp__github__*",
+      "mcp__fetch__*",
+      "mcp__exa__*"
+    ],
+    "deny": [
+      "Bash(rm -rf /)*",
+      "Bash(rm -rf ~)*",
+      "Bash(sudo:*)",
+      "Bash(chmod 777:*)",
+      "Bash(eval *)*"
+    ]
+  },
+  "commands": ["*"],
+  "agents": ["*"],
+  "mcp": ["*"]
+}

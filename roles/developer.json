@@ -1,0 +1,39 @@
+{
+  "role_name": "developer",
+  "description": "개발자 역할 — 개발에 필요한 주요 도구와 에이전트 접근 권한",
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "Task(*)",
+      "NotebookEdit(*)",
+      "WebSearch",
+      "WebSearch(*)",
+      "mcp__context7__*",
+      "mcp__memory__*",
+      "mcp__github__*",
+      "mcp__fetch__*"
+    ],
+    "deny": [
+      "Bash(rm -rf /)*",
+      "Bash(rm -rf ~)*",
+      "Bash(rm -rf .)*",
+      "Bash(rm -rf *)*",
+      "Bash(sudo:*)",
+      "Bash(chmod 777:*)",
+      "Bash(git push --force*main)*",
+      "Bash(git push -f*main)*",
+      "Bash(git push --force*master)*",
+      "Bash(git push -f*master)*",
+      "Bash(npm publish)*",
+      "Bash(eval *)*"
+    ]
+  },
+  "commands": ["*"],
+  "agents": ["planner", "tdd-guide", "code-reviewer", "build-error-resolver"],
+  "mcp": ["context7", "memory", "github", "fetch"]
+}

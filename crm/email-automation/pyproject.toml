@@ -1,0 +1,23 @@
+[project]
+name = "email-automation"
+version = "0.1.0"
+description = "CRM Email Automation CLI — CSV 고객 데이터를 읽어 세그먼트별 맞춤 안내메일을 자동 생성"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+email-automation = "email_automation.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/email_automation"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]

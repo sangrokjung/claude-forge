@@ -1,0 +1,31 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL SERVICE"
+    },
+    "body": {
+      "items": [
+        {
+          "bidNtceNo": "20260301001",
+          "bidNtceOrd": "00",
+          "bidNtceNm": "전기차 충전인프라 구축사업",
+          "ntceInsttNm": "한국전력공사",
+          "bidNtceDtlUrl": "https://g2b.go.kr/bid/20260301001",
+          "bidNtceDt": "2026-03-01 09:00"
+        },
+        {
+          "bidNtceNo": "20260301002",
+          "bidNtceOrd": "00",
+          "bidNtceNm": "사무용품 구매",
+          "ntceInsttNm": "서울시청",
+          "bidNtceDtlUrl": "https://g2b.go.kr/bid/20260301002",
+          "bidNtceDt": "2026-03-01 10:00"
+        }
+      ],
+      "numOfRows": 100,
+      "pageNo": 1,
+      "totalCount": 2
+    }
+  }
+}
