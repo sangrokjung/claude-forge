@@ -95,7 +95,23 @@
       "Bash(/usr/bin/perl -e *)*",
       "Bash(xargs *)*",
       "Bash(open http*)*",
-      "Bash(source /dev/*)*"
+      "Bash(source /dev/*)*",
+      "Read(*/.env)",
+      "Read(*/.env.*)",
+      "Read(*/.ssh/id_*)",
+      "Read(*/.aws/credentials)",
+      "Read(*/.npmrc)",
+      "Read(*/.netrc)",
+      "Read(*/.git-credentials)",
+      "Read(*/.docker/config.json)",
+      "Grep(*/.env)",
+      "Grep(*/.env.*)",
+      "Grep(*/.ssh/id_*)",
+      "Grep(*/.aws/credentials)",
+      "Grep(*/.npmrc)",
+      "Grep(*/.netrc)",
+      "Grep(*/.git-credentials)",
+      "Grep(*/.docker/config.json)"
     ]
   },
   "hooks": {
@@ -106,6 +122,21 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/remote-command-guard.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/npm-scripts-guard.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/claude-infra-guard.sh",
             "timeout": 5000
           }
         ]
@@ -214,6 +245,15 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/session-wrap-suggest.sh"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/stop-verify.sh",
+            "timeout": 5000
           }
         ]
       }
