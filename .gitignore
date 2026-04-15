@@ -31,3 +31,6 @@ venv/
 # Archive
 archive/
 reports/
+
+# Vendored mirrors — never ignore contents even if names match above patterns
+!vendor/**
