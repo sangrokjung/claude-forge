@@ -320,6 +320,50 @@ install_external_skills() {
     echo -e "${GREEN}External skills installation complete!${NC}"
 }
 
+# 7b. Install bin/claude-forge launcher to user PATH
+install_launcher() {
+    local launcher="$REPO_DIR/bin/claude-forge"
+    [ -f "$launcher" ] || return 0
+
+    echo ""
+    echo "Installing bin/claude-forge launcher..."
+
+    # Pick a target directory in PATH that we can write to
+    local target_dir=""
+    for candidate in "$HOME/.local/bin" "/usr/local/bin"; do
+        if [ -d "$candidate" ] && [ -w "$candidate" ]; then
+            target_dir="$candidate"
+            break
+        fi
+    done
+    if [ -z "$target_dir" ]; then
+        # ~/.local/bin doesn't exist yet — offer to create it
+        if [ ! -d "$HOME/.local/bin" ]; then
+            read -p "  Create ~/.local/bin and add launcher? (y/n) " -n 1 -r
+            echo ""
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                mkdir -p "$HOME/.local/bin"
+                target_dir="$HOME/.local/bin"
+            fi
+        fi
+    fi
+
+    if [ -z "$target_dir" ]; then
+        echo -e "  ${YELLOW}!${NC} no writable PATH directory — skipping launcher install"
+        echo "    Run manually: ln -sf \"$launcher\" ~/.local/bin/claude-forge"
+        return 0
+    fi
+
+    ln -sf "$launcher" "$target_dir/claude-forge"
+    echo -e "  ${GREEN}✓${NC} $target_dir/claude-forge → $launcher"
+
+    # Warn if target_dir not in PATH
+    if ! echo ":$PATH:" | grep -q ":$target_dir:"; then
+        echo -e "  ${YELLOW}!${NC} $target_dir is not in your PATH"
+        echo "    Add to ~/.zshrc or ~/.bashrc:  export PATH=\"$target_dir:\$PATH\""
+    fi
+}
+
 # 8. Setup shell aliases
 setup_shell_aliases() {
     echo ""
@@ -470,6 +514,9 @@ main() {
         # Write forge metadata
         write_meta
 
+        # Install launcher into PATH
+        install_launcher
+
         # Setup shell aliases
         setup_shell_aliases
 
@@ -501,6 +548,12 @@ main() {
     /code-review    코드 보안+품질 검사
     /handoff-verify 빌드/테스트/린트 자동 검증
     /auto           계획부터 PR까지 원버튼 자동
+
+  셸에서 어디서나 (launcher 설치 시):
+    claude-forge doctor      설치 헬스 체크
+    claude-forge update      git pull로 업데이트
+    claude-forge status      메타파일 확인
+    claude-forge uninstall   안전 제거
 
   ${YELLOW}★ Star: github.com/sangrokjung/claude-forge${NC}
   ${YELLOW}? Issues: github.com/sangrokjung/claude-forge/issues${NC}

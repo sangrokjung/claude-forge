@@ -4,6 +4,48 @@
 
 ---
 
+## 0단계: 이미 설치되어 있나요?
+
+확인 한 줄:
+
+```bash
+ls -la ~/.claude/agents
+# → ~/.claude/agents -> /path/to/claude-forge/agents 가 보이면 설치됨
+```
+
+또는 launcher 사용 (설치되어 있다면):
+
+```bash
+claude-forge status     # 메타파일 확인 → 설치 완료 시 JSON 출력
+claude-forge doctor     # 설치 무결성 점검 (의존성·symlink·MCP·alias·백업)
+```
+
+이미 설치되어 있다면 곧장 [1단계](#1단계-claude-code-실행)로 넘어가세요. 설치가 안 되어 있다면:
+
+```bash
+git clone https://github.com/sangrokjung/claude-forge.git
+cd claude-forge && ./install.sh
+```
+
+> 한 번 설치하면 **어느 프로젝트에서 `claude` 를 띄우든** 모든 agent/command/skill을 그대로 씁니다. 프로젝트마다 다시 설치할 필요 없습니다.
+
+### 라이프사이클 명령어 (셸에서 어디서나)
+
+| 명령 | 하는 일 |
+|------|---------|
+| `claude-forge install` | 최초 설치 / 재설치 |
+| `claude-forge update` | `git pull`로 최신 버전 받기 |
+| `claude-forge doctor` | 설치 헬스 체크 |
+| `claude-forge status` | 현재 설치 메타정보 |
+| `claude-forge path` | 저장소 경로 출력 |
+| `claude-forge uninstall` | 안전 제거 (사용자 데이터 보존) |
+
+> launcher가 PATH에 없으면 `~/.local/bin`을 PATH에 추가하세요: `export PATH="$HOME/.local/bin:$PATH"`
+
+세션 안에서는 슬래시 명령으로도 됩니다: `/forge-doctor`, `/forge-update`.
+
+---
+
 ## 당신의 첫 5분
 
 ### 1단계: Claude Code 실행
