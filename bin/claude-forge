@@ -1,0 +1,146 @@
+#!/bin/bash
+# claude-forge — Claude Forge 런처
+#
+# 어디서나 호출 가능한 단일 진입점. .forge-meta.json에서 저장소 경로를
+# 찾아 install.sh / uninstall.sh / scripts/forge-doctor.sh 등을 실행한다.
+#
+# 설치:
+#   ln -s "$(pwd)/bin/claude-forge" /usr/local/bin/claude-forge
+#   # 또는
+#   mkdir -p ~/.local/bin && ln -s "$(pwd)/bin/claude-forge" ~/.local/bin/claude-forge
+#
+# 사용:
+#   claude-forge install         # ./install.sh
+#   claude-forge update          # /forge-update와 동일 (셸에서)
+#   claude-forge doctor [args]   # scripts/forge-doctor.sh
+#   claude-forge uninstall [args]# ./uninstall.sh
+#   claude-forge status          # 메타파일 요약
+#   claude-forge path            # 저장소 경로 출력
+#   claude-forge version         # plugin.json 버전
+#   claude-forge help            # 이 도움말
+
+set -e
+
+CLAUDE_DIR="$HOME/.claude"
+META="$CLAUDE_DIR/.forge-meta.json"
+
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+DIM='\033[2m'
+NC='\033[0m'
+
+# Resolve repo path
+resolve_repo() {
+    if [ -f "$META" ] && command -v jq >/dev/null; then
+        local p
+        p=$(jq -r '.repo_path // ""' "$META" 2>/dev/null)
+        if [ -n "$p" ] && [ -d "$p" ]; then
+            echo "$p"
+            return 0
+        fi
+    fi
+
+    # Fallback 1: follow ~/.claude/agents symlink
+    if [ -L "$CLAUDE_DIR/agents" ]; then
+        local link target
+        link=$(readlink "$CLAUDE_DIR/agents")
+        target=$(cd "$(dirname "$link")" 2>/dev/null && pwd)
+        if [ -n "$target" ] && [ -d "$target" ]; then
+            echo "$target"
+            return 0
+        fi
+    fi
+
+    # Fallback 2: this script's own location (bin/claude-forge → repo)
+    local self_dir
+    self_dir=$(cd "$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")/.." 2>/dev/null && pwd)
+    if [ -d "$self_dir/.claude-plugin" ]; then
+        echo "$self_dir"
+        return 0
+    fi
+
+    return 1
+}
+
+usage() {
+    sed -n '2,22p' "$0" | sed 's/^# //; s/^#//'
+}
+
+cmd="${1:-help}"
+shift || true
+
+case "$cmd" in
+    -h|--help|help)
+        usage
+        ;;
+
+    install)
+        REPO=$(resolve_repo) || {
+            echo -e "${YELLOW}No existing install found. Run install.sh from the cloned repo:${NC}" >&2
+            echo "  git clone https://github.com/sangrokjung/claude-forge.git" >&2
+            echo "  cd claude-forge && ./install.sh" >&2
+            exit 1
+        }
+        cd "$REPO"
+        exec ./install.sh "$@"
+        ;;
+
+    update)
+        REPO=$(resolve_repo) || { echo -e "${RED}claude-forge not installed${NC}" >&2; exit 1; }
+        cd "$REPO"
+        if command -v claude >/dev/null; then
+            echo "Tip: in a Claude Code session, run /forge-update for the full pipeline."
+            echo ""
+        fi
+        echo "Pulling latest in $REPO ..."
+        git pull --ff-only "$@"
+        echo ""
+        echo -e "${GREEN}Pull complete. Re-run install.sh if symlinks/MCP setup changed:${NC}"
+        echo "  ./install.sh"
+        ;;
+
+    doctor)
+        REPO=$(resolve_repo) || { echo -e "${RED}claude-forge not installed${NC}" >&2; exit 2; }
+        exec bash "$REPO/scripts/forge-doctor.sh" "$@"
+        ;;
+
+    uninstall)
+        REPO=$(resolve_repo) || { echo -e "${RED}claude-forge not installed${NC}" >&2; exit 1; }
+        exec bash "$REPO/uninstall.sh" "$@"
+        ;;
+
+    status)
+        if [ ! -f "$META" ]; then
+            echo -e "${YELLOW}Not installed${NC} (no $META)"
+            exit 1
+        fi
+        if command -v jq >/dev/null; then
+            jq '.' "$META"
+        else
+            cat "$META"
+        fi
+        ;;
+
+    path)
+        REPO=$(resolve_repo) || { echo -e "${RED}claude-forge not installed${NC}" >&2; exit 1; }
+        echo "$REPO"
+        ;;
+
+    version)
+        REPO=$(resolve_repo) || { echo -e "${RED}claude-forge not installed${NC}" >&2; exit 1; }
+        plugin_json="$REPO/.claude-plugin/plugin.json"
+        if [ -f "$plugin_json" ] && command -v jq >/dev/null; then
+            jq -r '.version' "$plugin_json"
+        else
+            echo "unknown"
+        fi
+        ;;
+
+    *)
+        echo -e "${RED}Unknown command: $cmd${NC}" >&2
+        echo ""
+        usage
+        exit 2
+        ;;
+esac
