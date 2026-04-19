@@ -33,7 +33,7 @@
 
 ## Claude Forge란?
 
-Claude Forge는 **Claude Code**를 기본 CLI에서 **완전한 개발 환경**으로 변환합니다. 설치 한 번으로 **11개 전문 에이전트**(Opus 6 + Sonnet 5, frontmatter v2), **40개 슬래시 커맨드**, **15개 이상 스킬 워크플로우**, **18개 자동화 훅 + 9개 opt-in 예제**(21 lifecycle 이벤트 커버), **9개 규칙 파일**, **3개 MCP 서버**(minimal, 8개 이상 optional)가 모두 연결되어 즉시 사용 가능합니다.
+Claude Forge는 **Claude Code**를 기본 CLI에서 **완전한 개발 환경**으로 변환합니다. 설치 한 번으로 **11개 전문 에이전트**(Opus 6 + Sonnet 5, frontmatter v2), **32개 슬래시 커맨드**, **23개 스킬 워크플로우**(15 native + 8 commands에서 이전), **15개 자동화 훅 + 9개 opt-in 예제**(21 lifecycle 이벤트 커버), **9개 규칙 파일**, **3개 MCP 서버**(minimal, 8개 이상 optional)가 모두 연결되어 즉시 사용 가능합니다.
 
 > oh-my-zsh가 터미널을 강화하듯, Claude Forge는 AI 코딩 어시스턴트를 **파워 유저 도구**로 업그레이드합니다.
 
@@ -458,7 +458,7 @@ claude-forge/
 ---
 
 <details>
-<summary><strong>📋 전체 커맨드 목록 (40개)</strong></summary>
+<summary><strong>📋 전체 커맨드 목록 (32개)</strong></summary>
 
 | 커맨드 | 설명 |
 |:-------|:-----|

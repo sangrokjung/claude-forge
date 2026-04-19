@@ -169,7 +169,7 @@ print_upgrade_summary() {
     echo "  Target        : $CLAUDE_DIR"
     echo ""
     echo "  Expected counts:"
-    echo "    - 11 agents, 15 skills, 40 commands, 9+ rules, 17+ hooks"
+    echo "    - 11 agents, 23 skills (15 native + 8 moved from commands), 32 commands, 9+ rules, 15 hooks + 9 opt-in examples"
     echo ""
     echo "  Next steps:"
     echo "    1. Review docs/MIGRATION.md for detailed changes"

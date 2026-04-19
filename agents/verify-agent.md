@@ -1,4 +1,3 @@
-# Part of Claude Forge — github.com/sangrokjung/claude-forge
 ---
 name: verify-agent
 description: Fresh-context verification sub-agent. Runs build/type/lint/test verification pipeline.
