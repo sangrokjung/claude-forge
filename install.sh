@@ -121,8 +121,17 @@ create_v3_compat_links() {
     local created=0
 
     # v2.1 경로 -> v3.0 경로 매핑
+    # v2.1의 commands/ 디렉토리형 skill(8개)이 v3.0에서 skills/로 이전됨.
+    # 기존 참조를 깨지 않도록 심볼릭 링크로 호환성 유지 (2027-04-01까지).
     local mappings=(
         "commands/debugging-strategies:skills/debugging-strategies"
+        "commands/dependency-upgrade:skills/dependency-upgrade"
+        "commands/evaluating-code-models:skills/evaluating-code-models"
+        "commands/evaluating-llms-harness:skills/evaluating-llms-harness"
+        "commands/extract-errors:skills/extract-errors"
+        "commands/security-compliance:skills/security-compliance"
+        "commands/stride-analysis-patterns:skills/stride-analysis-patterns"
+        "commands/summarize:skills/summarize"
     )
 
     for mapping in "${mappings[@]}"; do

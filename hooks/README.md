@@ -26,7 +26,7 @@ Claude Code v3.0 exposes **21 hookable events** across 7 categories. Install onl
 | System | `FileChanged` | Claude edits a watched file | Kick linters / formatters | (custom) |
 | System | `InstructionsLoaded` | CLAUDE.md / rules loaded | Audit rule sources | (custom) |
 | System | `Notification` | User-facing notification emitted | Mirror to Discord/Slack | (custom) |
-| System | `PermissionDenied` | A permission prompt was denied | Audit-log denials | (custom) |
+| System | `PermissionRequest` | A permission prompt is shown (auto/manual decision pending) | Audit or custom auto-approval | (custom) |
 | System | `TaskCreated` | Task tool creates a new task | Log assignment, notify team | `examples/task-created.sh.example` |
 | System | `TaskCompleted` | Task marked completed | Close loop, emit metrics | `task-completed.sh` |
 | Worktree | `WorktreeCreate` | New git worktree registered | Seed `.claude/` symlink, log | `examples/worktree-create.sh.example` |

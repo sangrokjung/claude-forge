@@ -57,6 +57,22 @@ git branch   # pull 준비 상태 확인
 
 `memory` / `exa` / `github` / `fetch`를 자동화에서 사용 중이라면, Step 6 이전에 먼저 복구하여 `enabledMcpjsonServers` 힌트와 실제 상태를 일치시키세요.
 
+### Step 2.5: 제거된 MCP 도구를 참조하던 5개 agent 점검
+
+v2.1은 `Tool_Usage` 섹션에서 `mcp__exa__*` 또는 `mcp__memory__*`를 직접 호출하던 5개 agent를 제공했습니다. v3.0에서는 이 호출을 **내장 도구 기본 + MCP 선택 대체** 구조로 재작성했지만, 5개 중 하나라도 로컬에서 커스터마이즈했다면 로컬 복사본을 다시 확인하세요:
+
+| Agent | v2.1에서 사용한 도구 | v3.0 대체 |
+|-------|-----------------------|-----------|
+| `agents/security-reviewer.md` | `mcp__exa__web_search_exa` | 내장 `WebSearch` (Exa 선택) |
+| `agents/architect.md` | `mcp__exa__web_search_exa` | 내장 `WebSearch` (Exa 선택) |
+| `agents/refactor-cleaner.md` | `mcp__memory__*` | Auto Memory(`~/.claude/projects/<hash>/memory/`) 또는 텍스트 로그, memory MCP 선택 |
+| `agents/doc-updater.md` | `mcp__memory__*` | Auto Memory 또는 `git log`, memory MCP 선택 |
+| `agents/database-reviewer.md` | `mcp__memory__*` | Auto Memory 또는 마이그레이션 파일, memory MCP 선택 |
+
+**v2.1 문구를 개인 포크에 유지했다면**: (a) v3.0 사본을 pull 받아 커스터마이즈를 다시 적용하거나, (b) Step 2에서 `mcp-servers.optional.json`으로부터 해당 MCP 서버를 복구하여 기존 도구 이름이 다시 해결되도록 하세요.
+
+**기본 제공 agent를 그대로 사용 중**: 추가 조치 불필요. v3.0이 수동 MCP 설정 없이도 내장 도구로 자동 폴백합니다.
+
 ### Step 3: Hooks (선택)
 
 이미 설치된 hook 스크립트는 **그대로 동작합니다**. v3.0은 **21개 이벤트 카탈로그**(`hooks/README.md`)와 **9개 shell 예제**(`hooks/examples/`)를 추가합니다:

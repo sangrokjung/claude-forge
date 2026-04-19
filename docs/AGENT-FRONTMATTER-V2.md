@@ -77,6 +77,25 @@ The commented block acts as a **self-documenting menu**. To enable a field, unco
 
 The v3.0 CI job (`.github/workflows/validate.yml`) lints every `agents/*.md` file against `reference/agent-schema.json` (JSON Schema draft-07). Unknown top-level keys produce warnings, not errors — this keeps future Anthropic additions from breaking CI before we can update the schema.
 
+## Verification Status (as of 2026-04-18)
+
+Not every v3.0 field is identically documented on the public Anthropic spec page. Based on an independent review against the official docs + release notes:
+
+| Field | Official spec page | Notes |
+|-------|--------------------|-------|
+| `name`, `description`, `tools`, `model`, `memory`, `color` | ✅ Confirmed | v1 fields, stable. |
+| `isolation` | ✅ Confirmed | Documented on the subagents page with `worktree` enum. |
+| `mcpServers` | ✅ Confirmed | Documented on the subagents / MCP page. |
+| `maxTurns` | ✅ Confirmed | Referenced in agent SDK docs. |
+| `hooks` | ✅ Confirmed | Per-agent hook overlay documented. |
+| `permissionMode` | ✅ Confirmed | Enum documented on the settings / permissions page. |
+| `disallowedTools` | ✅ Confirmed | Mentioned as counterpart to `tools`. |
+| `effort` | ⚠️ **Unverified** | Referenced in roadmap / issue threads, not yet on the public schema page. Kept as `effort: max` only on `architect.md` — safe to remove if it produces warnings on your Claude Code version. |
+| `background` | ⚠️ **Unverified** | Scheduled but not yet on the public schema page. Kept as a **commented example** on all 11 agents. |
+| `skills` (preload) | ⚠️ **Unverified** | Mentioned in skills / agent-skills blog posts, not yet on the subagent schema page. Kept as a **commented example** on all 11 agents. |
+
+The 3 "Unverified" fields are **opt-in only**: they appear as commented-out examples in each agent file. Uncomment a field only after confirming it is supported in your running Claude Code release (`claude --version` + the docs page for that version). CI (`validate.yml`) treats unknown fields as warnings, not errors, so your agent files will not break if Anthropic renames or drops one of these fields later.
+
 ## References
 
 - Anthropic subagents documentation: <https://docs.claude.com/en/docs/claude-code/sub-agents>

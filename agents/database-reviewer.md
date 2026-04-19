@@ -80,7 +80,7 @@ color: blue
     - Use `mcp__supabase__apply_migration` for schema changes.
     - Use Read/Grep to examine SQL in application code.
     - Use `mcp__context7__*` for PostgreSQL/Supabase latest documentation.
-    - Use `mcp__memory__*` for DB schema change history.
+    - Track DB schema change history via Auto Memory (`~/.claude/projects/<hash>/memory/`) or migration files in the repo. If the optional memory MCP is enabled (see docs/MCP-MIGRATION.md), `mcp__memory__*` offers a knowledge-graph API.
   </Tool_Usage>
 
   <Execution_Policy>
@@ -313,7 +313,7 @@ CREATE INDEX search_idx ON articles USING gin (search_vector);
 ## Related MCP Tools
 
 - **mcp__context7__***: PostgreSQL/Supabase latest documentation
-- **mcp__memory__***: DB schema change history
+- **Auto Memory** (built-in, default) / **mcp__memory__*** (optional, see docs/MCP-MIGRATION.md): DB schema change history
 - **mcp__supabase__***: Supabase DB direct management (queries, migrations, schema)
 
 ## Related Skills

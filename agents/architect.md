@@ -60,7 +60,7 @@ effort: max  # NEW v3.0 — deep reasoning for architecture trade-offs
     - Use Bash with git blame/log for change history analysis.
     - Use mcp__sequential-thinking__sequentialthinking for complex architectural analysis.
     - Use mcp__context7__* for framework/library latest documentation.
-    - Use mcp__exa__web_search_exa for technology trends and architecture pattern research.
+    - Use WebSearch (built-in) for technology trends and architecture pattern research. If the optional Exa MCP is enabled (see docs/MCP-MIGRATION.md), mcp__exa__web_search_exa adds semantic filters.
   </Tool_Usage>
 
   <Execution_Policy>
@@ -135,7 +135,7 @@ effort: max  # NEW v3.0 — deep reasoning for architecture trade-offs
 
 - **mcp__sequential-thinking__sequentialthinking**: Architectural decision analysis
 - **mcp__context7__***: Framework/library latest documentation
-- **mcp__exa__web_search_exa**: Technology trends and architecture pattern research
+- **WebSearch** (built-in, default) / **mcp__exa__web_search_exa** (optional, see docs/MCP-MIGRATION.md): Technology trends and architecture pattern research
 
 ## Related Skills
 

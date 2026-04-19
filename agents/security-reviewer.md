@@ -65,7 +65,7 @@ color: red
     - Use Bash to run dependency audits (npm audit, pip-audit).
     - Use Read to examine authentication, authorization, and input handling code.
     - Use Bash with `git log -p` to check for secrets in git history.
-    - Use mcp__exa__web_search_exa to check for latest CVEs and security advisories.
+    - Use WebSearch (built-in) to check for latest CVEs and security advisories. If the optional Exa MCP is enabled (see docs/MCP-MIGRATION.md), mcp__exa__web_search_exa provides semantic search as a supplement.
     - Use mcp__context7__* for security library documentation.
   </Tool_Usage>
 
@@ -160,7 +160,7 @@ If CRITICAL vulnerability found:
 
 ## Related MCP Tools
 
-- **mcp__exa__web_search_exa**: Latest CVE and security vulnerability search
+- **WebSearch** (built-in, default) / **mcp__exa__web_search_exa** (optional, see docs/MCP-MIGRATION.md): Latest CVE and security vulnerability search
 - **mcp__context7__***: Security library documentation
 
 ## Related Skills

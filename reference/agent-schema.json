@@ -47,7 +47,7 @@
     "background": {
       "type": "boolean",
       "default": false,
-      "description": "NEW in v3.0. When true, the agent executes asynchronously without blocking the parent session. Results arrive via notification."
+      "description": "NEW in v3.0 (UNVERIFIED against the official Claude Code 2026 spec page as of 2026-04-18 — present in roadmap discussions but not the public schema). When true, the agent is intended to execute asynchronously without blocking the parent session. Results arrive via notification. Verify availability in your Claude Code version before relying on it."
     },
     "maxTurns": {
       "type": "integer",
@@ -59,7 +59,7 @@
       "type": "array",
       "items": { "type": "string" },
       "uniqueItems": true,
-      "description": "NEW in v3.0. List of skill names to preload into the agent's context at spawn time."
+      "description": "NEW in v3.0 (UNVERIFIED against the official Claude Code 2026 spec page as of 2026-04-18 — present in roadmap discussions but not the public schema). Intended: list of skill names to preload into the agent's context at spawn time. Verify availability in your Claude Code version before relying on it."
     },
     "mcpServers": {
       "type": "array",
@@ -70,7 +70,7 @@
     "effort": {
       "type": "string",
       "enum": ["low", "medium", "high", "max"],
-      "description": "NEW in v3.0. Reasoning effort. Maps to the model's thinking budget. Use 'max' only for agents that genuinely need deep reasoning (architecture, security)."
+      "description": "NEW in v3.0 (UNVERIFIED against the official Claude Code 2026 spec page as of 2026-04-18 — present in roadmap discussions but not the public schema). Intended: reasoning effort, maps to the model's thinking budget. Use 'max' only for agents that genuinely need deep reasoning (architecture, security). Verify availability in your Claude Code version before relying on it."
     },
     "hooks": {
       "type": "object",

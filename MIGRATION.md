@@ -57,6 +57,22 @@ Full recipes live in [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md). The short
 
 If you use the `memory` / `exa` / `github` / `fetch` servers in automations, copy them back **before** Step 6 so the `enabledMcpjsonServers` hint matches reality.
 
+### Step 2.5: Review five agents that historically used removed MCP tools
+
+v2.1 shipped five agents whose `Tool_Usage` section directly referenced `mcp__exa__*` or `mcp__memory__*`. In v3.0 these references have been **rewritten to built-in tools with the MCP as an optional fallback**, but if you previously customized any of the five, re-check your local copy:
+
+| Agent | Historical tool | v3.0 replacement |
+|-------|-----------------|-------------------|
+| `agents/security-reviewer.md` | `mcp__exa__web_search_exa` | Built-in `WebSearch` (Exa optional) |
+| `agents/architect.md` | `mcp__exa__web_search_exa` | Built-in `WebSearch` (Exa optional) |
+| `agents/refactor-cleaner.md` | `mcp__memory__*` | Auto Memory (`~/.claude/projects/<hash>/memory/`) or plain log; memory MCP optional |
+| `agents/doc-updater.md` | `mcp__memory__*` | Auto Memory or `git log`; memory MCP optional |
+| `agents/database-reviewer.md` | `mcp__memory__*` | Auto Memory or migration files; memory MCP optional |
+
+**If you kept the v2.1 wording in a private fork**: either (a) pull the v3.0 copy and redo your customization, or (b) restore the matching MCP server from `mcp-servers.optional.json` (Step 2) so the old tool name resolves again.
+
+**If you use the agents as shipped**: nothing to do. v3.0 auto-falls back to the built-in tool without any manual MCP setup.
+
 ### Step 3: Hooks (optional)
 
 Hook scripts you already installed **keep working**. v3.0 adds a **catalog of 21 events** (`hooks/README.md`) and ships **9 shell examples** under `hooks/examples/`:

@@ -1,6 +1,6 @@
 {
   "_comment": "Reference document only. Claude Code does not support a separate hooks.json. Actual hook settings must be in settings.json.",
-  "_v3_events": "v3.0 expands hook events from 5 to 21. New opt-in events: SessionEnd, StopFailure, PostToolUseFailure, SubagentStart, SubagentStop, PreCompact, PostCompact, ConfigChange, CwdChanged, FileChanged, InstructionsLoaded, Notification, PermissionDenied, TaskCreated, WorktreeCreate, WorktreeRemove. See hooks/README.md for the full catalog and hooks/examples/ for installable templates.",
+  "_v3_events": "v3.0 expands hook events from 5 to 21. New opt-in events: SessionEnd, StopFailure, PostToolUseFailure, SubagentStart, SubagentStop, PreCompact, PostCompact, ConfigChange, CwdChanged, FileChanged, InstructionsLoaded, Notification, PermissionRequest, TaskCreated, WorktreeCreate, WorktreeRemove. See hooks/README.md for the full catalog and hooks/examples/ for installable templates. NOTE: Some optional subagent frontmatter fields (e.g. memory, effort, background, skills) are scheduled per the Anthropic 2026 roadmap — verify availability against your Claude Code version before relying on them.",
   "PreToolUse": [
     {
       "matcher": "Bash",

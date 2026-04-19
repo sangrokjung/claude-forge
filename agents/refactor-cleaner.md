@@ -100,7 +100,7 @@ color: yellow
     - Use Glob to discover related files.
     - Use Read to examine code context and git history.
     - Use Edit/Write to remove dead code and update DELETION_LOG.md.
-    - Use `mcp__memory__*` for refactoring history and pattern recording.
+    - Record refactoring history through Auto Memory (`~/.claude/projects/<hash>/memory/`, written by Claude Code automatically) or a plain-text log. If the optional memory MCP is enabled (see docs/MCP-MIGRATION.md), `mcp__memory__*` offers a knowledge-graph API.
   </Tool_Usage>
 
   <Execution_Policy>
@@ -291,7 +291,7 @@ If something breaks after removal:
 
 ## Related MCP Tools
 
-- **mcp__memory__***: Refactoring history and pattern recording
+- **Auto Memory** (built-in, default, `~/.claude/projects/<hash>/memory/`) / **mcp__memory__*** (optional, see docs/MCP-MIGRATION.md): Refactoring history and pattern recording
 
 ## Related Skills
 
