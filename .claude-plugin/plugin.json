@@ -1,29 +1,39 @@
 {
   "name": "claude-forge",
   "version": "3.0.0",
-  "description": "Production-grade configuration framework for Claude Code",
-  "author": "sangrokjung",
+  "description": "oh-my-zsh for Claude Code — 11 agents, 32 commands, 23 skills, 15 hooks + 9 examples (21 events), 9 rules, 3 MCP (minimal)",
+  "author": {
+    "name": "Sangrok Jung",
+    "url": "https://github.com/sangrokjung"
+  },
+  "repository": "https://github.com/sangrokjung/claude-forge",
   "homepage": "https://github.com/sangrokjung/claude-forge",
   "license": "MIT",
-  "engines": {
-    "claude-code": ">=2.1.110"
-  },
-  "minClaudeCodeVersion": "2.1.110",
   "keywords": [
     "claude-code",
-    "configuration",
-    "framework",
+    "development-environment",
+    "agents",
+    "skills",
+    "hooks",
+    "tdd",
+    "code-review",
+    "security",
+    "automation",
+    "oh-my-zsh",
     "hooks-21",
     "skills-commands-hybrid",
     "mcp-minimal",
     "v3"
   ],
-  "includes": {
-    "agents": "agents/",
-    "skills": "skills/",
-    "hooks": "hooks/",
-    "rules": "rules/",
-    "commands": "commands/",
-    "scripts": "scripts/"
-  }
+  "engines": {
+    "claude-code": ">=2.1.110"
+  },
+  "minClaudeCodeVersion": "2.1.110",
+  "agents": "agents/",
+  "skills": "skills/",
+  "hooks": "hooks/",
+  "commands": "commands/",
+  "rules": "rules/",
+  "scripts": "scripts/",
+  "mcpServers": "./mcp-servers.json"
 }

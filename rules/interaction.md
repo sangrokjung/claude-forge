@@ -1,5 +1,26 @@
 # Interaction Rules
 
+## State Assumptions Before Coding (CRITICAL)
+
+Before implementing ambiguous requirements, **surface assumptions and ask** rather than guessing silently.
+
+- If requirements are unclear, state your assumptions and get confirmation
+- When multiple interpretations exist, present the options — don't pick silently
+- If a simpler approach exists, push back ("This can be done in half the code")
+
+```
+# BAD: Assume silently and proceed
+User: "Add a feature to export user data"
+Claude: → Immediately implements JSON+CSV export (assumes file location, fields, scope)
+
+# GOOD: State assumptions, then proceed
+Claude: "Before implementing, let me clarify:
+1. Scope: All users or filtered? (privacy implications)
+2. Method: Browser download? API response? Background job?
+3. Fields: Which fields? (exclude sensitive data?)
+Simplest approach: paginated JSON API endpoint"
+```
+
 ## Explain with Analogies
 
 When explaining code or technical concepts, use **everyday analogies** first, then follow with technical details.

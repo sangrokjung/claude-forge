@@ -1,6 +1,6 @@
 # Golden Principles
 
-> 11 core principles for writing clean, maintainable code.
+> 12 core principles for writing clean, maintainable code.
 
 ## 1. Immutability
 
@@ -58,6 +58,16 @@ Run `/plan` first if any of these apply: new feature (3+ files), architecture ch
 
 When using subagent-driven development: spec compliance first, issues found = not done, "close enough" doesn't count.
 
+## 12. Surgical Changes
+
+**Why?** LLMs fix one bug but "improve" adjacent formatting, comments, and type hints. Reviewers can't find the actual change.
+
+**How?** Only change what was requested. Every changed line must trace directly to the user's request.
+- Don't "improve" adjacent code, comments, or formatting
+- Match existing style, even if you'd do it differently
+- Unrelated dead code: mention it, don't delete it
+- Only clean up orphans (unused imports, etc.) that YOUR changes created
+
 ---
 
 ## Anti-Rationalization (These excuses don't work)
@@ -79,3 +89,5 @@ When using subagent-driven development: spec compliance first, issues found = no
 | SDD | "Skip review, move to next task" | Unreviewed = incomplete. No exceptions |
 | Ralph Loop | "Let me just try one more approach" | Stop. Plan first, then execute once |
 | /simplify | "The complexity is necessary" | Run /simplify. If it finds reduction, it wasn't necessary |
+| Surgical | "While I'm here, let me clean up" | Only change requested lines. Cleanup is a separate request |
+| Simplicity | "Need abstraction for extensibility" | Only what's needed now. Abstract when repetition hits 3+ times |

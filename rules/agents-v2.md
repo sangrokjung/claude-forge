@@ -1,94 +1,56 @@
 # Agent Orchestration
 
-> Team operations: reference/agents-teams-ref.md
-> MCP/config: reference/agents-config-ref.md
-
-## Available Agents
-
-Located in `~/.claude/agents/`:
-
-### Development Agents
-
-| Agent | Purpose | Model | When to Use |
-|-------|---------|-------|-------------|
-| planner | Implementation planning | opus | Complex features, refactoring |
-| architect | System design | opus | Architectural decisions |
-| tdd-guide | Test-driven development | opus | New features, bug fixes |
-| code-reviewer | Code review | opus | After writing code |
-| security-reviewer | Security analysis | opus | Before commits |
-| build-error-resolver | Fix build errors | sonnet | When build fails |
-| e2e-runner | E2E testing | sonnet | Critical user flows |
-| refactor-cleaner | Dead code cleanup | sonnet | Code maintenance |
-| doc-updater | Documentation | sonnet | Updating docs |
-| database-reviewer | PostgreSQL/Supabase DB | opus | Schema, query optimization |
-| verify-agent | Fresh-context verification | sonnet | /handoff-verify subagent |
+> 팀 운영 상세: ~/qjc-office/dotclaude/reference/agents-teams-ref.md
+> MCP/설정 상세: ~/qjc-office/dotclaude/reference/agents-config-ref.md
+> 에이전트 카탈로그: ~/qjc-office/dotclaude/reference/agent-catalog.md
 
 ## Built-in Skills
 
-Claude Code includes built-in slash commands that should be used when appropriate:
+| Skill | When to Use |
+|-------|-------------|
+| /simplify | 기능 구현 후 코드 정리 (3 병렬 에이전트) |
+| /batch | 동일 패턴 반복 변경 (5+ 파일) |
+| /rc | 외출 시 원격 세션 접속 |
+| /ralph-loop | 다중 턴 자율 반복 (`--max-iterations` 필수) |
+| /email-action | 2-Phase 이메일 처리: 빈 입력→목록, 번호→매칭, 검색어→4-Opus 팀 (Phase 2만 에이전트 사용) |
 
-| Skill | Purpose | When to Use |
-|-------|---------|-------------|
-| `/simplify` | Reduce code complexity | After implementation, during refactoring |
-| `/batch` | Process multiple files/tasks | Repetitive operations across files |
-| `/rc` | Run configuration commands | Project setup, config changes |
+## 에이전트 자동 라우팅 (CRITICAL)
 
-## Immediate Agent Usage
+`/agent-router` 스킬이 전문 도메인의 실질적 작업 요청을 자동 라우팅한다.
+using-superpowers의 "1% 규칙"에 의해 매 턴 agent-router 체크가 강제된다.
+단순 질문/정보 요청은 라우팅하지 않고 직접 답변한다.
 
-No user prompt needed:
-1. Complex feature requests - Use **planner** agent
-2. Code just written/modified - Use **code-reviewer** agent
-3. Bug fix or new feature - Use **tdd-guide** agent
-4. Architectural decision - Use **architect** agent
+주요 라우팅 대상 (34 에이전트):
+- 개발: planner, code-reviewer, architect, tdd-guide, build-error-resolver, verify-agent, e2e-runner, security-reviewer, database-reviewer, refactor-cleaner, doc-updater
+- 비즈니스: product-strategist, quotation, crm-manager, qjc-business, qjc-operations
+- 법무/재무: contract-legal, financial-accountant, patent-attorney, gov-support-strategist
+- 마케팅/콘텐츠: seo-geo-aeo-strategist, copywriting, ad-optimizer-team, performance-growth-marketer, qjc-content, storyteller
+- 크리에이티브: web-designer, remotion-creator
+- 리서치: researcher, ai-researcher, research-pi
+- 리뷰: codex-reviewer, gemini-reviewer
+- 메타 사고: first-principles-thinker
+
+상세 라우팅 테이블: `/agent-router` 스킬 참조.
 
 ## Parallel Task Execution
 
-ALWAYS use parallel Task execution for independent operations:
-
-```markdown
-# GOOD: Parallel execution
-Launch 3 agents in parallel:
-1. Agent 1: Security analysis of auth.ts
-2. Agent 2: Performance review of cache system
-3. Agent 3: Type checking of utils.ts
-
-# BAD: Sequential when unnecessary
-First agent 1, then agent 2, then agent 3
-```
-
-## Multi-Perspective Analysis
-
-For complex problems, use split role sub-agents:
-- Factual reviewer
-- Senior engineer
-- Security expert
-- Consistency reviewer
-- Redundancy checker
+독립 작업은 항상 병렬 실행. 순차 실행이 필요한 경우만 예외.
 
 ## Subagents vs Agent Teams
 
-Choose based on whether communication between agents is needed:
-
 | | Subagents | Agent Teams |
 |---|---|---|
-| Context | Own window; returns results to caller only | Own window; fully independent |
-| Communication | Reports to main agent only | Hub-and-spoke via leader. Peer-to-peer only for technical coordination |
-| Coordination | Main agent manages | Leader coordinates + shared task list |
-| Best for | Focused tasks where only results matter | Complex tasks requiring discussion/collaboration |
-| Token cost | Low (result summaries) | High (separate instance per member) |
+| 통신 | 메인에게만 보고 | 리더 경유 (hub-and-spoke) |
+| 최적 용도 | 결과만 중요한 집중 작업 | 논의/협업이 필요한 복잡한 작업 |
+| 토큰 비용 | 낮음 | 높음 |
 
-See reference/agents-teams-ref.md for detailed team operation rules.
-See reference/agents-config-ref.md for MCP distribution and subagent selection guide.
+상세: agents-teams-ref.md, agents-config-ref.md 참조.
 
 ## Agent Memory
 
-Agents with `memory: project` get persistent memory at `~/.claude/agent-memory/{agent-name}/`.
+`~/.claude/agent-memory/{agent-name}/`. 상세: agents-config-ref.md 참조.
 
-> **Note**: The `memory` field value is semantic only. All agents use the same path pattern regardless of the value set.
+## Agent Pipeline / Parallel Agents
 
-### Self-Evolution (Core 5 Agents)
-
-code-reviewer, planner, architect, tdd-guide, security-reviewer automatically learn after each task:
-1. Identify new patterns/edge cases
-2. Record recurring issues as Learnings in memory
-3. Reference previous Learnings for quality improvement
+- 호출 순서: ~/qjc-office/dotclaude/reference/agent-pipeline.md
+- 병렬 가이드: ~/qjc-office/dotclaude/reference/parallel-agents-guide.md

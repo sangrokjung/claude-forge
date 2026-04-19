@@ -1,0 +1,33 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-forge",
+  "version": "2.2.0",
+  "description": "oh-my-zsh for Claude Code — 11 agents, 40 commands, 15 skills, 15 hooks, 9 rules in one install",
+  "owner": {
+    "name": "Sangrok Jung",
+    "url": "https://github.com/sangrokjung"
+  },
+  "plugins": [
+    {
+      "name": "claude-forge",
+      "description": "Production-grade development environment for Claude Code with 11 specialized agents, 40 slash commands, 15 skills, 15 hooks, and 9 rules. Includes TDD workflow, security review, code review, architecture analysis, build error resolution, and more.",
+      "version": "2.2.0",
+      "author": {
+        "name": "Sangrok Jung",
+        "url": "https://github.com/sangrokjung"
+      },
+      "source": ".",
+      "category": "development",
+      "homepage": "https://github.com/sangrokjung/claude-forge",
+      "tags": [
+        "agents",
+        "skills",
+        "hooks",
+        "tdd",
+        "code-review",
+        "security",
+        "automation"
+      ]
+    }
+  ]
+}

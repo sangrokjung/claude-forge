@@ -1,3 +1,7 @@
+---
+description: Incrementally fix TypeScript and build errors one at a time
+---
+
 # Build and Fix
 
 > **참고**: 빌드 에러가 아키텍처 문제에서 기인하는 경우, `/plan`으로 구조적 해결 방안을 먼저 수립하세요.

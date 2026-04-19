@@ -1,3 +1,7 @@
+---
+description: Safely identify and remove dead code with test verification
+---
+
 # Refactor Clean
 
 > **참고**: 대규모 리팩토링(3파일 이상 변경 예상)은 `/plan`을 먼저 실행하세요 (Golden Principle #9: HARD-GATE).
