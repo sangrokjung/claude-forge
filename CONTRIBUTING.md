@@ -135,6 +135,12 @@ Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `ci`
 - **Agent author credit**: When you create a new agent, your GitHub username is credited in the agent file's frontmatter (`author` field)
 - **Good First Issues**: Look for issues labeled `good first issue` for a great starting point
 
+## Skills vs Commands
+
+Claude Forge v3.0 follows a hybrid policy: `skills/<name>/SKILL.md` hosts auto-invocable knowledge and reusable workflows, while `commands/*.md` hosts explicit side-effect actions that the user times by typing `/name`. If the surface benefits from bundled `references/` or should be discovered automatically, it is a skill; if it commits, pushes, deploys, or notifies, it is a command.
+
+See [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md) for the full policy, gray-zone examples, frontmatter standards, and the authoring checklist.
+
 ## Questions?
 
 Open an issue on [GitHub](https://github.com/sangrokjung/claude-forge/issues).

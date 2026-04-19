@@ -18,6 +18,7 @@
 </p>
 
 <p align="center">
+  <a href="#-whats-new-in-v30">What's New v3.0</a> &bull;
   <a href="#-quick-start">Quick Start</a> &bull;
   <a href="#-development-workflows">Workflows</a> &bull;
   <a href="#-whats-inside-claude-forge">What's Inside</a> &bull;
@@ -27,11 +28,13 @@
   <a href="README.ko.md">한국어</a>
 </p>
 
+> 🎉 **v3.0 released (April 2026)** — Anthropic 2026 standard alignment: Hooks 21 events · Subagent frontmatter v2 · Skills/Commands hybrid policy · MCP minimal (3 servers). See [MIGRATION.md](MIGRATION.md) / [MIGRATION.ko.md](MIGRATION.ko.md).
+
 ---
 
 ## What is Claude Forge?
 
-Claude Forge is an open-source development environment for Claude Code that provides 11 specialized agents, 40 slash commands, 15 skill workflows, and 15 automation hooks. Often described as "oh-my-zsh for Claude Code", it transforms Claude Code from a basic CLI into a full-featured development environment. One install gives you agents, commands, skills, hooks, and 9 rule files -- all pre-wired and ready to go.
+Claude Forge is an open-source development environment for Claude Code that provides 11 specialized agents, 40 slash commands, 15+ skill workflows, and 18 automation hooks (plus 9 opt-in examples). Often described as "oh-my-zsh for Claude Code", it transforms Claude Code from a basic CLI into a full-featured development environment. One install gives you agents, commands, skills, hooks, and 9 rule files -- all pre-wired and ready to go.
 
 > Think of it as **oh-my-zsh for Claude Code**: the same way oh-my-zsh enhances your terminal, Claude Forge supercharges your AI coding assistant.
 
@@ -55,13 +58,27 @@ claude
 
 > If you find Claude Forge useful, please consider giving it a [star](https://github.com/sangrokjung/claude-forge/stargazers) -- it helps others discover this project.
 
-### What's New in v2.1
+### 🎉 What's New in v3.0
 
 | Change | Description |
 |:-------|:------------|
-| **Verification Rules** | New `verification.md` rule enforces evidence-based completion -- no claims without fresh test/build output. |
-| **Agent Self-Evolution** | Core 5 agents (planner, architect, code-reviewer, security-reviewer, tdd-guide) now record learnings in `~/.claude/agent-memory/` after each task. |
-| **Hook Sync** | Added `forge-update-check.sh` (session start update notification) and `observe.sh` (continuous learning observation). |
+| **Hooks 21 Events** | Lifecycle hooks expanded from 5 to 21 events. Opt-in samples live at [`hooks/examples/`](hooks/examples/) with the full catalog in [`hooks/README.md`](hooks/README.md). |
+| **Subagent Frontmatter v2** | 10 optional fields: `isolation`, `background`, `memory`, `maxTurns`, `skills`, `mcpServers`, `effort`, `hooks`, `permissionMode`, `disallowedTools`. Schema: [`reference/agent-schema.json`](reference/agent-schema.json). Details: [`docs/AGENT-FRONTMATTER-V2.md`](docs/AGENT-FRONTMATTER-V2.md). |
+| **Skills/Commands Hybrid Policy** | Clear boundary documented at [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md). 8 directory-form commands are being migrated to `skills/` with symlink compatibility preserved. |
+| **MCP Minimal (3 servers)** | Default set trimmed to `playwright` · `context7` · `jina-reader`. The legacy full set lives in [`mcp-servers.optional.json`](mcp-servers.optional.json). Recipes: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md). |
+| **CLAUDE.md Template + @import** | New [`setup/CLAUDE.md.template`](setup/CLAUDE.md.template) and [`docs/CLAUDE-MD-GUIDE.md`](docs/CLAUDE-MD-GUIDE.md) with a 200-line principle and `@import` pattern for modular project instructions. |
+| **settings.json 2026 Fields** | New fields: `tui` (flicker-free rendering), `disableSkillShellExecution` (sandbox), `enabledMcpjsonServers` (explicit allowlist). |
+| **Upgrade in One Command** | `./install.sh --upgrade` safely migrates existing v2.1 installs with backup and diff preview. |
+
+### 🚨 Breaking Changes
+
+- **MCP defaults cut** — `memory`, `exa`, `github`, and `fetch` were removed from `mcp-servers.json`. Restore any of them from [`mcp-servers.optional.json`](mcp-servers.optional.json) if you need them. Built-in replacements: Auto Memory, the `gh` CLI, `WebSearch`, and the `jina-reader` fallback cover most previous use cases.
+- **8 commands moved to `skills/`** — Symlink compatibility is maintained until **2027-04-01**. Affected: `debugging-strategies`, `dependency-upgrade`, `evaluating-code-models`, `evaluating-llms-harness`, `extract-errors`, `security-compliance`, `stride-analysis-patterns`, `summarize`.
+- **settings.json allowlist** — Removed `mcp__memory`, `mcp__exa`, `mcp__github`, `mcp__fetch`. Added `mcp__playwright`.
+
+### Why v3.0?
+
+The 2026 Anthropic Claude Code standard evolved significantly (Skills/Commands integration, 21 hook events, expanded subagent frontmatter). v3.0 aligns fully with that standard, **cuts dependencies from 6 MCP servers to 3** to lower the barrier for new users, and incorporates dotclaude operational experience (security allowlists, breakage-safe migration). Existing v2.1 users can migrate with a single line: `./install.sh --upgrade`.
 
 ### New here?
 
@@ -174,12 +191,13 @@ Most developers either use Claude Code with no customization or spend hours asse
 
 | Feature | Claude Forge | Basic `.claude/` Setup | Individual Plugins |
 |:--------|:------------|:-----------------------|:-------------------|
-| **Agents** | 11 pre-configured (Opus + Sonnet) | Manual setup required | Varies by plugin |
-| **Slash Commands** | 40 ready-to-use | None | Per-plugin basis |
-| **Skill Workflows** | 15 multi-step pipelines | None | Per-plugin basis |
-| **Security** | 6-layer automated hooks | None by default | Per-plugin basis |
+| **Agents** | 11 pre-configured (frontmatter v2) | Manual setup required | Varies by plugin |
+| **Slash Commands** | 40 ready-to-use (hybrid policy) | None | Per-plugin basis |
+| **Skill Workflows** | 15+ multi-step pipelines | None | Per-plugin basis |
+| **Hooks** | 18 built-in + 9 opt-in examples (21 events) | None by default | Per-plugin basis |
+| **MCP Servers** | 3 minimal (8+ optional) | None | Per-plugin basis |
 | **Installation** | 5 min, one command | Hours of manual config | Per-plugin install |
-| **Updates** | `git pull` (instant) | Manual per-file | Per-plugin update |
+| **Updates** | `git pull` + `./install.sh --upgrade` | Manual per-file | Per-plugin update |
 | **Workflow Integration** | End-to-end pipelines (plan to PR) | Disconnected tools | Not integrated |
 
 ---
@@ -192,12 +210,12 @@ Most developers either use Claude Code with no customization or spend hours asse
 
 | Category | Count | Highlights |
 |:--------:|:-----:|:-----------|
-| **Agents** | 11 | `planner` `architect` `code-reviewer` `security-reviewer` `tdd-guide` `database-reviewer` + 5 more |
+| **Agents** | 11 | `planner` `architect` `code-reviewer` `security-reviewer` `tdd-guide` `database-reviewer` + 5 more (frontmatter v2) |
 | **Commands** | 40 | `/commit-push-pr` `/handoff-verify` `/explore` `/tdd` `/plan` `/orchestrate` `/security-review` ... |
-| **Skills** | 15 | `build-system` `security-pipeline` `eval-harness` `team-orchestrator` `session-wrap` ... |
-| **Hooks** | 15 | Secret filtering, remote command guard, DB protection, security auto-trigger, rate limiting ... |
+| **Skills** | 15+ | `build-system` `security-pipeline` `eval-harness` `team-orchestrator` `session-wrap` ... (+8 migrated from commands/) |
+| **Hooks** | 18 + 9 examples | 18 built-in (secret filtering, remote command guard, DB protection, security auto-trigger, rate limiting ...) + 9 opt-in samples covering 21 lifecycle events |
 | **Rules** | 9 | `coding-style` `security` `git-workflow` `golden-principles` `agents` `interaction` `verification` ... |
-| **MCP Servers** | 6 | `context7` `memory` `exa` `github` `fetch` `jina-reader` |
+| **MCP Servers** | 3 (minimal) | `playwright` `context7` `jina-reader` — 8+ more available in [`mcp-servers.optional.json`](mcp-servers.optional.json) |
 
 ---
 
@@ -217,7 +235,9 @@ Most developers either use Claude Code with no customization or spend hours asse
 ```bash
 git clone --recurse-submodules https://github.com/sangrokjung/claude-forge.git
 cd claude-forge
-./install.sh
+./install.sh                     # fresh install
+# or
+./install.sh --upgrade           # safe v2.1 → v3.0 migration (backup + diff preview)
 ```
 
 The installer:
@@ -229,7 +249,7 @@ The installer:
 6. Optionally installs MCP servers and external skills
 7. Adds shell aliases (`cc` → `claude`, `ccr` → `claude --resume`)
 
-Because it uses symlinks, `git pull` in the repo updates everything instantly.
+Because it uses symlinks, `git pull` in the repo updates everything instantly. Use `--upgrade` after pulling v3.0 to apply MCP/settings migrations in place.
 
 ### Windows
 
@@ -242,14 +262,17 @@ Windows uses **file copies** instead of symlinks. Re-run `install.ps1` after `gi
 
 ### MCP Server Setup
 
-| Server | API Key | Setup |
-|:-------|:--------|:------|
-| **context7** | Not required | Auto-installed via `install.sh` |
-| **memory** | Not required | Auto-installed via `install.sh` |
-| **fetch** | Not required | Requires `uvx` (Python) |
-| **jina-reader** | Not required | Auto-installed via `install.sh` |
-| **exa** | OAuth | `claude mcp add exa --url https://mcp.exa.ai/mcp` |
-| **github** | PAT | Set `GITHUB_PERSONAL_ACCESS_TOKEN` env var |
+v3.0 ships with **3 minimal defaults**. Others are available opt-in via [`mcp-servers.optional.json`](mcp-servers.optional.json). Full recipes: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md).
+
+| Server | Default? | API Key | Setup |
+|:-------|:--------:|:--------|:------|
+| **playwright** | ✅ | Not required | Auto-installed via `install.sh` |
+| **context7** | ✅ | Not required | Auto-installed via `install.sh` |
+| **jina-reader** | ✅ | Not required | Auto-installed via `install.sh` |
+| **memory** | opt-in | Not required | Merge from `mcp-servers.optional.json` |
+| **fetch** | opt-in | Not required | Requires `uvx` (Python) |
+| **exa** | opt-in | OAuth | `claude mcp add exa --url https://mcp.exa.ai/mcp` |
+| **github** | opt-in | PAT | Set `GITHUB_PERSONAL_ACCESS_TOKEN` env var |
 
 ### Customization
 
@@ -265,6 +288,8 @@ vim ~/.claude/settings.local.json
 ---
 
 ## 🏗 Claude Forge Architecture
+
+> **Skills vs Commands** — `skills/` host auto-invocable knowledge and reusable workflows (Claude discovers them via the description trigger). `commands/` host explicit side-effect actions that the user times by typing `/name`. See [docs/SKILLS-VS-COMMANDS.md](docs/SKILLS-VS-COMMANDS.md) for the policy.
 
 <p align="center">
   <img src="docs/architecture.jpg" alt="Symlink Architecture" width="720">
@@ -315,25 +340,30 @@ graph TB
 
 ```
 claude-forge/
-  ├── agents/               Agent definitions (11 .md files)
-  ├── cc-chips/             Status bar submodule
-  ├── cc-chips-custom/      Custom status bar overlay
-  ├── commands/             Slash commands (32 .md + 8 SKILL dirs)
-  ├── docs/                 Screenshots, diagrams
-  ├── hooks/                Event-driven shell scripts (15)
-  ├── knowledge/            Knowledge base entries
-  ├── reference/            Reference documentation
-  ├── rules/                Auto-loaded rule files (9)
-  ├── scripts/              Utility scripts
-  ├── setup/                Installation guides + templates
-  ├── skills/               Multi-step skill workflows (15)
-  ├── install.sh            macOS/Linux installer (symlinks)
-  ├── install.ps1           Windows installer (copies)
-  ├── mcp-servers.json      MCP server configurations
-  ├── settings.json         Claude Code settings
-  ├── CONTRIBUTING.md       Contribution guide
-  ├── SECURITY.md           Security policy
-  └── LICENSE               MIT License
+  ├── agents/                    Agent definitions (11 .md files, frontmatter v2)
+  ├── cc-chips/                  Status bar submodule
+  ├── cc-chips-custom/           Custom status bar overlay
+  ├── commands/                  Slash commands (32 .md, 8 dirs moved to skills/)
+  ├── docs/                      Screenshots, diagrams, policy docs (v3.0 guides)
+  ├── hooks/                     Event-driven shell scripts (18)
+  │   └── examples/              Opt-in .example samples for 21 lifecycle events (9)
+  ├── knowledge/                 Knowledge base entries
+  ├── reference/                 Reference docs (+ agent-schema.json)
+  ├── rules/                     Auto-loaded rule files (9)
+  ├── scripts/                   Utility scripts
+  ├── setup/                     Installation guides + CLAUDE.md template
+  ├── skills/                    Multi-step skill workflows (15+, hybrid policy)
+  ├── install.sh                 macOS/Linux installer (--upgrade supported)
+  ├── install.ps1                Windows installer (--upgrade supported)
+  ├── mcp-servers.json           MCP server defaults (3 minimal)
+  ├── mcp-servers.optional.json  Optional MCP servers (memory/exa/github/fetch...)
+  ├── plugin.json                Plugin manifest (3.0.0)
+  ├── settings.json              Claude Code settings (2026 fields)
+  ├── MIGRATION.md               v2.1 → v3.0 migration guide (EN)
+  ├── MIGRATION.ko.md            v2.1 → v3.0 migration guide (KO)
+  ├── CONTRIBUTING.md            Contribution guide
+  ├── SECURITY.md                Security policy
+  └── LICENSE                    MIT License
 ```
 
 </details>
@@ -369,6 +399,10 @@ claude-forge/
 | `work-tracker-stop.sh` | Stop | Finalizes work tracking data |
 | `task-completed.sh` | TaskCompleted | Notifies on subagent task completion |
 | `expensive-mcp-warning.sh` | - | Warns about costly MCP operations |
+
+### Opt-in Examples (v3.0)
+
+9 additional `.example` samples covering the newer lifecycle events (SessionEnd, PreCompact, SubagentStart/Stop, MessageStart/End, UserPromptReceived, and more) ship in [`hooks/examples/`](hooks/examples/). The full 21-event catalog with recipes is in [`hooks/README.md`](hooks/README.md). Rename `*.example` → `*.sh` and register in `settings.json` to activate.
 
 ---
 
@@ -534,14 +568,14 @@ Each agent has a **color** in the UI for quick visual identification:
 <details>
 <summary><strong>What is Claude Forge?</strong></summary>
 
-Claude Forge is an open-source development environment for Claude Code. It bundles 11 specialized agents, 40 slash commands, 15 skill workflows, 15 automation hooks, and 9 rule files into a single install. Think of it as "oh-my-zsh for Claude Code" -- it turns the basic Claude Code CLI into a fully equipped coding environment with built-in workflows for planning, TDD, security review, and deployment.
+Claude Forge is an open-source development environment for Claude Code. It bundles 11 specialized agents, 40 slash commands, 15+ skill workflows, 18 automation hooks (+9 opt-in examples covering 21 lifecycle events), and 9 rule files into a single install. Think of it as "oh-my-zsh for Claude Code" -- it turns the basic Claude Code CLI into a fully equipped coding environment with built-in workflows for planning, TDD, security review, and deployment.
 
 </details>
 
 <details>
 <summary><strong>How is Claude Forge different from other Claude Code plugins?</strong></summary>
 
-Most Claude Code plugins solve one problem at a time. Claude Forge is a **complete development environment** -- 11 agents, 40 commands, 15 skills, 15 hooks, and 9 rules that work together as a cohesive system. Instead of assembling individual plugins and configuring each one, Claude Forge gives you a pre-wired pipeline: `/plan` feeds into `/tdd`, which feeds into `/code-review`, which feeds into `/handoff-verify`, which feeds into `/commit-push-pr`. The 6-layer security hook system also runs automatically without extra configuration.
+Most Claude Code plugins solve one problem at a time. Claude Forge is a **complete development environment** -- 11 agents (frontmatter v2), 40 commands, 15+ skills, 18 hooks (+9 examples), and 9 rules that work together as a cohesive system. Instead of assembling individual plugins and configuring each one, Claude Forge gives you a pre-wired pipeline: `/plan` feeds into `/tdd`, which feeds into `/code-review`, which feeds into `/handoff-verify`, which feeds into `/commit-push-pr`. The 6-layer security hook system also runs automatically without extra configuration.
 
 </details>
 

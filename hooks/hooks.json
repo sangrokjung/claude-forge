@@ -1,5 +1,6 @@
 {
   "_comment": "Reference document only. Claude Code does not support a separate hooks.json. Actual hook settings must be in settings.json.",
+  "_v3_events": "v3.0 expands hook events from 5 to 21. New opt-in events: SessionEnd, StopFailure, PostToolUseFailure, SubagentStart, SubagentStop, PreCompact, PostCompact, ConfigChange, CwdChanged, FileChanged, InstructionsLoaded, Notification, PermissionDenied, TaskCreated, WorktreeCreate, WorktreeRemove. See hooks/README.md for the full catalog and hooks/examples/ for installable templates.",
   "PreToolUse": [
     {
       "matcher": "Bash",

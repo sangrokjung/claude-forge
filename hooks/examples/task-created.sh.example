@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# TaskCreated hook example — claude-forge v3.0
+# Event: TaskCreated
+# Trigger: Fires when a new task is created via the Task tool (agent delegation)
+#
+# Usage:
+#   1. mkdir -p ~/.claude/hooks && cp this_file ~/.claude/hooks/task-created.sh
+#   2. chmod +x ~/.claude/hooks/task-created.sh
+#   3. Add to ~/.claude/settings.json hooks.TaskCreated section
+#
+# Input (stdin JSON): { "tool_input": { "task_id": "...", "task_subject": "...", "teammate_name": "..." } }
+# Output: exit 0 success, exit 2 blocking error (rejects task creation)
+set -euo pipefail
+
+INPUT=$(cat)
+printf '%s' "$INPUT" | python3 - <<'PY' 2>/dev/null || true
+import sys, json
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+ti = d.get("tool_input", {})
+task_id = ti.get("task_id", "unknown")
+subject = ti.get("task_subject", ti.get("subject", "unknown"))
+teammate = ti.get("teammate_name", d.get("teammate_name", "unknown"))
+print(f'[task-created] #{task_id} "{subject}" -> {teammate}', file=sys.stderr)
+PY
+
+exit 0

@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/sangrokjung/claude-forge/blob/main/reference/agent-schema.json",
+  "title": "Claude Forge Subagent Frontmatter v2",
+  "description": "JSON Schema (draft-07) for the YAML frontmatter of subagent definitions under claude-forge/agents/*.md. Extends the v1 schema with nine optional fields introduced in claude-forge v3.0 to match the Anthropic 2026 subagent spec.",
+  "type": "object",
+  "required": ["name", "description"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Unique kebab-case agent identifier. Must match the file name without the .md extension."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "description": "One-line description used by the router to decide when to activate this agent. Include triggers such as 'PROACTIVELY' or 'MUST BE USED' to encourage auto-invocation."
+    },
+    "tools": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Whitelist of built-in tools this agent may call (for example Read, Grep, Bash). Omit to inherit the full tool set of the parent session."
+    },
+    "model": {
+      "type": "string",
+      "enum": ["opus", "sonnet", "haiku", "inherit"],
+      "description": "Preferred model tier for this agent. Use 'inherit' to fall back to the parent session's model."
+    },
+    "memory": {
+      "type": "string",
+      "enum": ["project", "agent", "none"],
+      "description": "Memory scope. 'project' shares memory with the main session, 'agent' uses a dedicated folder under ~/.claude/agent-memory/{name}/, 'none' disables persistent memory."
+    },
+    "color": {
+      "type": "string",
+      "enum": ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"],
+      "description": "Cosmetic terminal label color."
+    },
+    "isolation": {
+      "type": "string",
+      "enum": ["inline", "worktree"],
+      "default": "inline",
+      "description": "NEW in v3.0. Set to 'worktree' to run the agent inside an isolated git worktree, preventing file conflicts during parallel work. Default 'inline' runs in the current tree."
+    },
+    "background": {
+      "type": "boolean",
+      "default": false,
+      "description": "NEW in v3.0. When true, the agent executes asynchronously without blocking the parent session. Results arrive via notification."
+    },
+    "maxTurns": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "NEW in v3.0. Hard cap on conversation turns before the agent auto-stops. Useful for exploration agents that might otherwise loop."
+    },
+    "skills": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "NEW in v3.0. List of skill names to preload into the agent's context at spawn time."
+    },
+    "mcpServers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "NEW in v3.0. Restrict the agent to the listed MCP servers. Omit to inherit all servers configured in settings.json."
+    },
+    "effort": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "max"],
+      "description": "NEW in v3.0. Reasoning effort. Maps to the model's thinking budget. Use 'max' only for agents that genuinely need deep reasoning (architecture, security)."
+    },
+    "hooks": {
+      "type": "object",
+      "description": "NEW in v3.0. Agent-local hook definitions that overlay on top of global hooks declared in settings.json.",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "object" }
+      }
+    },
+    "permissionMode": {
+      "type": "string",
+      "enum": ["default", "acceptEdits", "bypassPermissions", "plan"],
+      "description": "NEW in v3.0. Permission model applied only to this agent. 'acceptEdits' auto-approves file edits, 'bypassPermissions' disables prompts entirely (use with caution), 'plan' forces plan mode."
+    },
+    "disallowedTools": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "NEW in v3.0. Explicit blocklist applied on top of the 'tools' whitelist. Useful when inheriting a large toolset and wanting to subtract a few dangerous tools."
+    }
+  }
+}

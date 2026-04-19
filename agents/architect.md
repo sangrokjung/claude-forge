@@ -6,6 +6,17 @@ tools: ["Read", "Grep", "Glob"]
 model: opus
 memory: project
 color: blue
+effort: max  # NEW v3.0 — deep reasoning for architecture trade-offs
+# v3.0 optional fields (uncomment when needed):
+# isolation: worktree       # isolate agent work in a git worktree
+# background: true          # run in background without blocking
+# maxTurns: 20              # cap conversation length
+# skills: [arch-review]     # preload skills
+# mcpServers: [context7]    # scoped MCP access
+# hooks:                    # agent-specific hooks
+#   PreToolUse: [...]
+# permissionMode: acceptEdits
+# disallowedTools: [WebFetch]
 ---
 
 <Agent_Prompt>

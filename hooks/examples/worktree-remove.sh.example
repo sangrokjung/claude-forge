@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# WorktreeRemove hook example — claude-forge v3.0
+# Event: WorktreeRemove
+# Trigger: Fires when a git worktree is removed (via ExitWorktree / worktree-cleanup skill)
+#
+# Usage:
+#   1. mkdir -p ~/.claude/hooks && cp this_file ~/.claude/hooks/worktree-remove.sh
+#   2. chmod +x ~/.claude/hooks/worktree-remove.sh
+#   3. Add to ~/.claude/settings.json hooks.WorktreeRemove section
+#
+# Input (stdin JSON): { "path": "/abs/worktree/path", "branch": "...", "merged": true|false }
+# Output: exit 0 success, exit 2 blocking error (aborts removal — e.g., uncommitted changes)
+set -euo pipefail
+
+LOG="${HOME}/.claude/logs/worktrees.log"
+mkdir -p "$(dirname "$LOG")"
+
+INPUT=$(cat)
+PATH_VAL=$(printf '%s' "$INPUT" | python3 -c "import sys,json;print(json.load(sys.stdin).get('path',''))" 2>/dev/null || echo "")
+MERGED=$(printf '%s' "$INPUT" | python3 -c "import sys,json;print(json.load(sys.stdin).get('merged',False))" 2>/dev/null || echo "False")
+
+# Safety check: block removal of a worktree that has not been merged
+if [ "$MERGED" != "True" ] && [ -n "$PATH_VAL" ]; then
+  printf '[worktree-remove] refuse: %s is not merged yet\n' "$PATH_VAL" >&2
+  # exit 2   # uncomment to actually block
+fi
+
+printf '%s REMOVE %s (merged=%s)\n' "$(date -u +%FT%TZ)" "$PATH_VAL" "$MERGED" >> "$LOG"
+
+exit 0

@@ -1,13 +1,23 @@
 {
   "name": "claude-forge",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "Production-grade configuration framework for Claude Code",
   "author": "sangrokjung",
   "homepage": "https://github.com/sangrokjung/claude-forge",
   "license": "MIT",
   "engines": {
-    "claude-code": ">=1.0.0"
+    "claude-code": ">=2.1.110"
   },
+  "minClaudeCodeVersion": "2.1.110",
+  "keywords": [
+    "claude-code",
+    "configuration",
+    "framework",
+    "hooks-21",
+    "skills-commands-hybrid",
+    "mcp-minimal",
+    "v3"
+  ],
   "includes": {
     "agents": "agents/",
     "skills": "skills/",

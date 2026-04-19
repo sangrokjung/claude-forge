@@ -1,0 +1,49 @@
+# {PROJECT_NAME}
+
+## Overview
+<1-3 line description of what this project does and who uses it.>
+
+## Stack
+- <Language / runtime (e.g. TypeScript 5.x, Node 20)>
+- <Framework (e.g. Next.js 15 App Router)>
+- <Data layer (e.g. Supabase / Postgres)>
+- <Testing (e.g. Vitest, Playwright)>
+- <Deploy target (e.g. Vercel)>
+
+## Golden Rules
+@.claude/rules/golden-principles.md
+@.claude/rules/verification.md
+
+## Project-Specific Conventions
+- <Add conventions that are unique to this project. Keep to 3-7 bullets.>
+- <Examples: directory layout, module boundaries, naming rules, forbidden patterns.>
+- <If a rule grows past a few lines, extract it to `.claude/rules/<topic>.md` and @import it above.>
+
+## Common Commands
+- `/plan` — draft an implementation plan before coding (HARD-GATE for 3+ file changes)
+- `/tdd` — red-green-refactor loop
+- `/code-review` — security + quality review before commit
+- `/auto` — one-shot plan to PR pipeline
+- `/handoff-verify` — build + test + lint gate
+- `/sync-docs` — keep CLAUDE.md / rules / PRD aligned with code
+
+## Agents
+- `planner` — implementation plans (opus)
+- `architect` — C4 + ADR + Fitness Functions (opus)
+- `code-reviewer` — security + quality review (opus)
+- `tdd-guide` — test-first implementation (sonnet)
+- `refactor-cleaner` — dead code + technical debt (sonnet)
+- <Add project-specific agents here, e.g. `api-design`, `database-reviewer`.>
+
+## Memory Policy
+- **CLAUDE.md** (this file): static, version-controlled, team-shared context. Keep under 200 lines.
+- **`.claude/rules/<topic>.md`**: topic-specific rules, imported above via `@path`.
+- **`CLAUDE.local.md`** (gitignored): personal overrides that should not be shared.
+- **Auto Memory** (`~/.claude/agent-memory/<agent>/`): session-aware corrections managed by Claude. Never edit by hand.
+
+## Secrets
+- Never commit `.env`, `credentials.json`, service-account JSON, or API keys.
+- All secrets go through `process.env` with a startup assertion that throws on missing values.
+- See `.gitignore` for the full exclusion list.
+
+<!-- End — keep this file <= 200 lines. Extract topics into .claude/rules/<topic>.md and pull them in via @import. -->

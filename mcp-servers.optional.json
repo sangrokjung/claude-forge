@@ -1,0 +1,68 @@
+{
+  "description": "Optional MCP servers — pick & copy into mcp-servers.json as needed (claude-forge v3.0)",
+  "servers": {
+    "memory": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {},
+      "description": "Knowledge graph across sessions. NOTE: Claude Code 2026 ships Auto Memory (~/.claude/projects/.../memory/) — consider before adding.",
+      "when_to_use": "Team-shared knowledge graph, cross-project memory, or when Auto Memory is insufficient."
+    },
+    "exa": {
+      "type": "http",
+      "url": "https://mcp.exa.ai/mcp",
+      "description": "Exa AI web search and company research.",
+      "when_to_use": "When built-in WebSearch is insufficient (company/people deep research, semantic search with filters)."
+    },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      },
+      "description": "GitHub repo/PR/issue via MCP.",
+      "when_to_use": "When gh CLI is not installed or you prefer structured tool calls. Most users can use gh CLI via Bash directly."
+    },
+    "fetch": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["mcp-server-fetch"],
+      "description": "Web content fetching (Python uvx).",
+      "when_to_use": "Fallback when jina-reader is rate-limited or blocked."
+    },
+    "time": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["mcp-server-time"],
+      "description": "Timezone-aware date/time arithmetic.",
+      "when_to_use": "Scheduling, cron, timezone conversion tasks."
+    },
+    "sequential-thinking": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "description": "Structured multi-step reasoning tool.",
+      "when_to_use": "Complex planning or chain-of-thought intensive tasks. Often redundant with Claude's own reasoning — measure before adding."
+    },
+    "supabase": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@supabase/mcp-server-supabase"],
+      "env": {
+        "SUPABASE_URL": "${SUPABASE_URL}",
+        "SUPABASE_SERVICE_ROLE_KEY": "${SUPABASE_SERVICE_ROLE_KEY}"
+      },
+      "description": "Supabase DB management (SQL, migrations, edge functions).",
+      "when_to_use": "Supabase projects — alternative to direct psql/CLI."
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp"],
+      "description": "Chrome DevTools Protocol (performance, a11y, Lighthouse audit).",
+      "when_to_use": "Performance debugging / Lighthouse scoring. Heavier than playwright."
+    }
+  }
+}

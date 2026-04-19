@@ -1,5 +1,9 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "cleanupPeriodDays": 14,
+  "tui": true,
+  "disableSkillShellExecution": false,
+  "enabledMcpjsonServers": ["playwright", "context7", "jina-reader"],
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "ENABLE_TOOL_SEARCH": "auto:5"
@@ -32,13 +36,11 @@
       "AskUserQuestion(*)",
       "ListMcpResourcesTool(*)",
       "ReadMcpResourceTool(*)",
+      "mcp__playwright__*",
       "mcp__context7__*",
-      "mcp__exa__*",
-      "mcp__memory__*",
-      "mcp__github__*",
-      "mcp__fetch__*",
       "mcp__jina-reader__*"
     ],
+    "ask": [],
     "deny": [
       "WebFetch",
       "WebFetch(*)",
