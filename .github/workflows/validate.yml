@@ -166,7 +166,9 @@ jobs:
       - name: Dry-run upgrade smoke
         run: |
           ./install.sh --upgrade --dry-run 2>&1 | tee /tmp/upgrade.log
-          grep -q "3/3 present" /tmp/upgrade.log || { echo "::error::v3 MCP not detected"; exit 1; }
+          # ANSI escape를 제거한 후 패턴 매칭 (install.sh가 컬러 출력)
+          sed 's/\x1b\[[0-9;]*m//g' /tmp/upgrade.log > /tmp/upgrade.plain
+          grep -q "v3.0 core MCP entries present (3/3" /tmp/upgrade.plain || { echo "::error::v3 MCP not detected"; cat /tmp/upgrade.plain | tail -30; exit 1; }
 
   security:
     name: Secret & Shell
@@ -176,12 +178,18 @@ jobs:
 
       - name: Check for secrets
         run: |
+          # AWS/Anthropic 공식 문서 예시 키는 화이트리스트
+          # AKIAIOSFODNN7EXAMPLE = AWS 공식 docs 예제 (real key 아님)
           PATTERNS='(sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{36,}|AKIA[A-Z0-9]{16}|sb_publishable_[a-zA-Z0-9]+)'
-          if grep -rE "$PATTERNS" --include='*.json' --include='*.sh' --include='*.md' .; then
-            echo "::error::Potential secrets found in repository!"
+          WHITELIST='AKIAIOSFODNN7EXAMPLE|sk-ant-example|sk-test-example|ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+          MATCHES=$(grep -rE "$PATTERNS" --include='*.json' --include='*.sh' --include='*.md' . 2>/dev/null \
+                    | grep -vE "$WHITELIST" || true)
+          if [ -n "$MATCHES" ]; then
+            echo "::error::Potential secrets found:"
+            echo "$MATCHES"
             exit 1
           else
-            echo "No secrets detected."
+            echo "No secrets detected (whitelisted: AWS/Anthropic doc examples)."
           fi
 
       - name: ShellCheck hooks
