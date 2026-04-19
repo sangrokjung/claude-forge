@@ -1,7 +1,7 @@
 {
   "name": "claude-forge",
   "version": "3.0.0",
-  "description": "oh-my-zsh for Claude Code — 11 agents, 32 commands, 23 skills, 15 hooks + 9 examples (21 events), 9 rules, 3 MCP (minimal)",
+  "description": "oh-my-zsh for Claude Code — 11 agents, 33 commands, 24 skills, 15 hooks + 9 examples (21 events), 9 rules, 3 MCP (minimal)",
   "author": {
     "name": "Sangrok Jung",
     "url": "https://github.com/sangrokjung"

@@ -34,7 +34,7 @@
 
 ## What is Claude Forge?
 
-Claude Forge is an open-source development environment for Claude Code that provides 11 specialized agents, 32 slash commands, 23 skill workflows, 15 automation hooks (plus 9 opt-in examples covering 21 lifecycle events), and 9 rule files. Often described as "oh-my-zsh for Claude Code", it transforms Claude Code from a basic CLI into a full-featured development environment. One install gives you agents, commands, skills, hooks, and rules — all pre-wired and ready to go.
+Claude Forge is an open-source development environment for Claude Code that provides 11 specialized agents, 33 slash commands, 24 skill workflows, 15 automation hooks (plus 9 opt-in examples covering 21 lifecycle events), and 9 rule files. Often described as "oh-my-zsh for Claude Code", it transforms Claude Code from a basic CLI into a full-featured development environment. One install gives you agents, commands, skills, hooks, and rules — all pre-wired and ready to go.
 
 > Think of it as **oh-my-zsh for Claude Code**: the same way oh-my-zsh enhances your terminal, Claude Forge supercharges your AI coding assistant.
 
@@ -568,14 +568,14 @@ Each agent has a **color** in the UI for quick visual identification:
 <details>
 <summary><strong>What is Claude Forge?</strong></summary>
 
-Claude Forge is an open-source development environment for Claude Code. It bundles 11 specialized agents, 32 slash commands, 23 skill workflows, 15 automation hooks (+9 opt-in examples covering 21 lifecycle events), and 9 rule files into a single install. Think of it as "oh-my-zsh for Claude Code" -- it turns the basic Claude Code CLI into a fully equipped coding environment with built-in workflows for planning, TDD, security review, and deployment.
+Claude Forge is an open-source development environment for Claude Code. It bundles 11 specialized agents, 33 slash commands, 24 skill workflows, 15 automation hooks (+9 opt-in examples covering 21 lifecycle events), and 9 rule files into a single install. Think of it as "oh-my-zsh for Claude Code" -- it turns the basic Claude Code CLI into a fully equipped coding environment with built-in workflows for planning, TDD, security review, and deployment.
 
 </details>
 
 <details>
 <summary><strong>How is Claude Forge different from other Claude Code plugins?</strong></summary>
 
-Most Claude Code plugins solve one problem at a time. Claude Forge is a **complete development environment** -- 11 agents (frontmatter v2), 32 commands, 23 skills, 15 hooks (+9 examples), and 9 rules that work together as a cohesive system. Instead of assembling individual plugins and configuring each one, Claude Forge gives you a pre-wired pipeline: `/plan` feeds into `/tdd`, which feeds into `/code-review`, which feeds into `/handoff-verify`, which feeds into `/commit-push-pr`. The 6-layer security hook system also runs automatically without extra configuration.
+Most Claude Code plugins solve one problem at a time. Claude Forge is a **complete development environment** -- 11 agents (frontmatter v2), 33 commands, 24 skills, 15 hooks (+9 examples), and 9 rules that work together as a cohesive system. Instead of assembling individual plugins and configuring each one, Claude Forge gives you a pre-wired pipeline: `/plan` feeds into `/tdd`, which feeds into `/code-review`, which feeds into `/handoff-verify`, which feeds into `/commit-push-pr`. The 6-layer security hook system also runs automatically without extra configuration.
 
 </details>
 
