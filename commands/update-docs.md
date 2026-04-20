@@ -1,3 +1,8 @@
+---
+description: Sync documentation from source-of-truth (package.json, .env.example)
+allowed-tools: Read, Write, Glob, Bash
+---
+
 # Update Documentation
 
 Sync documentation from source-of-truth:
