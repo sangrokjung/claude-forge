@@ -42,6 +42,24 @@ Claude Forge is an open-source development environment for Claude Code that prov
 
 ## ⚡ Quick Start
 
+### Option 1 — Claude Code Plugin (Recommended, v3.0.1+)
+
+Inside Claude Code:
+
+```
+/plugin install sangrokjung/claude-forge
+```
+
+This installs claude-forge under `~/.claude/plugins/cache/sangrokjung/claude-forge/` and
+wires up 11 agents · 33 commands · 24 skills · 15 hooks · 9 rules · 4 MCP servers through
+the plugin manifest (`.claude-plugin/plugin.json`). Updates via `/plugin update`.
+
+Alternatively you can add claude-forge to `~/.claude/plugins/known_marketplaces.json` as a
+`github` source (`{ "source": { "source": "github", "repo": "sangrokjung/claude-forge" } }`)
+to see it in the `/plugin` Discover tab.
+
+### Option 2 — Classic install.sh (existing users, full symlink install)
+
 ```bash
 # 1. Clone
 git clone --recurse-submodules https://github.com/sangrokjung/claude-forge.git
@@ -55,6 +73,9 @@ claude
 ```
 
 `install.sh` symlinks everything to `~/.claude/`, so `git pull` updates instantly.
+This legacy path also provisions extras that plugin-mode doesn't (shell aliases, CC CHIPS
+status bar submodule, optional MCP bootstrap). New users should prefer Option 1 unless
+they want a global install.
 
 > If you find Claude Forge useful, please consider giving it a [star](https://github.com/sangrokjung/claude-forge/stargazers) -- it helps others discover this project.
 
@@ -220,6 +241,21 @@ Most developers either use Claude Code with no customization or spend hours asse
 ---
 
 ## 📥 Claude Forge Installation Guide
+
+### As a Claude Code Plugin (v3.0.1+)
+
+Since v3.0.1 claude-forge ships a standard Claude Code plugin manifest
+(`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`), so the one-liner is:
+
+```
+/plugin install sangrokjung/claude-forge
+```
+
+Upgrade via `/plugin update sangrokjung/claude-forge` (or the `/plugin` UI). This path
+covers everything the plugin system manages — agents, skills, commands, hooks, rules, and
+the 4 MCP servers declared in `mcp-servers.json`. If you need shell aliases (`cc`, `ccr`),
+the CC CHIPS status bar submodule, or MCP credential templating, use the classic install
+below.
 
 ### Prerequisites
 
