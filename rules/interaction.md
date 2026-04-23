@@ -92,7 +92,8 @@ Use MCP-based alternatives instead:
 
 | Priority | Tool | Use Case |
 |----------|------|----------|
-| 1st | `mcp__jina-reader__*` | Token-efficient, clean markdown output |
-| 2nd | `mcp__fetch__fetch` | Fallback if Jina fails, free |
+| 1st | `mcp__jina-reader__*` | Token-efficient, clean markdown output (default since v3.0) |
+| 2nd | built-in `WebSearch` | For discovery / ranked results when a direct URL isn't known |
+| 3rd (optional) | `mcp__fetch__fetch` | Fallback when Jina is rate-limited; requires adding `fetch` from `mcp-servers.optional.json` (not in v3.0 default set) |
 
 No exceptions — WebFetch is denied in all scenarios.

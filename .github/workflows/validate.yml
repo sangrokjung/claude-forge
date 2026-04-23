@@ -2,9 +2,10 @@ name: Validate
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'feat/**', 'fix/**', 'chore/**', 'docs/**', 'ci/**']
   pull_request:
-    branches: [main]
+    # no base-branch restriction — run on every PR regardless of target
+  workflow_dispatch:
 
 jobs:
   json:
@@ -61,6 +62,64 @@ jobs:
               sys.exit(1)
           print("OK: v3 settings.json compliant")
           EOF
+
+  marketplace-schema:
+    name: Plugin Manifest & Marketplace Schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Required manifest files exist
+        run: |
+          test -f .claude-plugin/plugin.json || { echo "::error::.claude-plugin/plugin.json missing"; exit 1; }
+          test -f .claude-plugin/marketplace.json || { echo "::error::.claude-plugin/marketplace.json missing"; exit 1; }
+          echo "OK: both manifest files present"
+
+      - name: plugin.json required fields
+        run: |
+          for field in name version description author repository; do
+            value=$(jq -er ".${field}" .claude-plugin/plugin.json 2>/dev/null) || {
+              echo "::error::.claude-plugin/plugin.json missing required field: ${field}"
+              exit 1
+            }
+            echo "OK plugin.json.${field}=${value:0:60}"
+          done
+
+      - name: marketplace.json required fields
+        run: |
+          for field in '"$schema"' name description owner plugins; do
+            jq -er ".${field}" .claude-plugin/marketplace.json > /dev/null 2>&1 || {
+              echo "::error::.claude-plugin/marketplace.json missing required field: ${field}"
+              exit 1
+            }
+            echo "OK marketplace.json.${field}"
+          done
+          count=$(jq -r '.plugins | length' .claude-plugin/marketplace.json)
+          [ "$count" -ge 1 ] || { echo "::error::marketplace.json.plugins is empty"; exit 1; }
+          echo "OK: marketplace.json has ${count} plugin entry(ies)"
+
+      - name: Version drift guard (plugin.json ↔ marketplace.json)
+        run: |
+          PJV=$(jq -r '.version' .claude-plugin/plugin.json)
+          MJV=$(jq -r '.version' .claude-plugin/marketplace.json)
+          MPV=$(jq -r '.plugins[] | select(.name=="claude-forge") | .version' .claude-plugin/marketplace.json)
+          echo "plugin.json.version=${PJV}"
+          echo "marketplace.json.version=${MJV}"
+          echo "marketplace.plugins[claude-forge].version=${MPV}"
+          if [ "$PJV" != "$MJV" ] || [ "$MJV" != "$MPV" ]; then
+            echo "::error::Version drift detected — all three must match (expected: ${PJV})"
+            exit 1
+          fi
+          echo "OK: all three versions match"
+
+      - name: SemVer format guard
+        run: |
+          PJV=$(jq -r '.version' .claude-plugin/plugin.json)
+          if ! echo "$PJV" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?(\+[A-Za-z0-9.-]+)?$'; then
+            echo "::error::plugin.json.version '${PJV}' is not valid SemVer (X.Y.Z)"
+            exit 1
+          fi
+          echo "OK: ${PJV} is valid SemVer"
 
   frontmatter:
     name: Agent & Skill Frontmatter

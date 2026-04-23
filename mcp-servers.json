@@ -1,5 +1,5 @@
 {
-  "description": "Minimal MCP servers — claude-forge v3.0 (3 servers). Full set: mcp-servers.optional.json",
+  "description": "Minimal MCP servers — claude-forge v3.0 (4 servers). Full set: mcp-servers.optional.json",
   "servers": {
     "playwright": {
       "type": "stdio",
@@ -20,10 +20,16 @@
       "command": "npx",
       "args": ["-y", "jina-mcp-tools"],
       "description": "URL-to-markdown via Jina AI — token-efficient web content (fetch replacement)"
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@0.23.0"],
+      "description": "Chrome DevTools Protocol — Lighthouse audits, Core Web Vitals (LCP/INP/CLS), memory snapshots, network inspection. Complements playwright with quantitative perf/a11y diagnostics. Maintained by Google ChromeDevTools org (Apache-2.0, github.com/ChromeDevTools/chrome-devtools-mcp) — NOT an Anthropic-official server. Version pinned to 0.23.0 (stable 2026-04-22); bump manually after audit."
     }
   },
   "_notes": {
-    "why_3_servers": "Minimal dependency for broad user compatibility. memory → Claude Code Auto Memory. exa → built-in WebSearch. github → gh CLI. fetch → jina-reader fallback.",
-    "add_more": "See mcp-servers.optional.json for 6+ additional servers (memory, exa, github, fetch, time, sequential-thinking). Copy entries into this file and run: ./install.sh --upgrade"
+    "why_4_servers": "Minimal dependency for broad user compatibility. playwright = general browser automation. context7 = live library docs. jina-reader = token-efficient web fetch. chrome-devtools = quantitative perf/a11y audits (complements playwright, heavier but Lighthouse-grade). memory → Claude Code Auto Memory. exa → built-in WebSearch. github → gh CLI. fetch → jina-reader fallback.",
+    "add_more": "See mcp-servers.optional.json for 5+ additional servers (memory, exa, github, fetch, time, sequential-thinking). Copy entries into this file and run: ./install.sh --upgrade"
   }
 }

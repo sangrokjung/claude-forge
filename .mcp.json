@@ -4,11 +4,6 @@
     "command": "npx",
     "args": ["-y", "@upstash/context7-mcp@latest"]
   },
-  "memory": {
-    "type": "stdio",
-    "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-memory"]
-  },
   "exa": {
     "type": "http",
     "url": "https://mcp.exa.ai/mcp"
@@ -20,11 +15,6 @@
     "env": {
       "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
     }
-  },
-  "fetch": {
-    "type": "stdio",
-    "command": "uvx",
-    "args": ["mcp-server-fetch"]
   },
   "jina-reader": {
     "type": "stdio",

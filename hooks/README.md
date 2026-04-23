@@ -5,7 +5,7 @@
 
 ## Event Catalog
 
-Claude Code v3.0 exposes **21 hookable events** across 7 categories. Install only what you need.
+Claude Code exposes **27 hookable events** across 7 categories (official catalog as of 2026-04-23). claude-forge ships examples for the 21 most common; the remaining 6 are listed below without examples — implement per project need. Install only what you need.
 
 | Category | Event | Trigger | Common Use | Example |
 |----------|-------|---------|------------|---------|
@@ -32,16 +32,31 @@ Claude Code v3.0 exposes **21 hookable events** across 7 categories. Install onl
 | Worktree | `WorktreeCreate` | New git worktree registered | Seed `.claude/` symlink, log | `examples/worktree-create.sh.example` |
 | Worktree | `WorktreeRemove` | Worktree torn down | Block if unmerged, cleanup | `examples/worktree-remove.sh.example` |
 
+### Additional events (spec-only, no example shipped)
+
+The following 6 events are defined in the official Claude Code spec (see [code.claude.com/docs/en/hooks](https://code.claude.com/docs/en/hooks)) but claude-forge v3.0 does not ship example handlers. Consult the spec if you need to wire them:
+
+| Event | Trigger (official) |
+|-------|-------------------|
+| `UserPromptExpansion` | A `@file` / `@folder` reference is expanded inline before tool dispatch |
+| `PermissionDenied` | User explicitly rejected a permission request |
+| `TeammateIdle` | A spawned teammate agent has been idle past threshold |
+| `Elicitation` | Hook or tool requests structured input from the user |
+| `ElicitationResult` | User response to an elicitation is captured |
+| `TaskStatusChanged` | Any `TaskUpdate` mutates a task's status field (not just completion) |
+
 ## Hook Handler Types
 
-Each hook entry specifies a `type`. v3.0 supports four:
+Each hook entry specifies a `type`. Claude Code supports four (Tier 0 source: [code.claude.com/docs/en/hooks](https://code.claude.com/docs/en/hooks), verified 2026-04-23):
 
 | Type | Purpose | Notes |
 |------|---------|-------|
-| `command` | Run a shell script (most common) | Takes `command`, optional `timeout` (ms) |
+| `command` | Run a shell script (most common) | Takes `command`, optional `timeout` in **seconds** (default 600). Inline env-var assignment supported: `FOO=bar ~/.claude/hooks/foo.sh`. Default shell = bash, `powershell` opt-in on Windows. |
 | `http` | POST the payload to an HTTP endpoint | Takes `url`, `headers` — good for Zapier/webhooks |
-| `llm-prompt` | Invoke a nested LLM with a preset prompt | Takes `prompt`, `model` — used for "auto-review" style checks |
-| `mcp-tool` | Invoke an MCP tool directly | Takes `server`, `tool`, `arguments` |
+| `prompt` | Invoke a nested LLM with a preset prompt | Takes `prompt`, `model`, optional `timeout` (seconds; default 30) — used for "auto-review" style checks |
+| `agent` | Invoke an MCP tool / subagent directly | Takes `server`, `tool`, `arguments`, optional `timeout` (seconds; default 60) — or agent reference for Task dispatch |
+
+> **v3.0.1 correction**: Earlier revisions of this guide labelled the last two types as `llm-prompt` and `mcp-tool`. Those names are not in the official spec — the correct identifiers are `prompt` and `agent`. If any of your hooks reference the old names, rename them before upgrading.
 
 ## Matcher Schema
 
@@ -53,7 +68,7 @@ Hooks in the same event can be filtered by a `matcher` glob to narrow when they 
     {
       "matcher": "Bash",
       "hooks": [
-        { "type": "command", "command": "~/.claude/hooks/remote-command-guard.sh", "timeout": 5000 }
+        { "type": "command", "command": "~/.claude/hooks/remote-command-guard.sh", "timeout": 5 }
       ]
     },
     {
@@ -81,11 +96,51 @@ Matcher semantics:
 ## Security Notes
 
 - **Exit codes** — `0` = success, `2` = blocking error (rejects the action), anything else = non-blocking warning logged to stderr.
-- **Timeout** — Default 60 s. Set `timeout` (ms) to enforce per-hook budget; blocking hooks that run long will stall the session.
+- **Timeout** — Default 600 s for `command` type (30 s for `prompt`, 60 s for `agent`). Set `timeout` (**seconds**, not ms) to enforce per-hook budget; blocking hooks that run long will stall the session. **SessionEnd has a special default 1.5 s** auto-raised to 60 s based on per-hook timeouts — override via `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` env (in ms).
 - **Input** — Hooks receive the full event payload on stdin as JSON. Parse defensively; never assume fields exist.
 - **Secrets** — Never `echo $ANTHROPIC_API_KEY` or print env vars; PostToolUse secret filter may not cover stderr.
 - **Side-effects** — Avoid network calls without rate-limit guards. Long-running hooks block the whole session.
 - **Scripts** — Must be executable (`chmod +x`). Use absolute paths or `~/` expansion.
+
+## Timing Wrapper (`_lib/timing.sh`, v3.0.1)
+
+Use `_lib/timing.sh` to wrap any hook and record start/end/duration into an append-only JSONL log. Especially useful for verifying whether `async: true` hooks actually run in parallel (distinct `start_ms` within the same event payload = parallel) versus serially.
+
+**Usage in `settings.json`:**
+
+```json
+{
+  "type": "command",
+  "command": "HOOK_EVENT=SessionEnd ~/.claude/hooks/_lib/timing.sh ~/.claude/hooks/discord-notify.sh stop",
+  "timeout": 8,
+  "async": true
+}
+```
+
+**What gets logged** (`~/.claude/logs/hook-timing.jsonl`, one JSON per line):
+
+```json
+{"hook":"discord-notify","cmd":"~/.claude/hooks/discord-notify.sh","pid":52341,"ppid":52340,"start_iso":"2026-04-23T01:18:18.828Z","start_ms":1776907098798,"end_ms":1776907099412,"duration_ms":614,"exit_code":0,"event":"SessionEnd","session_id":"..."}
+```
+
+**Analyzing parallelism** (after one session end):
+
+```bash
+jq -s 'map(select(.event == "SessionEnd")) | sort_by(.start_ms)' ~/.claude/logs/hook-timing.jsonl
+```
+
+If all hooks in a batch have `start_ms` within ~50 ms of each other → **truly parallel**. If they stagger by `duration_ms` → effectively serial despite `async: true`.
+
+**Overhead:** ~60-140 ms per hook (python3 startup + JSON write). Acceptable for SessionEnd batching; avoid wrapping hot-path hooks like `PostToolUse` on Edit unless debugging.
+
+**Aggregation:**
+
+```bash
+# Per-event summary
+jq -sr 'group_by(.event)[] | "\(.[0].event): count=\(length), max=\(map(.duration_ms)|max)ms, total_wall=\(map(.end_ms)|max - (map(.start_ms)|min))ms"' ~/.claude/logs/hook-timing.jsonl
+```
+
+`total_wall` = `max(end_ms) - min(start_ms)` across the batch — this is what the user actually waits for. Compare it to `sum(duration_ms)` to see if async parallelism is real.
 
 ## Migration from v2.1
 

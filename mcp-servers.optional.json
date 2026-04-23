@@ -56,13 +56,9 @@
       },
       "description": "Supabase DB management (SQL, migrations, edge functions).",
       "when_to_use": "Supabase projects — alternative to direct psql/CLI."
-    },
-    "chrome-devtools": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp"],
-      "description": "Chrome DevTools Protocol (performance, a11y, Lighthouse audit).",
-      "when_to_use": "Performance debugging / Lighthouse scoring. Heavier than playwright."
     }
+  },
+  "_notes": {
+    "chrome-devtools-moved": "v3.0.1: chrome-devtools was promoted to mcp-servers.json (default set). See MCP-MIGRATION.md."
   }
 }

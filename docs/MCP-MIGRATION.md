@@ -1,6 +1,8 @@
-# MCP Migration Guide — v2.1 → v3.0
+# MCP Migration Guide — v2.1 → v3.0 → v3.0.1
 
-> **TL;DR** — claude-forge v3.0 ships with **3 MCP servers** (playwright · context7 · jina-reader) instead of v2.1's 6. The 4 removed servers have first-class replacements already built into Claude Code 2026 or the standard CLI toolbox. This guide explains each replacement.
+> **TL;DR (v3.0.1, 2026-04-23)** — Promoted `chrome-devtools-mcp` from optional to default. claude-forge now ships with **4 MCP servers** (playwright · context7 · jina-reader · chrome-devtools). Rationale: Lighthouse/Core-Web-Vitals diagnostics are a different class of browser work than general automation, and the two complement each other without overlap.
+>
+> **TL;DR (v3.0)** — claude-forge v3.0 shipped with **3 MCP servers** instead of v2.1's 6. The 4 removed servers have first-class replacements already built into Claude Code 2026 or the standard CLI toolbox. This guide explains each replacement.
 
 ## Why the Cut
 
@@ -13,21 +15,26 @@ v2.1 bundled `memory`, `exa`, `github`, and `fetch` as defaults. Four forces mad
 
 Result: fewer dependencies for new users, faster install, lower token overhead on `ToolSearch`.
 
-## The 3 Default Servers
+## The 4 Default Servers (v3.0.1)
 
 | Server | Type | Replaces | Primary Use |
 |--------|------|----------|-------------|
-| **playwright** | stdio | (new) | Browser automation — navigate/click/screenshot/trace |
+| **playwright** | stdio | (new in v3.0) | Browser automation — navigate/click/screenshot/trace |
 | **context7** | stdio | (kept) | Up-to-date library docs (React, Next.js, Prisma, etc.) — use **before** writing library code |
 | **jina-reader** | stdio | fetch | URL → markdown, token-efficient page content |
+| **chrome-devtools** | stdio | (promoted in v3.0.1) | Lighthouse audits, Core Web Vitals (LCP/INP/CLS), memory snapshots, network inspection |
 
-`playwright` is **new** in v3.0 because browser automation is the single most requested task that the native toolbox cannot do well. The other two carry over from v2.1.
+### Why `chrome-devtools` joins the default set (v3.0.1)
+
+`playwright` covers general browser automation (click/fill/navigate), but quantitative diagnostics — Lighthouse scoring, LCP/INP/CLS measurement, V8 heap snapshots, CPU throttling — are Chrome DevTools Protocol territory. Users on performance-sensitive projects were importing `chrome-devtools` from `mcp-servers.optional.json` ~100% of the time, so keeping it optional added friction without upside. The two servers now coexist: `playwright` for "does this UI work?" and `chrome-devtools` for "how fast is it?"
+
+Cost: one extra npx spin-up on first invocation (server is stdio, so no idle cost). If you never run Lighthouse/perf audits, the server simply never starts.
 
 ## Per-Server Replacement Recipes
 
 ### `memory` → Auto Memory + optional MCP
 
-**What Auto Memory covers:** user facts, feedback corrections, project context, references to external systems. Stored at `~/.claude/projects/<hash>/memory/MEMORY.md` with typed entries (`user`, `feedback`, `project`, `reference`).
+**What Auto Memory covers:** user facts, feedback corrections, project context, references to external systems. Stored at `~/.claude/projects/<project>/memory/MEMORY.md` with typed entries (`user`, `feedback`, `project`, `reference`).
 
 **If you still need the MCP memory server** (team-shared knowledge graph, cross-project), add it from `mcp-servers.optional.json`:
 
