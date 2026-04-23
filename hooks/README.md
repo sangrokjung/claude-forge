@@ -87,6 +87,46 @@ Matcher semantics:
 - **Side-effects** — Avoid network calls without rate-limit guards. Long-running hooks block the whole session.
 - **Scripts** — Must be executable (`chmod +x`). Use absolute paths or `~/` expansion.
 
+## Timing Wrapper (`_lib/timing.sh`, v3.0.1)
+
+Use `_lib/timing.sh` to wrap any hook and record start/end/duration into an append-only JSONL log. Especially useful for verifying whether `async: true` hooks actually run in parallel (distinct `start_ms` within the same event payload = parallel) versus serially.
+
+**Usage in `settings.json`:**
+
+```json
+{
+  "type": "command",
+  "command": "HOOK_EVENT=SessionEnd ~/.claude/hooks/_lib/timing.sh ~/.claude/hooks/discord-notify.sh stop",
+  "timeout": 8,
+  "async": true
+}
+```
+
+**What gets logged** (`~/.claude/logs/hook-timing.jsonl`, one JSON per line):
+
+```json
+{"hook":"discord-notify","cmd":"~/.claude/hooks/discord-notify.sh","pid":52341,"ppid":52340,"start_iso":"2026-04-23T01:18:18.828Z","start_ms":1776907098798,"end_ms":1776907099412,"duration_ms":614,"exit_code":0,"event":"SessionEnd","session_id":"..."}
+```
+
+**Analyzing parallelism** (after one session end):
+
+```bash
+jq -s 'map(select(.event == "SessionEnd")) | sort_by(.start_ms)' ~/.claude/logs/hook-timing.jsonl
+```
+
+If all hooks in a batch have `start_ms` within ~50 ms of each other → **truly parallel**. If they stagger by `duration_ms` → effectively serial despite `async: true`.
+
+**Overhead:** ~60-140 ms per hook (python3 startup + JSON write). Acceptable for SessionEnd batching; avoid wrapping hot-path hooks like `PostToolUse` on Edit unless debugging.
+
+**Aggregation:**
+
+```bash
+# Per-event summary
+jq -sr 'group_by(.event)[] | "\(.[0].event): count=\(length), max=\(map(.duration_ms)|max)ms, total_wall=\(map(.end_ms)|max - (map(.start_ms)|min))ms"' ~/.claude/logs/hook-timing.jsonl
+```
+
+`total_wall` = `max(end_ms) - min(start_ms)` across the batch — this is what the user actually waits for. Compare it to `sum(duration_ms)` to see if async parallelism is real.
+
 ## Migration from v2.1
 
 v2.1 shipped **5 events** and shared a flat handler list. v3.0 expands to **21 events** with opt-in per-event installation. Existing v2.1 hooks continue to work unchanged.
