@@ -51,10 +51,10 @@ Each hook entry specifies a `type`. Claude Code supports four (Tier 0 source: [c
 
 | Type | Purpose | Notes |
 |------|---------|-------|
-| `command` | Run a shell script (most common) | Takes `command`, optional `timeout` (ms). Inline env-var assignment supported: `FOO=bar ~/.claude/hooks/foo.sh`. Default shell = bash, `powershell` opt-in on Windows. |
+| `command` | Run a shell script (most common) | Takes `command`, optional `timeout` in **seconds** (default 600). Inline env-var assignment supported: `FOO=bar ~/.claude/hooks/foo.sh`. Default shell = bash, `powershell` opt-in on Windows. |
 | `http` | POST the payload to an HTTP endpoint | Takes `url`, `headers` — good for Zapier/webhooks |
-| `prompt` | Invoke a nested LLM with a preset prompt | Takes `prompt`, `model` — used for "auto-review" style checks |
-| `agent` | Invoke an MCP tool / subagent directly | Takes `server`, `tool`, `arguments` — or agent reference for Task dispatch |
+| `prompt` | Invoke a nested LLM with a preset prompt | Takes `prompt`, `model`, optional `timeout` (seconds; default 30) — used for "auto-review" style checks |
+| `agent` | Invoke an MCP tool / subagent directly | Takes `server`, `tool`, `arguments`, optional `timeout` (seconds; default 60) — or agent reference for Task dispatch |
 
 > **v3.0.1 correction**: Earlier revisions of this guide labelled the last two types as `llm-prompt` and `mcp-tool`. Those names are not in the official spec — the correct identifiers are `prompt` and `agent`. If any of your hooks reference the old names, rename them before upgrading.
 
@@ -68,7 +68,7 @@ Hooks in the same event can be filtered by a `matcher` glob to narrow when they 
     {
       "matcher": "Bash",
       "hooks": [
-        { "type": "command", "command": "~/.claude/hooks/remote-command-guard.sh", "timeout": 5000 }
+        { "type": "command", "command": "~/.claude/hooks/remote-command-guard.sh", "timeout": 5 }
       ]
     },
     {
@@ -96,7 +96,7 @@ Matcher semantics:
 ## Security Notes
 
 - **Exit codes** — `0` = success, `2` = blocking error (rejects the action), anything else = non-blocking warning logged to stderr.
-- **Timeout** — Default 60 s. Set `timeout` (ms) to enforce per-hook budget; blocking hooks that run long will stall the session.
+- **Timeout** — Default 600 s for `command` type (30 s for `prompt`, 60 s for `agent`). Set `timeout` (**seconds**, not ms) to enforce per-hook budget; blocking hooks that run long will stall the session. **SessionEnd has a special default 1.5 s** auto-raised to 60 s based on per-hook timeouts — override via `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` env (in ms).
 - **Input** — Hooks receive the full event payload on stdin as JSON. Parse defensively; never assume fields exist.
 - **Secrets** — Never `echo $ANTHROPIC_API_KEY` or print env vars; PostToolUse secret filter may not cover stderr.
 - **Side-effects** — Avoid network calls without rate-limit guards. Long-running hooks block the whole session.
