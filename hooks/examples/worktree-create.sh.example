@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# WorktreeCreate hook example — claude-forge v3.0
+# Event: WorktreeCreate
+# Trigger: Fires when a new git worktree is created (via EnterWorktree / worktree-start skill)
+#
+# Usage:
+#   1. mkdir -p ~/.claude/hooks && cp this_file ~/.claude/hooks/worktree-create.sh
+#   2. chmod +x ~/.claude/hooks/worktree-create.sh
+#   3. Add to ~/.claude/settings.json hooks.WorktreeCreate section
+#
+# Input (stdin JSON): { "path": "/abs/worktree/path", "branch": "...", "base_branch": "..." }
+# Output: exit 0 success, exit 2 blocking error (aborts worktree creation)
+set -euo pipefail
+
+LOG="${HOME}/.claude/logs/worktrees.log"
+mkdir -p "$(dirname "$LOG")"
+
+INPUT=$(cat)
+PATH_VAL=$(printf '%s' "$INPUT" | python3 -c "import sys,json;print(json.load(sys.stdin).get('path',''))" 2>/dev/null || echo "")
+BRANCH=$(printf '%s' "$INPUT" | python3 -c "import sys,json;print(json.load(sys.stdin).get('branch',''))" 2>/dev/null || echo "")
+
+printf '%s CREATE %s (branch=%s)\n' "$(date -u +%FT%TZ)" "$PATH_VAL" "$BRANCH" >> "$LOG"
+
+# Optional: seed new worktree with a .claude/ symlink to inherit project rules
+# [ -d "$PATH_VAL" ] && ln -sf "$(pwd)/.claude" "$PATH_VAL/.claude" 2>/dev/null || true
+
+exit 0

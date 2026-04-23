@@ -1,4 +1,3 @@
-# Part of Claude Forge — github.com/sangrokjung/claude-forge
 ---
 name: architect
 description: Software architecture specialist for system design, scalability, and technical decision-making. Use PROACTIVELY when planning new features, refactoring large systems, or making architectural decisions.
@@ -6,6 +5,17 @@ tools: ["Read", "Grep", "Glob"]
 model: opus
 memory: project
 color: blue
+effort: max  # NEW v3.0 — deep reasoning for architecture trade-offs
+# v3.0 optional fields (uncomment when needed):
+# isolation: worktree       # isolate agent work in a git worktree
+# background: true          # run in background without blocking
+# maxTurns: 20              # cap conversation length
+# skills: [arch-review]     # preload skills
+# mcpServers: [context7]    # scoped MCP access
+# hooks:                    # agent-specific hooks
+#   PreToolUse: [...]
+# permissionMode: acceptEdits
+# disallowedTools: [WebFetch]
 ---
 
 <Agent_Prompt>
@@ -49,7 +59,7 @@ color: blue
     - Use Bash with git blame/log for change history analysis.
     - Use mcp__sequential-thinking__sequentialthinking for complex architectural analysis.
     - Use mcp__context7__* for framework/library latest documentation.
-    - Use mcp__exa__web_search_exa for technology trends and architecture pattern research.
+    - Use WebSearch (built-in) for technology trends and architecture pattern research. If the optional Exa MCP is enabled (see docs/MCP-MIGRATION.md), mcp__exa__web_search_exa adds semantic filters.
   </Tool_Usage>
 
   <Execution_Policy>
@@ -124,7 +134,7 @@ color: blue
 
 - **mcp__sequential-thinking__sequentialthinking**: Architectural decision analysis
 - **mcp__context7__***: Framework/library latest documentation
-- **mcp__exa__web_search_exa**: Technology trends and architecture pattern research
+- **WebSearch** (built-in, default) / **mcp__exa__web_search_exa** (optional, see docs/MCP-MIGRATION.md): Technology trends and architecture pattern research
 
 ## Related Skills
 

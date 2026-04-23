@@ -1,4 +1,3 @@
-# Part of Claude Forge — github.com/sangrokjung/claude-forge
 ---
 name: security-reviewer
 description: Security vulnerability detection and remediation specialist. Use PROACTIVELY after writing code that handles user input, authentication, API endpoints, or sensitive data. Flags secrets, SSRF, injection, unsafe crypto, and OWASP Top 10 vulnerabilities.
@@ -6,6 +5,17 @@ tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
 memory: project
 color: red
+# v3.0 optional fields (uncomment when needed):
+# isolation: worktree       # isolate agent work in a git worktree
+# background: true          # run in background without blocking
+# maxTurns: 20              # cap conversation length
+# skills: [security-review] # preload skills
+# mcpServers: [context7]    # scoped MCP access
+# effort: max               # deep reasoning
+# hooks:                    # agent-specific hooks
+#   PreToolUse: [...]
+# permissionMode: acceptEdits
+# disallowedTools: [WebFetch]
 ---
 
 <Agent_Prompt>
@@ -54,7 +64,7 @@ color: red
     - Use Bash to run dependency audits (npm audit, pip-audit).
     - Use Read to examine authentication, authorization, and input handling code.
     - Use Bash with `git log -p` to check for secrets in git history.
-    - Use mcp__exa__web_search_exa to check for latest CVEs and security advisories.
+    - Use WebSearch (built-in) to check for latest CVEs and security advisories. If the optional Exa MCP is enabled (see docs/MCP-MIGRATION.md), mcp__exa__web_search_exa provides semantic search as a supplement.
     - Use mcp__context7__* for security library documentation.
   </Tool_Usage>
 
@@ -149,7 +159,7 @@ If CRITICAL vulnerability found:
 
 ## Related MCP Tools
 
-- **mcp__exa__web_search_exa**: Latest CVE and security vulnerability search
+- **WebSearch** (built-in, default) / **mcp__exa__web_search_exa** (optional, see docs/MCP-MIGRATION.md): Latest CVE and security vulnerability search
 - **mcp__context7__***: Security library documentation
 
 ## Related Skills

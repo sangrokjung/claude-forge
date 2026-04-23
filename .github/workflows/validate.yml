@@ -2,32 +2,253 @@ name: Validate
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'feat/**', 'fix/**', 'chore/**', 'docs/**', 'ci/**']
   pull_request:
-    branches: [main]
+    # no base-branch restriction — run on every PR regardless of target
+  workflow_dispatch:
 
 jobs:
-  validate:
+  json:
+    name: JSON Files
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate JSON files
+      - name: Validate JSON syntax
         run: |
-          for f in settings.json mcp-servers.json .claude-plugin/plugin.json; do
+          files=(
+            settings.json
+            mcp-servers.json
+            mcp-servers.optional.json
+            .claude-plugin/plugin.json
+            reference/agent-schema.json
+          )
+          for f in "${files[@]}"; do
             if [ -f "$f" ]; then
-              python3 -m json.tool "$f" > /dev/null && echo "OK: $f" || (echo "FAIL: $f" && exit 1)
+              python3 -m json.tool "$f" > /dev/null && echo "OK: $f" || { echo "FAIL: $f"; exit 1; }
+            else
+              echo "SKIP (missing): $f"
             fi
           done
 
+      - name: Validate mcp-servers.json has v3 servers
+        run: |
+          python3 <<'EOF'
+          import json, sys
+          data = json.load(open("mcp-servers.json"))
+          servers = data.get("servers", {})
+          required = {"playwright", "context7", "jina-reader"}
+          missing = required - servers.keys()
+          if missing:
+              print(f"::error::mcp-servers.json missing v3 defaults: {missing}")
+              sys.exit(1)
+          print(f"OK: v3 MCP defaults present ({len(servers)} total)")
+          EOF
+
+      - name: Validate settings.json v3 fields
+        run: |
+          python3 <<'EOF'
+          import json, sys
+          s = json.load(open("settings.json"))
+          required_keys = {"tui", "disableSkillShellExecution", "enabledMcpjsonServers"}
+          missing = [k for k in required_keys if k not in s]
+          if missing:
+              print(f"::error::settings.json missing v3 keys: {missing}")
+              sys.exit(1)
+          allow = s.get("permissions", {}).get("allow", [])
+          removed = [p for p in allow if p.startswith("mcp__") and any(x in p for x in ["memory", "exa", "github", "fetch"])]
+          if removed:
+              print(f"::error::settings.json still allows removed v2.1 MCP: {removed}")
+              sys.exit(1)
+          print("OK: v3 settings.json compliant")
+          EOF
+
+  marketplace-schema:
+    name: Plugin Manifest & Marketplace Schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Required manifest files exist
+        run: |
+          test -f .claude-plugin/plugin.json || { echo "::error::.claude-plugin/plugin.json missing"; exit 1; }
+          test -f .claude-plugin/marketplace.json || { echo "::error::.claude-plugin/marketplace.json missing"; exit 1; }
+          echo "OK: both manifest files present"
+
+      - name: plugin.json required fields
+        run: |
+          for field in name version description author repository; do
+            value=$(jq -er ".${field}" .claude-plugin/plugin.json 2>/dev/null) || {
+              echo "::error::.claude-plugin/plugin.json missing required field: ${field}"
+              exit 1
+            }
+            echo "OK plugin.json.${field}=${value:0:60}"
+          done
+
+      - name: marketplace.json required fields
+        run: |
+          for field in '"$schema"' name description owner plugins; do
+            jq -er ".${field}" .claude-plugin/marketplace.json > /dev/null 2>&1 || {
+              echo "::error::.claude-plugin/marketplace.json missing required field: ${field}"
+              exit 1
+            }
+            echo "OK marketplace.json.${field}"
+          done
+          count=$(jq -r '.plugins | length' .claude-plugin/marketplace.json)
+          [ "$count" -ge 1 ] || { echo "::error::marketplace.json.plugins is empty"; exit 1; }
+          echo "OK: marketplace.json has ${count} plugin entry(ies)"
+
+      - name: Version drift guard (plugin.json ↔ marketplace.json)
+        run: |
+          PJV=$(jq -r '.version' .claude-plugin/plugin.json)
+          MJV=$(jq -r '.version' .claude-plugin/marketplace.json)
+          MPV=$(jq -r '.plugins[] | select(.name=="claude-forge") | .version' .claude-plugin/marketplace.json)
+          echo "plugin.json.version=${PJV}"
+          echo "marketplace.json.version=${MJV}"
+          echo "marketplace.plugins[claude-forge].version=${MPV}"
+          if [ "$PJV" != "$MJV" ] || [ "$MJV" != "$MPV" ]; then
+            echo "::error::Version drift detected — all three must match (expected: ${PJV})"
+            exit 1
+          fi
+          echo "OK: all three versions match"
+
+      - name: SemVer format guard
+        run: |
+          PJV=$(jq -r '.version' .claude-plugin/plugin.json)
+          if ! echo "$PJV" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?(\+[A-Za-z0-9.-]+)?$'; then
+            echo "::error::plugin.json.version '${PJV}' is not valid SemVer (X.Y.Z)"
+            exit 1
+          fi
+          echo "OK: ${PJV} is valid SemVer"
+
+  frontmatter:
+    name: Agent & Skill Frontmatter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps
+        run: pip install jsonschema pyyaml
+
+      - name: Validate agents/*.md frontmatter
+        run: |
+          python3 <<'EOF'
+          import json, re, sys
+          from pathlib import Path
+          try:
+              import yaml
+          except ImportError:
+              print("::warning::pyyaml missing, skipping")
+              sys.exit(0)
+
+          schema_path = Path("reference/agent-schema.json")
+          if not schema_path.exists():
+              print("::warning::reference/agent-schema.json missing, skipping schema check")
+              sys.exit(0)
+
+          from jsonschema import validate, ValidationError
+          schema = json.loads(schema_path.read_text())
+          errors = 0
+          for p in Path("agents").glob("*.md"):
+              text = p.read_text()
+              m = re.match(r'^---\n(.*?)\n---\n', text, re.DOTALL)
+              if not m:
+                  print(f"::error file={p}::missing YAML frontmatter")
+                  errors += 1
+                  continue
+              try:
+                  data = yaml.safe_load(m.group(1))
+              except yaml.YAMLError as e:
+                  print(f"::error file={p}::invalid YAML: {e}")
+                  errors += 1
+                  continue
+              try:
+                  validate(data, schema)
+                  print(f"OK: {p}")
+              except ValidationError as e:
+                  print(f"::error file={p}::schema violation: {e.message}")
+                  errors += 1
+          if errors:
+              sys.exit(1)
+          EOF
+
+      - name: Validate skills/*/SKILL.md description
+        run: |
+          python3 <<'EOF'
+          import re, sys
+          from pathlib import Path
+          errors = 0
+          for skill_dir in Path("skills").iterdir():
+              if not skill_dir.is_dir():
+                  continue
+              md = skill_dir / "SKILL.md"
+              if not md.exists():
+                  print(f"::warning file={skill_dir}::missing SKILL.md")
+                  continue
+              text = md.read_text()
+              fm = re.match(r'^---\n(.*?)\n---\n', text, re.DOTALL)
+              if not fm:
+                  print(f"::error file={md}::missing YAML frontmatter")
+                  errors += 1
+                  continue
+              body = fm.group(1)
+              if not re.search(r'^name:\s', body, re.MULTILINE):
+                  print(f"::error file={md}::missing 'name' field")
+                  errors += 1
+              if not re.search(r'^description:\s', body, re.MULTILINE):
+                  print(f"::error file={md}::missing 'description' field")
+                  errors += 1
+              else:
+                  print(f"OK: {md}")
+          if errors:
+              sys.exit(1)
+          EOF
+
+  installer:
+    name: Installer Dry-Run
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Bash syntax
+        run: bash -n install.sh
+
+      - name: Dry-run help
+        run: ./install.sh --help || true
+
+      - name: Dry-run upgrade smoke
+        run: |
+          ./install.sh --upgrade --dry-run 2>&1 | tee /tmp/upgrade.log
+          # ANSI escape를 제거한 후 패턴 매칭 (install.sh가 컬러 출력)
+          sed 's/\x1b\[[0-9;]*m//g' /tmp/upgrade.log > /tmp/upgrade.plain
+          grep -q "v3.0 core MCP entries present (3/3" /tmp/upgrade.plain || { echo "::error::v3 MCP not detected"; cat /tmp/upgrade.plain | tail -30; exit 1; }
+
+  security:
+    name: Secret & Shell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Check for secrets
         run: |
+          # AWS/Anthropic 공식 문서 예시 키는 화이트리스트
+          # AKIAIOSFODNN7EXAMPLE = AWS 공식 docs 예제 (real key 아님)
           PATTERNS='(sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{36,}|AKIA[A-Z0-9]{16}|sb_publishable_[a-zA-Z0-9]+)'
-          if grep -rE "$PATTERNS" --include='*.json' --include='*.sh' --include='*.md' .; then
-            echo "::error::Potential secrets found in repository!"
+          WHITELIST='AKIAIOSFODNN7EXAMPLE|sk-ant-example|sk-test-example|ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+          MATCHES=$(grep -rE "$PATTERNS" --include='*.json' --include='*.sh' --include='*.md' . 2>/dev/null \
+                    | grep -vE "$WHITELIST" || true)
+          if [ -n "$MATCHES" ]; then
+            echo "::error::Potential secrets found:"
+            echo "$MATCHES"
             exit 1
           else
-            echo "No secrets detected."
+            echo "No secrets detected (whitelisted: AWS/Anthropic doc examples)."
           fi
 
       - name: ShellCheck hooks
@@ -36,3 +257,9 @@ jobs:
           scandir: hooks
           severity: warning
         continue-on-error: true
+
+      - name: ShellCheck installer
+        run: |
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck --severity=warning install.sh || true
+          fi

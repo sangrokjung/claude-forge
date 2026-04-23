@@ -1,4 +1,3 @@
-# Part of Claude Forge — github.com/sangrokjung/claude-forge
 ---
 name: e2e-runner
 description: End-to-end testing specialist using Vercel Agent Browser (preferred) with Playwright fallback. Use PROACTIVELY for generating, maintaining, and running E2E tests. Manages test journeys, quarantines flaky tests, uploads artifacts (screenshots, videos, traces), and ensures critical user flows work.
@@ -6,6 +5,17 @@ tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: sonnet
 memory: project
 color: cyan
+# v3.0 optional fields (uncomment when needed):
+# isolation: worktree       # isolate agent work in a git worktree
+# background: true          # run in background without blocking
+# maxTurns: 20              # cap conversation length
+# skills: [e2e]             # preload skills
+# mcpServers: [playwright]  # scoped MCP access
+# effort: max               # deep reasoning
+# hooks:                    # agent-specific hooks
+#   PreToolUse: [...]
+# permissionMode: acceptEdits
+# disallowedTools: [WebFetch]
 ---
 
 <Agent_Prompt>

@@ -1,5 +1,9 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "cleanupPeriodDays": 14,
+  "tui": true,
+  "disableSkillShellExecution": false,
+  "enabledMcpjsonServers": ["playwright", "context7", "jina-reader", "chrome-devtools"],
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "ENABLE_TOOL_SEARCH": "auto:5"
@@ -32,13 +36,11 @@
       "AskUserQuestion(*)",
       "ListMcpResourcesTool(*)",
       "ReadMcpResourceTool(*)",
+      "mcp__playwright__*",
       "mcp__context7__*",
-      "mcp__exa__*",
-      "mcp__memory__*",
-      "mcp__github__*",
-      "mcp__fetch__*",
       "mcp__jina-reader__*"
     ],
+    "ask": [],
     "deny": [
       "WebFetch",
       "WebFetch(*)",
@@ -106,7 +108,7 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/remote-command-guard.sh",
-            "timeout": 5000
+            "timeout": 5
           }
         ]
       },
@@ -116,7 +118,7 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/rate-limiter.sh",
-            "timeout": 5000
+            "timeout": 5
           },
           {
             "type": "command",
@@ -139,7 +141,7 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/forge-update-check.sh",
-            "timeout": 5000
+            "timeout": 5
           }
         ]
       }
@@ -164,7 +166,7 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/output-secret-filter.sh",
-            "timeout": 5000
+            "timeout": 5
           },
           {
             "type": "command",
@@ -225,7 +227,7 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/task-completed.sh",
-            "timeout": 10000
+            "timeout": 10
           }
         ]
       }

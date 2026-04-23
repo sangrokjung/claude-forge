@@ -29,7 +29,6 @@
       "mcp__playwright__browser_press_key",
       "mcp__playwright__browser_tabs",
       "mcp__context7__query-docs",
-      "mcp__memory__create_entities",
       "mcp__plugin_oh-my-claudecode_t__lsp_hover",
       "mcp__plugin_oh-my-claudecode_t__lsp_find_references",
       "mcp__plugin_oh-my-claudecode_t__lsp_goto_definition",

@@ -6,16 +6,155 @@
 .DESCRIPTION
     Windows(네이티브 또는 WSL2)에 Claude Code 설정을 설치합니다.
     agents, rules, commands, skills, settings 파일을 ~/.claude/에 복사합니다.
+
+    -Upgrade : 기존 설치를 v3.0으로 업그레이드 (심볼릭/복사 대상 갱신 + 안내 출력)
+    -DryRun  : 실제 파일 변경 없이 수행 예정 작업만 출력
 .NOTES
     관리자 권한 필요: PowerShell 우클릭 -> 관리자 권한으로 실행
     Run as Administrator: Right-click PowerShell -> Run as Administrator
 #>
+
+param(
+    [switch]$Upgrade,
+    [switch]$DryRun,
+    [switch]$Help
+)
 
 $ErrorActionPreference = "Stop"
 
 $RepoDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ClaudeDir = Join-Path $env:USERPROFILE ".claude"
 $IsWSL = $false
+
+if ($Help) {
+    Write-Host "Usage: install.ps1 [-Upgrade] [-DryRun] [-Help]"
+    Write-Host ""
+    Write-Host "Options:"
+    Write-Host "  -Upgrade   Upgrade existing installation to v3.0"
+    Write-Host "  -DryRun    Preview changes without modifying files"
+    Write-Host "  -Help      Show this help message"
+    Write-Host ""
+    Write-Host "v3.0 Breaking Changes (see docs/MIGRATION.md):"
+    Write-Host "  - MCP servers: 6 -> 3 (playwright, context7, jina-reader)"
+    Write-Host "  - Hooks: 5 events -> 21 (opt-in via hooks/examples/)"
+    Write-Host "  - Subagent frontmatter: v2 optional fields"
+    Write-Host "  - Skills/Commands: hybrid policy (docs/SKILLS-VS-COMMANDS.md)"
+    exit 0
+}
+
+function Write-UpgradeBanner {
+    Write-Host "=========================================="
+    Write-Host "  claude-forge v3.0 Upgrade"
+    Write-Host "=========================================="
+    Write-Host ""
+    Write-Host "  Breaking changes since v2.1:"
+    Write-Host "  - MCP: 6 servers -> 3 (playwright, context7, jina-reader)"
+    Write-Host "    - Removed: memory, exa, github, fetch"
+    Write-Host "    - Recipes: docs/MCP-MIGRATION.md"
+    Write-Host "  - Hooks: 5 events -> 21 (opt-in via hooks/examples/)"
+    Write-Host "  - Subagent frontmatter: v2 optional fields"
+    Write-Host "  - Skills/Commands: hybrid policy (docs/SKILLS-VS-COMMANDS.md)"
+    Write-Host ""
+    if ($DryRun) {
+        Write-Host "  [DRY-RUN] No files will be modified." -ForegroundColor Yellow
+        Write-Host ""
+    }
+}
+
+function Write-UpgradeSummary {
+    Write-Host ""
+    Write-Host "=========================================="
+    Write-Host "  Upgrade Summary"
+    Write-Host "=========================================="
+    Write-Host "  Version       : v3.0.0"
+    $modeLabel = if ($DryRun) { 'dry-run' } else { 'applied' }
+    Write-Host "  Mode          : $modeLabel"
+    Write-Host "  Repo          : $RepoDir"
+    Write-Host "  Target        : $ClaudeDir"
+    Write-Host ""
+    Write-Host "  Expected counts:"
+    Write-Host "    - 11 agents, 24 skills (16 native + 8 moved from commands), 33 commands, 9+ rules, 15 hooks + 9 opt-in examples"
+    Write-Host ""
+    Write-Host "  Next steps:"
+    Write-Host "    1. Review docs/MIGRATION.md for detailed changes"
+    Write-Host "    2. Opt-in new hooks from hooks/examples/ as needed"
+    Write-Host "    3. Run 'claude mcp list' to verify 3 MCP servers"
+    Write-Host ""
+}
+
+function Test-McpV3 {
+    $mcpJson = Join-Path $RepoDir "mcp-servers.json"
+    if (-not (Test-Path $mcpJson)) { return }
+
+    Write-Host ""
+    Write-Host "Validating mcp-servers.json (v3.0 minimal profile)..."
+    try {
+        $json = Get-Content $mcpJson -Raw | ConvertFrom-Json
+    } catch {
+        Write-Host "  [!] Unable to parse mcp-servers.json" -ForegroundColor Yellow
+        return
+    }
+
+    $expected = @('playwright', 'context7', 'jina-reader')
+    $missing = @()
+    foreach ($name in $expected) {
+        $inServers = $false
+        $inInstallCmds = $false
+        if ($json.PSObject.Properties.Name -contains 'servers' -and $json.servers.PSObject.Properties.Name -contains $name) {
+            $inServers = $true
+        }
+        if ($json.PSObject.Properties.Name -contains 'install_commands' -and $json.install_commands.PSObject.Properties.Name -contains $name) {
+            $inInstallCmds = $true
+        }
+        if (-not ($inServers -or $inInstallCmds)) { $missing += $name }
+    }
+
+    $total = 0
+    if ($json.PSObject.Properties.Name -contains 'servers') {
+        $total = @($json.servers.PSObject.Properties).Count
+    }
+
+    if ($missing.Count -eq 0) {
+        Write-Host "  [OK] v3.0 core MCP entries present (3/3, total=$total)" -ForegroundColor Green
+    } else {
+        Write-Host "  [!] Missing v3.0 MCP entries: $($missing -join ', ')" -ForegroundColor Yellow
+        Write-Host "      See docs/MCP-MIGRATION.md for remediation."
+    }
+}
+
+function New-V3CompatLinks {
+    Write-Host ""
+    Write-Host "Creating v3.0 compat links..."
+    # v2.1 path -> v3.0 path mappings
+    $mappings = @(
+        @{ Old = 'commands/debugging-strategies'; New = 'skills/debugging-strategies' }
+    )
+    $created = 0
+    foreach ($m in $mappings) {
+        $newTarget = Join-Path $RepoDir $m.New
+        $oldLink = Join-Path $ClaudeDir $m.Old
+        if ((Test-Path $newTarget) -and (-not (Test-Path $oldLink))) {
+            if ($DryRun) {
+                Write-Host "  [DRY-RUN] would create compat link: $($m.Old) -> $($m.New)"
+            } else {
+                $parent = Split-Path -Parent $oldLink
+                if (-not (Test-Path $parent)) {
+                    New-Item -ItemType Directory -Path $parent -Force | Out-Null
+                }
+                try {
+                    Copy-Item -Path $newTarget -Destination $oldLink -Recurse -ErrorAction Stop
+                    Write-Host "  [OK] compat link: $($m.Old) -> $($m.New)" -ForegroundColor Green
+                    $created++
+                } catch {
+                    # non-fatal
+                }
+            }
+        }
+    }
+    if ($created -eq 0 -and (-not $DryRun)) {
+        Write-Host "  (no compat links needed)"
+    }
+}
 
 # --------------------------------------------------
 # 시작 안내
@@ -77,10 +216,21 @@ function Backup-ExistingConfig {
         $backupDir = "$ClaudeDir.backup.$timestamp"
         Write-Host ""
         Write-Host "기존 ~/.claude 폴더가 발견되었습니다. (Existing config found)" -ForegroundColor Yellow
+
+        # Upgrade mode: preserve in place, refresh targets
+        if ($Upgrade) {
+            Write-Host "  Upgrade mode: preserving $ClaudeDir (targets will be refreshed)." -ForegroundColor Gray
+            return
+        }
+
         $reply = Read-Host "백업할까요? $backupDir (y/n)"
         if ($reply -eq "y") {
-            Move-Item $ClaudeDir $backupDir
-            Write-Host "[OK] 백업 완료: $backupDir (Backup created)" -ForegroundColor Green
+            if ($DryRun) {
+                Write-Host "  [DRY-RUN] would move $ClaudeDir -> $backupDir" -ForegroundColor Yellow
+            } else {
+                Move-Item $ClaudeDir $backupDir
+                Write-Host "[OK] 백업 완료: $backupDir (Backup created)" -ForegroundColor Green
+            }
         }
         else {
             Write-Host "백업을 건너뜁니다. 기존 파일이 덮어쓰기될 수 있습니다." -ForegroundColor Yellow
@@ -95,7 +245,9 @@ function Copy-ConfigFiles {
     Write-Host ""
     Write-Host "설정 파일 복사 중... (Copying configuration files)" -ForegroundColor White
 
-    if (-not (Test-Path $ClaudeDir)) {
+    if ($DryRun) {
+        Write-Host "  [DRY-RUN] would ensure $ClaudeDir exists" -ForegroundColor Yellow
+    } elseif (-not (Test-Path $ClaudeDir)) {
         New-Item -ItemType Directory -Path $ClaudeDir -Force | Out-Null
     }
 
@@ -104,6 +256,10 @@ function Copy-ConfigFiles {
         $source = Join-Path $RepoDir $dir
         if (Test-Path $source) {
             $dest = Join-Path $ClaudeDir $dir
+            if ($DryRun) {
+                Write-Host "  [DRY-RUN] would refresh $dir/" -ForegroundColor Yellow
+                continue
+            }
             if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
             Copy-Item $source $dest -Recurse
             Write-Host "  [OK] $dir/ 복사 완료" -ForegroundColor Gray
@@ -118,6 +274,10 @@ function Copy-ConfigFiles {
         $source = Join-Path $RepoDir $file
         if (Test-Path $source) {
             $dest = Join-Path $ClaudeDir $file
+            if ($DryRun) {
+                Write-Host "  [DRY-RUN] would refresh $file" -ForegroundColor Yellow
+                continue
+            }
             Copy-Item $source $dest -Force
             Write-Host "  [OK] $file 복사 완료" -ForegroundColor Gray
         }
@@ -192,13 +352,27 @@ function Test-Installation {
 # Main
 # --------------------------------------------------
 function Main {
+    if ($Upgrade) { Write-UpgradeBanner }
+
     Test-Dependencies
     Backup-ExistingConfig
     Copy-ConfigFiles
+    Test-McpV3
+
+    if ($Upgrade) { New-V3CompatLinks }
+
+    if ($DryRun) {
+        Write-Host ""
+        Write-Host "[DRY-RUN] Skipping verify/MCP install." -ForegroundColor Yellow
+        if ($Upgrade) { Write-UpgradeSummary }
+        return
+    }
 
     $errors = Test-Installation
     if ($errors -eq 0) {
         Install-McpServers
+
+        if ($Upgrade) { Write-UpgradeSummary }
 
         Write-Host ""
         Write-Host "  ╔══════════════════════════════════════════════════════╗" -ForegroundColor Green

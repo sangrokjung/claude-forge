@@ -1,4 +1,3 @@
-# Part of Claude Forge — github.com/sangrokjung/claude-forge
 ---
 name: database-reviewer
 description: PostgreSQL database specialist for query optimization, schema design, security, and performance. Use PROACTIVELY when writing SQL, creating migrations, designing schemas, or troubleshooting database performance. Incorporates Supabase best practices.
@@ -6,6 +5,17 @@ tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: opus
 memory: project
 color: blue
+# v3.0 optional fields (uncomment when needed):
+# isolation: worktree       # isolate agent work in a git worktree
+# background: true          # run in background without blocking
+# maxTurns: 20              # cap conversation length
+# skills: [supabase]        # preload skills
+# mcpServers: [supabase]    # scoped MCP access
+# effort: max               # deep reasoning
+# hooks:                    # agent-specific hooks
+#   PreToolUse: [...]
+# permissionMode: acceptEdits
+# disallowedTools: [WebFetch]
 ---
 
 <Agent_Prompt>
@@ -69,7 +79,7 @@ color: blue
     - Use `mcp__supabase__apply_migration` for schema changes.
     - Use Read/Grep to examine SQL in application code.
     - Use `mcp__context7__*` for PostgreSQL/Supabase latest documentation.
-    - Use `mcp__memory__*` for DB schema change history.
+    - Track DB schema change history via Auto Memory (`~/.claude/projects/<project>/memory/`) or migration files in the repo. If the optional memory MCP is enabled (see docs/MCP-MIGRATION.md), `mcp__memory__*` offers a knowledge-graph API.
   </Tool_Usage>
 
   <Execution_Policy>
@@ -302,7 +312,7 @@ CREATE INDEX search_idx ON articles USING gin (search_vector);
 ## Related MCP Tools
 
 - **mcp__context7__***: PostgreSQL/Supabase latest documentation
-- **mcp__memory__***: DB schema change history
+- **Auto Memory** (built-in, default) / **mcp__memory__*** (optional, see docs/MCP-MIGRATION.md): DB schema change history
 - **mcp__supabase__***: Supabase DB direct management (queries, migrations, schema)
 
 ## Related Skills

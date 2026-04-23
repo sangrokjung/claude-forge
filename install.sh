@@ -4,6 +4,58 @@ set -e
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"
 
+# Defaults
+UPGRADE_MODE=0
+DRY_RUN=0
+
+# Usage banner
+print_usage_and_exit() {
+    cat << USAGE
+Usage: install.sh [OPTIONS]
+
+Options:
+  --upgrade     Upgrade existing installation to v3.0 (preserves symlinks,
+                refreshes targets, prints breaking-change guidance).
+  --dry-run     Show what would change without modifying files.
+  -h, --help    Show this help message.
+
+Examples:
+  ./install.sh                 # Fresh install
+  ./install.sh --upgrade       # Upgrade v2.x -> v3.0 in place
+  ./install.sh --dry-run       # Preview changes
+  ./install.sh --upgrade --dry-run
+
+v3.0 Breaking Changes (see docs/MIGRATION.md):
+  - MCP servers: 6 -> 3 (playwright, context7, jina-reader)
+  - Hooks: 5 events -> 21 (opt-in via hooks/examples/)
+  - Subagent frontmatter: v2 optional fields
+  - Skills/Commands: hybrid policy (docs/SKILLS-VS-COMMANDS.md)
+USAGE
+    exit 0
+}
+
+# Parse arguments
+while [ $# -gt 0 ]; do
+    case "${1:-}" in
+        --upgrade)
+            UPGRADE_MODE=1
+            shift
+            ;;
+        --dry-run)
+            DRY_RUN=1
+            shift
+            ;;
+        -h|--help)
+            print_usage_and_exit
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            echo "Run './install.sh --help' for usage." >&2
+            exit 1
+            ;;
+    esac
+done
+
 # Detect platform
 detect_platform() {
     if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -41,6 +93,90 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
+
+# Upgrade banner (printed when --upgrade is set)
+print_upgrade_banner() {
+    echo "=========================================="
+    echo "  claude-forge v3.0 Upgrade"
+    echo "=========================================="
+    echo ""
+    echo "  Breaking changes since v2.1:"
+    echo "  - MCP: 6 servers -> 3 (playwright, context7, jina-reader)"
+    echo "    - Removed: memory, exa, github, fetch"
+    echo "    - Recipes: docs/MCP-MIGRATION.md"
+    echo "  - Hooks: 5 events -> 21 (opt-in via hooks/examples/)"
+    echo "  - Subagent frontmatter: v2 optional fields"
+    echo "  - Skills/Commands: hybrid policy (docs/SKILLS-VS-COMMANDS.md)"
+    echo ""
+    if [ "$DRY_RUN" -eq 1 ]; then
+        echo -e "  ${YELLOW}[DRY-RUN] No files will be modified.${NC}"
+        echo ""
+    fi
+}
+
+# v3.0 skills/commands 호환 링크 (v2.1에서 commands로 제공되던 항목 일부가
+# v3.0에서 skills로 이동한 경우에 대한 하위 호환)
+create_v3_compat_links() {
+    local target_base="$CLAUDE_DIR"
+    local created=0
+
+    # v2.1 경로 -> v3.0 경로 매핑
+    # v2.1의 commands/ 디렉토리형 skill(8개)이 v3.0에서 skills/로 이전됨.
+    # 기존 참조를 깨지 않도록 심볼릭 링크로 호환성 유지 (2027-04-01까지).
+    local mappings=(
+        "commands/debugging-strategies:skills/debugging-strategies"
+        "commands/dependency-upgrade:skills/dependency-upgrade"
+        "commands/evaluating-code-models:skills/evaluating-code-models"
+        "commands/evaluating-llms-harness:skills/evaluating-llms-harness"
+        "commands/extract-errors:skills/extract-errors"
+        "commands/security-compliance:skills/security-compliance"
+        "commands/stride-analysis-patterns:skills/stride-analysis-patterns"
+        "commands/summarize:skills/summarize"
+    )
+
+    for mapping in "${mappings[@]}"; do
+        local old_path="${mapping%%:*}"
+        local new_path="${mapping##*:}"
+        local new_target="$REPO_DIR/$new_path"
+        local old_link="$target_base/$old_path"
+
+        if [ -e "$new_target" ] && [ ! -e "$old_link" ]; then
+            if [ "$DRY_RUN" -eq 1 ]; then
+                echo "  [DRY-RUN] would create compat link: $old_path -> $new_path"
+            else
+                mkdir -p "$(dirname "$old_link")"
+                ln -sf "$new_target" "$old_link" 2>/dev/null && \
+                    echo -e "  ${GREEN}✓${NC} compat link: $old_path -> $new_path" && \
+                    created=$((created + 1)) || true
+            fi
+        fi
+    done
+
+    if [ "$created" -eq 0 ] && [ "$DRY_RUN" -ne 1 ]; then
+        echo "  (no compat links needed)"
+    fi
+}
+
+# Upgrade-mode summary
+print_upgrade_summary() {
+    echo ""
+    echo "=========================================="
+    echo "  Upgrade Summary"
+    echo "=========================================="
+    echo "  Version       : v3.0.0"
+    echo "  Mode          : $([ "$DRY_RUN" -eq 1 ] && echo 'dry-run' || echo 'applied')"
+    echo "  Repo          : $REPO_DIR"
+    echo "  Target        : $CLAUDE_DIR"
+    echo ""
+    echo "  Expected counts:"
+    echo "    - 11 agents, 24 skills (16 native + 8 moved from commands), 33 commands, 9+ rules, 15 hooks + 9 opt-in examples"
+    echo ""
+    echo "  Next steps:"
+    echo "    1. Review docs/MIGRATION.md for detailed changes"
+    echo "    2. Opt-in new hooks from hooks/examples/ as needed"
+    echo "    3. Run 'claude mcp list' to verify 3 MCP servers"
+    echo ""
+}
 
 # 1. Check dependencies
 check_deps() {
@@ -91,11 +227,22 @@ backup() {
         local backup_dir="$CLAUDE_DIR.backup.$(date +%Y%m%d_%H%M%S)"
         echo ""
         echo -e "${YELLOW}Existing ~/.claude found${NC}"
+
+        # Upgrade mode: skip wholesale move, just refresh symlinks in place
+        if [ "$UPGRADE_MODE" -eq 1 ]; then
+            echo "  Upgrade mode: preserving $CLAUDE_DIR (symlinks will be refreshed)."
+            return 0
+        fi
+
         read -p "Backup to $backup_dir? (y/n) " -n 1 -r
         echo ""
         if [[ $REPLY =~ ^[Yy]$ ]]; then
-            mv "$CLAUDE_DIR" "$backup_dir"
-            echo -e "${GREEN}Backed up to $backup_dir${NC}"
+            if [ "$DRY_RUN" -eq 1 ]; then
+                echo "  [DRY-RUN] would mv $CLAUDE_DIR -> $backup_dir"
+            else
+                mv "$CLAUDE_DIR" "$backup_dir"
+                echo -e "${GREEN}Backed up to $backup_dir${NC}"
+            fi
         else
             echo "Skipping backup. Existing files may be overwritten."
         fi
@@ -120,11 +267,19 @@ link_files() {
         echo "Creating symlinks..."
     fi
 
-    mkdir -p "$CLAUDE_DIR"
+    if [ "$DRY_RUN" -eq 1 ]; then
+        echo "  [DRY-RUN] would mkdir -p $CLAUDE_DIR"
+    else
+        mkdir -p "$CLAUDE_DIR"
+    fi
 
     # Directories
     for dir in agents rules commands scripts skills hooks cc-chips cc-chips-custom; do
         if [ -d "$REPO_DIR/$dir" ]; then
+            if [ "$DRY_RUN" -eq 1 ]; then
+                echo "  [DRY-RUN] would refresh $dir/"
+                continue
+            fi
             rm -rf "$CLAUDE_DIR/$dir" 2>/dev/null || true
             if [ "$use_copy" = true ]; then
                 cp -r "$REPO_DIR/$dir" "$CLAUDE_DIR/$dir"
@@ -139,6 +294,10 @@ link_files() {
     # Files
     for file in settings.json; do
         if [ -f "$REPO_DIR/$file" ]; then
+            if [ "$DRY_RUN" -eq 1 ]; then
+                echo "  [DRY-RUN] would refresh $file"
+                continue
+            fi
             rm -f "$CLAUDE_DIR/$file" 2>/dev/null || true
             if [ "$use_copy" = true ]; then
                 cp "$REPO_DIR/$file" "$CLAUDE_DIR/$file"
@@ -151,12 +310,52 @@ link_files() {
     done
 }
 
+# 4b. Validate mcp-servers.json for v3.0 (3 core entries)
+validate_mcp_v3() {
+    local mcp_json="$REPO_DIR/mcp-servers.json"
+    if [ ! -f "$mcp_json" ] || ! command -v jq >/dev/null; then
+        return 0
+    fi
+
+    echo ""
+    echo "Validating mcp-servers.json (v3.0 minimal profile)..."
+
+    # v3.0 schema uses `.servers.<name>`; legacy v2.x used `.install_commands.<name>`
+    local expected=("playwright" "context7" "jina-reader")
+    local missing=()
+    for s in "${expected[@]}"; do
+        local present=0
+        if jq -e --arg s "$s" '.servers[$s] // empty' "$mcp_json" >/dev/null 2>&1; then
+            present=1
+        elif jq -e --arg s "$s" '.install_commands[$s] // empty' "$mcp_json" >/dev/null 2>&1; then
+            present=1
+        fi
+        [ "$present" -eq 0 ] && missing+=("$s")
+    done
+
+    local server_count
+    server_count=$(jq -r '.servers | length // 0' "$mcp_json" 2>/dev/null || echo 0)
+
+    if [ ${#missing[@]} -eq 0 ]; then
+        echo -e "  ${GREEN}✓${NC} v3.0 core MCP entries present (3/3, total=$server_count)"
+    else
+        echo -e "  ${YELLOW}!${NC} Missing v3.0 MCP entries: ${missing[*]}"
+        echo "    See docs/MCP-MIGRATION.md for remediation."
+    fi
+}
+
 # 5. Apply CC CHIPS custom overlay
 apply_cc_chips_custom() {
     local custom_dir="$REPO_DIR/cc-chips-custom"
     if [ -d "$custom_dir" ]; then
         echo ""
         echo "Applying CC CHIPS custom overlay..."
+
+        if [ "$DRY_RUN" -eq 1 ]; then
+            echo "  [DRY-RUN] would overlay engine.sh + themes/*.sh"
+            return 0
+        fi
+
         local target="$CLAUDE_DIR/cc-chips"
 
         if [ -f "$custom_dir/engine.sh" ] && [ -d "$target" ]; then
@@ -457,11 +656,32 @@ install_work_tracker() {
 
 # Main
 main() {
+    if [ "$UPGRADE_MODE" -eq 1 ]; then
+        print_upgrade_banner
+    fi
+
     check_deps
     init_submodules
     backup
     link_files
     apply_cc_chips_custom
+    validate_mcp_v3
+
+    # v3.0 compat symlinks (upgrade mode only)
+    if [ "$UPGRADE_MODE" -eq 1 ]; then
+        echo ""
+        echo "Creating v3.0 compat links..."
+        create_v3_compat_links
+    fi
+
+    if [ "$DRY_RUN" -eq 1 ]; then
+        echo ""
+        echo -e "${YELLOW}[DRY-RUN] Skipping verify/metadata/MCP/skills/tracker steps.${NC}"
+        if [ "$UPGRADE_MODE" -eq 1 ]; then
+            print_upgrade_summary
+        fi
+        return 0
+    fi
 
     if verify; then
         echo ""
@@ -481,6 +701,10 @@ main() {
 
         # Install work tracker
         install_work_tracker
+
+        if [ "$UPGRADE_MODE" -eq 1 ]; then
+            print_upgrade_summary
+        fi
 
         echo ""
         cat << COMPLETE

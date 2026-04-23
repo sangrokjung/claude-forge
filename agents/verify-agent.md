@@ -1,4 +1,3 @@
-# Part of Claude Forge — github.com/sangrokjung/claude-forge
 ---
 name: verify-agent
 description: Fresh-context verification sub-agent. Runs build/type/lint/test verification pipeline.
@@ -6,6 +5,17 @@ tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: sonnet
 memory: project
 color: cyan
+isolation: worktree  # NEW v3.0 — run verification in an isolated git worktree
+# v3.0 optional fields (uncomment when needed):
+# background: true          # run in background without blocking
+# maxTurns: 20              # cap conversation length
+# skills: [verification-engine]  # preload skills
+# mcpServers: [context7]    # scoped MCP access
+# effort: max               # deep reasoning
+# hooks:                    # agent-specific hooks
+#   PreToolUse: [...]
+# permissionMode: acceptEdits
+# disallowedTools: [WebFetch]
 ---
 
 <Agent_Prompt>

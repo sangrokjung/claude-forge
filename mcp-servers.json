@@ -1,45 +1,35 @@
 {
-  "description": "Global MCP servers (lightweight, universally needed)",
+  "description": "Minimal MCP servers — claude-forge v3.0 (4 servers). Full set: mcp-servers.optional.json",
   "servers": {
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"],
+      "env": {},
+      "description": "Headless browser automation (navigate, click, fill, screenshot, trace)"
+    },
     "context7": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"],
       "env": {},
-      "description": "Real-time library documentation (React 19, Next.js 15, etc.)"
-    },
-    "memory": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"],
-      "env": {},
-      "description": "Persistent context across sessions (knowledge graph)"
-    },
-    "exa": {
-      "type": "http",
-      "url": "https://mcp.exa.ai/mcp",
-      "description": "Exa AI-powered web search and company research"
-    },
-    "github": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
-      },
-      "description": "GitHub repository, PR, and issue management"
-    },
-    "fetch": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": ["mcp-server-fetch"],
-      "description": "Web content fetching (WebFetch replacement)"
+      "description": "Real-time library documentation (React 19, Next.js 15, etc.) — use BEFORE writing library code"
     },
     "jina-reader": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "jina-mcp-tools"],
-      "description": "URL-to-markdown via Jina AI (token-efficient)"
+      "description": "URL-to-markdown via Jina AI — token-efficient web content (fetch replacement)"
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@0.23.0"],
+      "description": "Chrome DevTools Protocol — Lighthouse audits, Core Web Vitals (LCP/INP/CLS), memory snapshots, network inspection. Complements playwright with quantitative perf/a11y diagnostics. Maintained by Google ChromeDevTools org (Apache-2.0, github.com/ChromeDevTools/chrome-devtools-mcp) — NOT an Anthropic-official server. Version pinned to 0.23.0 (stable 2026-04-22); bump manually after audit."
     }
+  },
+  "_notes": {
+    "why_4_servers": "Minimal dependency for broad user compatibility. playwright = general browser automation. context7 = live library docs. jina-reader = token-efficient web fetch. chrome-devtools = quantitative perf/a11y audits (complements playwright, heavier but Lighthouse-grade). memory → Claude Code Auto Memory. exa → built-in WebSearch. github → gh CLI. fetch → jina-reader fallback.",
+    "add_more": "See mcp-servers.optional.json for 5+ additional servers (memory, exa, github, fetch, time, sequential-thinking). Copy entries into this file and run: ./install.sh --upgrade"
   }
 }

@@ -1,4 +1,3 @@
-# Part of Claude Forge — github.com/sangrokjung/claude-forge
 ---
 name: tdd-guide
 description: Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Ensures 80%+ test coverage.
@@ -6,6 +5,17 @@ tools: ["Read", "Write", "Edit", "Bash", "Grep"]
 model: opus
 memory: project
 color: cyan
+# v3.0 optional fields (uncomment when needed):
+# isolation: worktree       # isolate agent work in a git worktree
+# background: true          # run in background without blocking
+# maxTurns: 20              # cap conversation length
+# skills: [tdd]             # preload skills
+# mcpServers: [context7]    # scoped MCP access
+# effort: max               # deep reasoning
+# hooks:                    # agent-specific hooks
+#   PreToolUse: [...]
+# permissionMode: acceptEdits
+# disallowedTools: [WebFetch]
 ---
 
 <Agent_Prompt>

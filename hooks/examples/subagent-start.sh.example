@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# SubagentStart hook example — claude-forge v3.0
+# Event: SubagentStart
+# Trigger: Fires when a subagent (Task tool spawn) begins execution
+#
+# Usage:
+#   1. mkdir -p ~/.claude/hooks && cp this_file ~/.claude/hooks/subagent-start.sh
+#   2. chmod +x ~/.claude/hooks/subagent-start.sh
+#   3. Add to ~/.claude/settings.json hooks.SubagentStart section
+#
+# Input (stdin JSON): { "subagent_name": "...", "session_id": "...", "parent_task_id": "..." }
+# Output: exit 0 success, exit 2 blocking error
+set -euo pipefail
+
+LOG="${HOME}/.claude/logs/subagent.log"
+mkdir -p "$(dirname "$LOG")"
+
+INPUT=$(cat)
+NAME=$(printf '%s' "$INPUT" | python3 -c "import sys,json;print(json.load(sys.stdin).get('subagent_name','unknown'))" 2>/dev/null || echo "unknown")
+
+# Record start timestamp (epoch) so SubagentStop can compute duration
+printf '%s START %s\n' "$(date -u +%FT%TZ)" "$NAME" >> "$LOG"
+printf '%s\n' "$(date +%s)" > "${HOME}/.claude/logs/subagent-${NAME}.start"
+
+exit 0

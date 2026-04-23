@@ -1,7 +1,7 @@
 {
   "name": "claude-forge",
-  "version": "2.2.0",
-  "description": "oh-my-zsh for Claude Code — 11 agents, 40 commands, 15 skills, 15 hooks, 9 rules in one install",
+  "version": "3.0.1",
+  "description": "oh-my-zsh for Claude Code — 11 agents, 33 commands, 24 skills, 15 hooks + 9 examples (21 events), 9 rules, 4 MCP (minimal: playwright, context7, jina-reader, chrome-devtools@0.23.0)",
   "author": {
     "name": "Sangrok Jung",
     "url": "https://github.com/sangrokjung"
@@ -10,6 +10,7 @@
   "homepage": "https://github.com/sangrokjung/claude-forge",
   "license": "MIT",
   "keywords": [
+    "claude-code",
     "development-environment",
     "agents",
     "skills",
@@ -18,11 +19,16 @@
     "code-review",
     "security",
     "automation",
-    "oh-my-zsh"
+    "oh-my-zsh",
+    "hooks-21",
+    "skills-commands-hybrid",
+    "mcp-minimal",
+    "v3"
   ],
   "engines": {
-    "claude-code": ">=1.0.0"
+    "claude-code": ">=2.1.110"
   },
+  "minClaudeCodeVersion": "2.1.110",
   "agents": "agents/",
   "skills": "skills/",
   "hooks": "hooks/",

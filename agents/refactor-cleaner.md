@@ -1,4 +1,3 @@
-# Part of Claude Forge — github.com/sangrokjung/claude-forge
 ---
 name: refactor-cleaner
 description: Dead code cleanup and consolidation specialist. Use PROACTIVELY for removing unused code, duplicates, and refactoring. Runs analysis tools (knip, depcheck, ts-prune) to identify dead code and safely removes it.
@@ -6,6 +5,17 @@ tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: sonnet
 memory: project
 color: yellow
+# v3.0 optional fields (uncomment when needed):
+# isolation: worktree       # isolate agent work in a git worktree
+# background: true          # run in background without blocking
+# maxTurns: 20              # cap conversation length
+# skills: [refactor-clean]  # preload skills
+# mcpServers: [context7]    # scoped MCP access
+# effort: max               # deep reasoning
+# hooks:                    # agent-specific hooks
+#   PreToolUse: [...]
+# permissionMode: acceptEdits
+# disallowedTools: [WebFetch]
 ---
 
 <Agent_Prompt>
@@ -89,7 +99,7 @@ color: yellow
     - Use Glob to discover related files.
     - Use Read to examine code context and git history.
     - Use Edit/Write to remove dead code and update DELETION_LOG.md.
-    - Use `mcp__memory__*` for refactoring history and pattern recording.
+    - Record refactoring history through Auto Memory (`~/.claude/projects/<project>/memory/`, written by Claude Code automatically) or a plain-text log. If the optional memory MCP is enabled (see docs/MCP-MIGRATION.md), `mcp__memory__*` offers a knowledge-graph API.
   </Tool_Usage>
 
   <Execution_Policy>
@@ -280,7 +290,7 @@ If something breaks after removal:
 
 ## Related MCP Tools
 
-- **mcp__memory__***: Refactoring history and pattern recording
+- **Auto Memory** (built-in, default, `~/.claude/projects/<project>/memory/`) / **mcp__memory__*** (optional, see docs/MCP-MIGRATION.md): Refactoring history and pattern recording
 
 ## Related Skills
 
