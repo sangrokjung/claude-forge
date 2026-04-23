@@ -28,7 +28,7 @@
   <a href="README.ko.md">한국어</a>
 </p>
 
-> 🎉 **v3.0 released (April 2026)** — Anthropic 2026 standard alignment: Hooks 21 events · Subagent frontmatter v2 · Skills/Commands hybrid policy · MCP minimal (3 servers). See [MIGRATION.md](MIGRATION.md) / [MIGRATION.ko.md](MIGRATION.ko.md).
+> 🎉 **v3.0.1 released (April 2026)** — installable as an official Claude Code plugin: `/plugin install sangrokjung/claude-forge`. Anthropic 2026 standard alignment (Hooks 21+ events · Subagent frontmatter v2 · Skills/Commands hybrid policy) plus a 4-server MCP minimum (playwright · context7 · jina-reader · chrome-devtools@0.23.0). See [MIGRATION.md](MIGRATION.md) / [MIGRATION.ko.md](MIGRATION.ko.md) and [Release v3.0.1](https://github.com/sangrokjung/claude-forge/releases/tag/v3.0.1).
 
 ---
 
@@ -86,10 +86,22 @@ they want a global install.
 | **Hooks 21 Events** | Lifecycle hooks expanded from 5 to 21 events. Opt-in samples live at [`hooks/examples/`](hooks/examples/) with the full catalog in [`hooks/README.md`](hooks/README.md). |
 | **Subagent Frontmatter v2** | 10 optional fields: `isolation`, `background`, `memory`, `maxTurns`, `skills`, `mcpServers`, `effort`, `hooks`, `permissionMode`, `disallowedTools`. Schema: [`reference/agent-schema.json`](reference/agent-schema.json). Details: [`docs/AGENT-FRONTMATTER-V2.md`](docs/AGENT-FRONTMATTER-V2.md). |
 | **Skills/Commands Hybrid Policy** | Clear boundary documented at [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md). 8 directory-form commands are being migrated to `skills/` with symlink compatibility preserved. |
-| **MCP Minimal (3 servers)** | Default set trimmed to `playwright` · `context7` · `jina-reader`. The legacy full set lives in [`mcp-servers.optional.json`](mcp-servers.optional.json). Recipes: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md). |
+| **MCP Minimal (4 servers, v3.0.1)** | Default set: `playwright` · `context7` · `jina-reader` · `chrome-devtools-mcp@0.23.0` (Google ChromeDevTools org, Apache-2.0 — promoted in v3.0.1 for Lighthouse / Core Web Vitals audits). The legacy full set lives in [`mcp-servers.optional.json`](mcp-servers.optional.json). Recipes: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md). Decision rationale: [`docs/adr/ADR-001-mcp-default-set.md`](docs/adr/ADR-001-mcp-default-set.md). |
 | **CLAUDE.md Template + @import** | New [`setup/CLAUDE.md.template`](setup/CLAUDE.md.template) and [`docs/CLAUDE-MD-GUIDE.md`](docs/CLAUDE-MD-GUIDE.md) with a 200-line principle and `@import` pattern for modular project instructions. |
 | **settings.json 2026 Fields** | New fields: `tui` (flicker-free rendering), `disableSkillShellExecution` (sandbox), `enabledMcpjsonServers` (explicit allowlist). |
 | **Upgrade in One Command** | `./install.sh --upgrade` safely migrates existing v2.1 installs with backup and diff preview. |
+
+### 🔧 What's New in v3.0.1 (patch)
+
+| Change | Description |
+|:-------|:------------|
+| **Official Plugin Install** | `/plugin install sangrokjung/claude-forge` now works out of the box. [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) + [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json) both pinned to `3.0.1`; CI enforces version drift via the new `marketplace-schema` job. |
+| **Chrome DevTools promoted** | Lighthouse / Core Web Vitals / memory snapshots now arrive with the default 4-server MCP set. Pinned at `chrome-devtools-mcp@0.23.0` (supply-chain hardening). |
+| **`hooks/_lib/timing.sh`** | New wrapper records SessionEnd hook timing into `~/.claude/logs/hook-timing.jsonl` (mode 600) so the real parallelism of `async: true` hooks can be audited post-hoc. ~35 ms overhead. |
+| **CI trigger expanded** | [`.github/workflows/validate.yml`](.github/workflows/validate.yml) now runs on every PR and on `main`/`feat/**`/`fix/**`/`chore/**`/`docs/**`/`ci/**` pushes (previously `main` only). 6 jobs total. |
+| **Tier 0 spec corrections** | Hook types aligned to `command`/`http`/`prompt`/`agent` (were `llm-prompt`/`mcp-tool`). `timeout` unit corrected to **seconds** (was ms). Auto Memory path `~/.claude/projects/<project>/memory/` (was `<hash>`). |
+| **New governance docs** | [`docs/adr/ADR-001-mcp-default-set.md`](docs/adr/ADR-001-mcp-default-set.md) (MCP default decision, MADR) · [`docs/SETTINGS-COMPATIBILITY.md`](docs/SETTINGS-COMPATIBILITY.md) (UNVERIFIED field tracking) · [`docs/MARKETPLACE-SUBMISSION.md`](docs/MARKETPLACE-SUBMISSION.md) (official directory submission packet). |
+| **4-way independent review** | super-research (Tier 0 docs) · security-reviewer · architect · codex-reviewer ran in parallel on the patch. 11 blocking issues closed before merge. |
 
 ### 🚨 Breaking Changes
 
@@ -236,7 +248,7 @@ Most developers either use Claude Code with no customization or spend hours asse
 | **Skills** | 15+ | `build-system` `security-pipeline` `eval-harness` `team-orchestrator` `session-wrap` ... (+8 migrated from commands/) |
 | **Hooks** | 15 + 9 examples | 15 built-in (secret filtering, remote command guard, DB protection, security auto-trigger, rate limiting ...) + 9 opt-in samples covering 21 lifecycle events |
 | **Rules** | 9 | `coding-style` `security` `git-workflow` `golden-principles` `agents` `interaction` `verification` ... |
-| **MCP Servers** | 3 (minimal) | `playwright` `context7` `jina-reader` — 8+ more available in [`mcp-servers.optional.json`](mcp-servers.optional.json) |
+| **MCP Servers** | 4 (minimal) | `playwright` `context7` `jina-reader` `chrome-devtools@0.23.0` — 7+ more available in [`mcp-servers.optional.json`](mcp-servers.optional.json) |
 
 ---
 
@@ -298,13 +310,14 @@ Windows uses **file copies** instead of symlinks. Re-run `install.ps1` after `gi
 
 ### MCP Server Setup
 
-v3.0 ships with **3 minimal defaults**. Others are available opt-in via [`mcp-servers.optional.json`](mcp-servers.optional.json). Full recipes: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md).
+v3.0.1 ships with **4 minimal defaults**. Others are available opt-in via [`mcp-servers.optional.json`](mcp-servers.optional.json). Full recipes: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md). Rationale: [`docs/adr/ADR-001-mcp-default-set.md`](docs/adr/ADR-001-mcp-default-set.md).
 
 | Server | Default? | API Key | Setup |
 |:-------|:--------:|:--------|:------|
 | **playwright** | ✅ | Not required | Auto-installed via `install.sh` |
 | **context7** | ✅ | Not required | Auto-installed via `install.sh` |
 | **jina-reader** | ✅ | Not required | Auto-installed via `install.sh` |
+| **chrome-devtools** | ✅ | Not required | Auto-installed via `install.sh` (pinned `@0.23.0`, Google ChromeDevTools org, Apache-2.0) |
 | **memory** | opt-in | Not required | Merge from `mcp-servers.optional.json` |
 | **fetch** | opt-in | Not required | Requires `uvx` (Python) |
 | **exa** | opt-in | OAuth | `claude mcp add exa --url https://mcp.exa.ai/mcp` |
@@ -391,9 +404,10 @@ claude-forge/
   ├── skills/                    Multi-step skill workflows (15+, hybrid policy)
   ├── install.sh                 macOS/Linux installer (--upgrade supported)
   ├── install.ps1                Windows installer (--upgrade supported)
-  ├── mcp-servers.json           MCP server defaults (3 minimal)
-  ├── mcp-servers.optional.json  Optional MCP servers (memory/exa/github/fetch...)
-  ├── plugin.json                Plugin manifest (3.0.0)
+  ├── mcp-servers.json           MCP server defaults (4 minimal)
+  ├── mcp-servers.optional.json  Optional MCP servers (memory/exa/github/fetch/time/...)
+  ├── .claude-plugin/plugin.json Plugin manifest (3.0.1)
+  ├── .claude-plugin/marketplace.json  Marketplace entry (3.0.1)
   ├── settings.json              Claude Code settings (2026 fields)
   ├── MIGRATION.md               v2.1 → v3.0 migration guide (EN)
   ├── MIGRATION.ko.md            v2.1 → v3.0 migration guide (KO)
