@@ -24,9 +24,8 @@
     "chrome-devtools": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest"],
-      "env": {},
-      "description": "Chrome DevTools Protocol — Lighthouse audits, Core Web Vitals (LCP/INP/CLS), memory snapshots, network inspection. Complements playwright with quantitative perf/a11y diagnostics."
+      "args": ["-y", "chrome-devtools-mcp@0.23.0"],
+      "description": "Chrome DevTools Protocol — Lighthouse audits, Core Web Vitals (LCP/INP/CLS), memory snapshots, network inspection. Complements playwright with quantitative perf/a11y diagnostics. Maintained by Google ChromeDevTools org (Apache-2.0, github.com/ChromeDevTools/chrome-devtools-mcp) — NOT an Anthropic-official server. Version pinned to 0.23.0 (stable 2026-04-22); bump manually after audit."
     }
   },
   "_notes": {

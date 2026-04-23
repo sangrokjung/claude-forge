@@ -65,7 +65,7 @@ v2.1 shipped five agents whose `Tool_Usage` section directly referenced `mcp__ex
 |-------|-----------------|-------------------|
 | `agents/security-reviewer.md` | `mcp__exa__web_search_exa` | Built-in `WebSearch` (Exa optional) |
 | `agents/architect.md` | `mcp__exa__web_search_exa` | Built-in `WebSearch` (Exa optional) |
-| `agents/refactor-cleaner.md` | `mcp__memory__*` | Auto Memory (`~/.claude/projects/<hash>/memory/`) or plain log; memory MCP optional |
+| `agents/refactor-cleaner.md` | `mcp__memory__*` | Auto Memory (`~/.claude/projects/<project>/memory/`) or plain log; memory MCP optional |
 | `agents/doc-updater.md` | `mcp__memory__*` | Auto Memory or `git log`; memory MCP optional |
 | `agents/database-reviewer.md` | `mcp__memory__*` | Auto Memory or migration files; memory MCP optional |
 
@@ -211,7 +211,7 @@ No. The installer only inserts the 3 new v3.0 top-level fields if they are missi
 Copy the `github` entry from `mcp-servers.optional.json` into `mcp-servers.json`, re-add `"mcp__github__*"` to `permissions.allow` and the server name to `enabledMcpjsonServers`, then `./install.sh --upgrade`. Your existing tool calls resume working.
 
 **Q3. I want Auto Memory **and** the old `memory` MCP in parallel.**
-Supported. Auto Memory lives at `~/.claude/projects/<hash>/memory/`; adding the `memory` MCP back simply gives you a **team-shared knowledge graph** on top. They do not conflict.
+Supported. Auto Memory lives at `~/.claude/projects/<project>/memory/`; adding the `memory` MCP back simply gives you a **team-shared knowledge graph** on top. They do not conflict.
 
 **Q4. Will my v2.1 agent YAML still parse?**
 Yes. The 10 new fields are all optional. If the key is absent, the harness falls back to v2.1 semantics (no isolation, foreground, unlimited turns, agent-visible default tool-set, default model effort, no agent-scoped hooks).

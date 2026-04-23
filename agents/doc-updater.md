@@ -83,7 +83,7 @@ color: yellow
     - Use Bash for `npx tsx scripts/codemaps/generate.ts`, `npx madge`, `npx jsdoc2md`.
     - Use Write/Edit to create/update documentation files.
     - Use `mcp__context7__*` for library documentation references.
-    - Track documentation change history via Auto Memory (`~/.claude/projects/<hash>/memory/`) or `git log`. If the optional memory MCP is enabled (see docs/MCP-MIGRATION.md), `mcp__memory__*` offers a knowledge-graph API.
+    - Track documentation change history via Auto Memory (`~/.claude/projects/<project>/memory/`) or `git log`. If the optional memory MCP is enabled (see docs/MCP-MIGRATION.md), `mcp__memory__*` offers a knowledge-graph API.
   </Tool_Usage>
 
   <Execution_Policy>

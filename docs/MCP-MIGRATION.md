@@ -34,7 +34,7 @@ Cost: one extra npx spin-up on first invocation (server is stdio, so no idle cos
 
 ### `memory` → Auto Memory + optional MCP
 
-**What Auto Memory covers:** user facts, feedback corrections, project context, references to external systems. Stored at `~/.claude/projects/<hash>/memory/MEMORY.md` with typed entries (`user`, `feedback`, `project`, `reference`).
+**What Auto Memory covers:** user facts, feedback corrections, project context, references to external systems. Stored at `~/.claude/projects/<project>/memory/MEMORY.md` with typed entries (`user`, `feedback`, `project`, `reference`).
 
 **If you still need the MCP memory server** (team-shared knowledge graph, cross-project), add it from `mcp-servers.optional.json`:
 

@@ -5,7 +5,7 @@
 
 ## Event Catalog
 
-Claude Code v3.0 exposes **21 hookable events** across 7 categories. Install only what you need.
+Claude Code exposes **27 hookable events** across 7 categories (official catalog as of 2026-04-23). claude-forge ships examples for the 21 most common; the remaining 6 are listed below without examples — implement per project need. Install only what you need.
 
 | Category | Event | Trigger | Common Use | Example |
 |----------|-------|---------|------------|---------|
@@ -32,16 +32,31 @@ Claude Code v3.0 exposes **21 hookable events** across 7 categories. Install onl
 | Worktree | `WorktreeCreate` | New git worktree registered | Seed `.claude/` symlink, log | `examples/worktree-create.sh.example` |
 | Worktree | `WorktreeRemove` | Worktree torn down | Block if unmerged, cleanup | `examples/worktree-remove.sh.example` |
 
+### Additional events (spec-only, no example shipped)
+
+The following 6 events are defined in the official Claude Code spec (see [code.claude.com/docs/en/hooks](https://code.claude.com/docs/en/hooks)) but claude-forge v3.0 does not ship example handlers. Consult the spec if you need to wire them:
+
+| Event | Trigger (official) |
+|-------|-------------------|
+| `UserPromptExpansion` | A `@file` / `@folder` reference is expanded inline before tool dispatch |
+| `PermissionDenied` | User explicitly rejected a permission request |
+| `TeammateIdle` | A spawned teammate agent has been idle past threshold |
+| `Elicitation` | Hook or tool requests structured input from the user |
+| `ElicitationResult` | User response to an elicitation is captured |
+| `TaskStatusChanged` | Any `TaskUpdate` mutates a task's status field (not just completion) |
+
 ## Hook Handler Types
 
-Each hook entry specifies a `type`. v3.0 supports four:
+Each hook entry specifies a `type`. Claude Code supports four (Tier 0 source: [code.claude.com/docs/en/hooks](https://code.claude.com/docs/en/hooks), verified 2026-04-23):
 
 | Type | Purpose | Notes |
 |------|---------|-------|
-| `command` | Run a shell script (most common) | Takes `command`, optional `timeout` (ms) |
+| `command` | Run a shell script (most common) | Takes `command`, optional `timeout` (ms). Inline env-var assignment supported: `FOO=bar ~/.claude/hooks/foo.sh`. Default shell = bash, `powershell` opt-in on Windows. |
 | `http` | POST the payload to an HTTP endpoint | Takes `url`, `headers` — good for Zapier/webhooks |
-| `llm-prompt` | Invoke a nested LLM with a preset prompt | Takes `prompt`, `model` — used for "auto-review" style checks |
-| `mcp-tool` | Invoke an MCP tool directly | Takes `server`, `tool`, `arguments` |
+| `prompt` | Invoke a nested LLM with a preset prompt | Takes `prompt`, `model` — used for "auto-review" style checks |
+| `agent` | Invoke an MCP tool / subagent directly | Takes `server`, `tool`, `arguments` — or agent reference for Task dispatch |
+
+> **v3.0.1 correction**: Earlier revisions of this guide labelled the last two types as `llm-prompt` and `mcp-tool`. Those names are not in the official spec — the correct identifiers are `prompt` and `agent`. If any of your hooks reference the old names, rename them before upgrading.
 
 ## Matcher Schema
 

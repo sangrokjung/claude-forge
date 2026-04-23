@@ -79,7 +79,7 @@ color: blue
     - Use `mcp__supabase__apply_migration` for schema changes.
     - Use Read/Grep to examine SQL in application code.
     - Use `mcp__context7__*` for PostgreSQL/Supabase latest documentation.
-    - Track DB schema change history via Auto Memory (`~/.claude/projects/<hash>/memory/`) or migration files in the repo. If the optional memory MCP is enabled (see docs/MCP-MIGRATION.md), `mcp__memory__*` offers a knowledge-graph API.
+    - Track DB schema change history via Auto Memory (`~/.claude/projects/<project>/memory/`) or migration files in the repo. If the optional memory MCP is enabled (see docs/MCP-MIGRATION.md), `mcp__memory__*` offers a knowledge-graph API.
   </Tool_Usage>
 
   <Execution_Policy>
