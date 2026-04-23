@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "claude-forge",
-      "description": "Production-grade development environment for Claude Code with 11 specialized agents, 33 slash commands, 24 skills, 15 hooks + 9 opt-in examples (21 events), and 9 rules. Includes TDD workflow, security review, code review, architecture analysis, build error resolution, and Chrome DevTools performance audits. MCP servers pinned to stable versions.",
+      "description": "Production-grade development environment for Claude Code with 11 specialized agents, 33 slash commands, 24 skills, 15 hooks + 9 opt-in examples (21 events), 9 rules, and 4 MCP servers (playwright, context7, jina-reader, chrome-devtools pinned at 0.23.0). Includes TDD workflow, security review, code review, architecture analysis, build error resolution, and Chrome DevTools Lighthouse / Core Web Vitals audits.",
       "version": "3.0.1",
       "author": {
         "name": "Sangrok Jung",
