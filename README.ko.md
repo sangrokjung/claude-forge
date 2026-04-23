@@ -27,13 +27,13 @@
   <a href="README.md">English</a>
 </p>
 
-> 🎉 **v3.0 공개 (2026년 4월)** — Anthropic 2026 표준에 정렬: Hooks 21 이벤트 · Subagent frontmatter v2 · Skills/Commands 하이브리드 정책 · MCP 최소 구성(3개). 상세: [MIGRATION.md](MIGRATION.md) / [MIGRATION.ko.md](MIGRATION.ko.md).
+> 🎉 **v3.0.1 공개 (2026년 4월)** — Claude Code 공식 플러그인으로 설치 가능: `/plugin install sangrokjung/claude-forge`. Anthropic 2026 표준 정렬(Hooks 21+ 이벤트 · Subagent frontmatter v2 · Skills/Commands 하이브리드 정책) + MCP 최소 구성(4개: playwright · context7 · jina-reader · chrome-devtools@0.23.0). 상세: [MIGRATION.md](MIGRATION.md) / [MIGRATION.ko.md](MIGRATION.ko.md), [Release v3.0.1](https://github.com/sangrokjung/claude-forge/releases/tag/v3.0.1).
 
 ---
 
 ## Claude Forge란?
 
-Claude Forge는 **Claude Code**를 기본 CLI에서 **완전한 개발 환경**으로 변환합니다. 설치 한 번으로 **11개 전문 에이전트**(Opus 6 + Sonnet 5, frontmatter v2), **33개 슬래시 커맨드**, **24개 스킬 워크플로우**(16 native + 8 commands에서 이전), **15개 자동화 훅 + 9개 opt-in 예제**(21 lifecycle 이벤트 커버), **9개 규칙 파일**, **3개 MCP 서버**(minimal, 8개 이상 optional)가 모두 연결되어 즉시 사용 가능합니다.
+Claude Forge는 **Claude Code**를 기본 CLI에서 **완전한 개발 환경**으로 변환합니다. 설치 한 번으로 **11개 전문 에이전트**(Opus 6 + Sonnet 5, frontmatter v2), **33개 슬래시 커맨드**, **24개 스킬 워크플로우**(16 native + 8 commands에서 이전), **15개 자동화 훅 + 9개 opt-in 예제**(21 lifecycle 이벤트 커버), **9개 규칙 파일**, **4개 MCP 서버**(minimal · chrome-devtools 포함, 7개 이상 optional)가 모두 연결되어 즉시 사용 가능합니다.
 
 > oh-my-zsh가 터미널을 강화하듯, Claude Forge는 AI 코딩 어시스턴트를 **파워 유저 도구**로 업그레이드합니다.
 
@@ -62,10 +62,22 @@ claude
 | **Hooks 21 이벤트** | 라이프사이클 훅이 5개에서 21개로 확장되었습니다. Opt-in 샘플은 [`hooks/examples/`](hooks/examples/)에, 전체 카탈로그는 [`hooks/README.md`](hooks/README.md)에 있습니다. |
 | **Subagent Frontmatter v2** | 10개 선택 필드 추가: `isolation`, `background`, `memory`, `maxTurns`, `skills`, `mcpServers`, `effort`, `hooks`, `permissionMode`, `disallowedTools`. 스키마: [`reference/agent-schema.json`](reference/agent-schema.json). 상세: [`docs/AGENT-FRONTMATTER-V2.md`](docs/AGENT-FRONTMATTER-V2.md). |
 | **Skills/Commands 하이브리드 정책** | 경계를 [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md)에 명문화. 디렉토리 형태의 커맨드 8개가 `skills/`로 이전되며, 기존 경로는 심볼릭 링크로 호환성 유지. |
-| **MCP 최소 구성 (3개)** | 기본 서버를 `playwright` · `context7` · `jina-reader`로 축소. 레거시 전체 세트는 [`mcp-servers.optional.json`](mcp-servers.optional.json)에 보존. 전환 레시피: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md). |
+| **MCP 최소 구성 (v3.0.1, 4개)** | 기본 서버: `playwright` · `context7` · `jina-reader` · `chrome-devtools-mcp@0.23.0` (Google ChromeDevTools 공식, Apache-2.0 — Lighthouse/Core Web Vitals 감사를 위해 v3.0.1에서 승격). 레거시 전체 세트는 [`mcp-servers.optional.json`](mcp-servers.optional.json)에 보존. 전환 레시피: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md). 결정 근거: [`docs/adr/ADR-001-mcp-default-set.md`](docs/adr/ADR-001-mcp-default-set.md). |
 | **CLAUDE.md 템플릿 + @import** | [`setup/CLAUDE.md.template`](setup/CLAUDE.md.template)과 [`docs/CLAUDE-MD-GUIDE.md`](docs/CLAUDE-MD-GUIDE.md) 신규. 200줄 원칙과 `@import` 패턴으로 모듈형 프로젝트 지침을 구성합니다. |
 | **settings.json 2026 필드** | 신규 필드: `tui` (깜박임 없는 렌더링), `disableSkillShellExecution` (샌드박싱), `enabledMcpjsonServers` (명시적 허용 목록). |
 | **원커맨드 업그레이드** | `./install.sh --upgrade` — 기존 v2.1 설치를 백업 및 diff 미리보기와 함께 안전하게 마이그레이션합니다. |
+
+### 🔧 v3.0.1 업데이트 (패치)
+
+| 변경 | 설명 |
+|:-----|:-----|
+| **공식 플러그인 설치** | `/plugin install sangrokjung/claude-forge`가 바로 동작합니다. [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) + [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json) 모두 `3.0.1`로 통일. CI `marketplace-schema` 잡이 버전 drift를 자동 차단합니다. |
+| **Chrome DevTools 승격** | 기본 4-서버 MCP 세트에 Lighthouse / Core Web Vitals / 메모리 스냅샷이 합류. `chrome-devtools-mcp@0.23.0`로 버전 고정(supply-chain 강화). |
+| **`hooks/_lib/timing.sh`** | SessionEnd 훅의 실행 시점을 `~/.claude/logs/hook-timing.jsonl`(권한 600)에 기록하는 래퍼 신규. `async: true` 훅의 실제 병렬성을 사후 검증할 수 있음. 오버헤드 약 35 ms. |
+| **CI 트리거 확장** | [`.github/workflows/validate.yml`](.github/workflows/validate.yml)가 전 PR과 `main`/`feat/**`/`fix/**`/`chore/**`/`docs/**`/`ci/**` 푸시에서 실행됩니다(이전에는 `main`만). 총 6개 job. |
+| **Tier 0 스펙 정합성 정정** | 훅 타입을 공식 규격에 맞춤(`command`/`http`/`prompt`/`agent` — 이전 `llm-prompt`/`mcp-tool`). `timeout` 단위 **초**로 정정(이전 ms). Auto Memory 경로 `~/.claude/projects/<project>/memory/`(이전 `<hash>`). |
+| **신규 거버넌스 문서** | [`docs/adr/ADR-001-mcp-default-set.md`](docs/adr/ADR-001-mcp-default-set.md)(MCP 기본 세트 결정 기록, MADR) · [`docs/SETTINGS-COMPATIBILITY.md`](docs/SETTINGS-COMPATIBILITY.md)(UNVERIFIED 필드 추적) · [`docs/MARKETPLACE-SUBMISSION.md`](docs/MARKETPLACE-SUBMISSION.md)(공식 디렉토리 제출 패킷). |
+| **4-방향 독립 회의적 리뷰** | super-research(Tier 0 docs) · security-reviewer · architect · codex-reviewer가 병렬로 패치를 검증. 병합 전 11개 블로킹 이슈 해소. |
 
 ### 🚨 Breaking Changes
 
@@ -205,7 +217,7 @@ graph LR
 | **스킬** | 15+ | `build-system` `security-pipeline` `eval-harness` `team-orchestrator` `session-wrap` ... (+커맨드에서 이전 8개) |
 | **훅** | 18 + 9 예제 | 보안 방어 6개 + 유틸리티 12개(built-in) + 21 lifecycle 이벤트 샘플 9개(opt-in) |
 | **규칙** | 9 | `coding-style` `security` `git-workflow` `golden-principles` `agents-v2` `verification` ... |
-| **MCP 서버** | 3 (minimal) | `playwright` `context7` `jina-reader` — 8개 이상은 [`mcp-servers.optional.json`](mcp-servers.optional.json) |
+| **MCP 서버** | 4 (minimal) | `playwright` `context7` `jina-reader` `chrome-devtools@0.23.0` — 7개 이상은 [`mcp-servers.optional.json`](mcp-servers.optional.json) |
 
 ---
 
@@ -265,13 +277,14 @@ cd claude-forge && ./install.sh
 
 ### MCP 서버 설정
 
-v3.0은 **기본 3개**만 탑재합니다. 나머지는 [`mcp-servers.optional.json`](mcp-servers.optional.json)에서 opt-in으로 복원합니다. 레시피: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md).
+v3.0.1은 **기본 4개**를 탑재합니다. 나머지는 [`mcp-servers.optional.json`](mcp-servers.optional.json)에서 opt-in으로 복원합니다. 레시피: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md). 근거: [`docs/adr/ADR-001-mcp-default-set.md`](docs/adr/ADR-001-mcp-default-set.md).
 
 | 서버 | 기본 여부 | API 키 필요 | 설명 |
 |:-----|:--------:|:----------:|:-----|
 | **playwright** | ✅ | - | 브라우저 자동화 / E2E |
 | **context7** | ✅ | - | 실시간 라이브러리 문서 조회 |
 | **jina-reader** | ✅ | - | URL → 마크다운 변환 |
+| **chrome-devtools** | ✅ | - | Lighthouse / Core Web Vitals / 메모리 스냅샷 (Google ChromeDevTools 공식, `@0.23.0` 핀) |
 | **memory** | opt-in | - | 영속적 지식 그래프 (Auto Memory로 대체 가능) |
 | **fetch** | opt-in | - | 웹 콘텐츠 가져오기 (`uvx` 필요) |
 | **github** | opt-in | `GITHUB_PERSONAL_ACCESS_TOKEN` | 리포/PR/이슈 관리 (`gh` CLI로 대체 가능) |
@@ -365,9 +378,10 @@ claude-forge/
   ├── skills/                    다단계 스킬 워크플로우 (15+, 하이브리드 정책)
   ├── install.sh                 macOS/Linux 설치 (--upgrade 지원)
   ├── install.ps1                Windows 설치 (--upgrade 지원)
-  ├── mcp-servers.json           MCP 기본 설정 (3 minimal)
-  ├── mcp-servers.optional.json  MCP 선택 서버 (memory/exa/github/fetch...)
-  ├── plugin.json                플러그인 매니페스트 (3.0.0)
+  ├── mcp-servers.json           MCP 기본 설정 (4 minimal)
+  ├── mcp-servers.optional.json  MCP 선택 서버 (memory/exa/github/fetch/time/...)
+  ├── .claude-plugin/plugin.json 플러그인 매니페스트 (3.0.1)
+  ├── .claude-plugin/marketplace.json  마켓플레이스 엔트리 (3.0.1)
   ├── settings.json              Claude Code 설정 (2026 필드)
   ├── MIGRATION.md               v2.1 → v3.0 마이그레이션 가이드 (EN)
   ├── MIGRATION.ko.md            v2.1 → v3.0 마이그레이션 가이드 (KO)
@@ -532,13 +546,14 @@ claude-forge/
 
 ## 🔌 MCP 서버
 
-`mcp-servers.json`에는 **기본 3개**, `mcp-servers.optional.json`에는 **선택 서버**가 사전 구성되어 있습니다 -- `./install.sh` 또는 `claude mcp add`로 설치합니다. 전환 레시피: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md).
+`mcp-servers.json`에는 **기본 4개**, `mcp-servers.optional.json`에는 **선택 서버**가 사전 구성되어 있습니다 -- `./install.sh` 또는 `claude mcp add`로 설치합니다. 전환 레시피: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md).
 
 | 서버 | 기본 여부 | 용도 |
 |:-----|:--------:|:-----|
 | **playwright** | ✅ | 브라우저 자동화 / E2E |
 | **context7** | ✅ | 실시간 라이브러리 문서 조회 |
 | **jina-reader** | ✅ | URL → 마크다운 변환 |
+| **chrome-devtools** | ✅ | Lighthouse / Core Web Vitals / 메모리 스냅샷 (`@0.23.0`) |
 | **memory** | opt-in | 영속적 지식 그래프 |
 | **exa** | opt-in | AI 기반 웹 검색 |
 | **github** | opt-in | 리포/PR/이슈 관리 |
