@@ -2,9 +2,10 @@ name: Validate
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'feat/**', 'fix/**', 'chore/**', 'docs/**', 'ci/**']
   pull_request:
-    branches: [main]
+    # no base-branch restriction — run on every PR regardless of target
+  workflow_dispatch:
 
 jobs:
   json:
