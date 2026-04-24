@@ -48,22 +48,33 @@ v2.1 users in place with backup + diff preview.
 
 ## 4. Installation paths
 
-### Direct (available today)
+### Plugin install (available today, partial coverage)
+
+Two-step official syntax — register the marketplace first, then install the plugin:
 
 ```
-/plugin install sangrokjung/claude-forge
+/plugin marketplace add sangrokjung/claude-forge
+/plugin install claude-forge
 ```
 
-### Via this marketplace (after approval)
+This path delivers Commands + (most) Skills. Agents / Hooks / Rules / MCP / statusLine
+currently require the classic `install.sh` — see
+[`docs/PLUGIN-VS-INSTALL-SH.md`](./PLUGIN-VS-INSTALL-SH.md) for the full matrix. This is
+a Claude Code loader limitation, not a repository limitation.
+
+### Via `claude-plugins-official` (after approval)
+
+Once accepted into the community directory:
 
 ```
 /plugin install claude-forge@claude-plugins-official
 ```
 
-### Legacy `install.sh` (existing users)
+### Legacy `install.sh` (full coverage, recommended for production use)
 
-Symlink-based install into `~/.claude/`. Retained for people who also want shell aliases
-(`cc`, `ccr`), the CC CHIPS status bar submodule, or bootstrapped MCP credentials.
+Symlink-based install into `~/.claude/`. Still the only path that wires up agents, hooks,
+rules, the 4 MCP servers, statusLine (CC CHIPS submodule), and `settings.json` env
+blocks. This is what most users should actually run.
 
 ## 5. Security & quality review summary
 
@@ -109,8 +120,9 @@ post-fix state.
 Before opening the submission, every box below must be checked in the current
 `main` (or the release tag being submitted).
 
-- [ ] README `Quick Start` shows `/plugin install sangrokjung/claude-forge` as the primary
-      installation path.
+- [ ] README `Quick Start` shows the two-step plugin install (`/plugin marketplace add
+      sangrokjung/claude-forge` then `/plugin install claude-forge`) and clearly discloses
+      that Agents / Hooks / Rules / MCP / statusLine currently require `./install.sh`.
 - [ ] `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` agree on the
       same `version` (CI job `marketplace-schema` enforces this).
 - [ ] `version` follows SemVer `X.Y.Z`.
@@ -134,8 +146,11 @@ Maintainer: Sangrok Jung (@sangrokjung)
 License: MIT
 Category: development
 
-Installable today via:
-  /plugin install sangrokjung/claude-forge
+Installable today via (two-step, partial coverage):
+  /plugin marketplace add sangrokjung/claude-forge
+  /plugin install claude-forge
+(Agents / Hooks / Rules / MCP / statusLine still require ./install.sh —
+ see docs/PLUGIN-VS-INSTALL-SH.md for the complete matrix.)
 
 Short description:
   oh-my-zsh for Claude Code — 11 agents, 33 commands, 24 skills, 15 hooks +
@@ -168,8 +183,9 @@ Additional context:
 
 ## 8. Post-approval tasks
 
-- [ ] Update README to mention both install paths (`sangrokjung/claude-forge` and
-      `claude-forge@claude-plugins-official`).
+- [ ] Update README to mention the official-directory install path
+      (`claude-forge@claude-plugins-official`) alongside the existing self-hosted
+      marketplace path.
 - [ ] Announce via GitHub Discussions / release notes.
 - [ ] Add a CI job that opens an issue whenever a new minor version lands in this repo
       but hasn't been proposed as a PR to `anthropics/claude-plugins-official`.

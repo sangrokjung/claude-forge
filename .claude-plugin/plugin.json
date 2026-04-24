@@ -28,12 +28,5 @@
   "engines": {
     "claude-code": ">=2.1.110"
   },
-  "minClaudeCodeVersion": "2.1.110",
-  "agents": "agents/",
-  "skills": "skills/",
-  "hooks": "hooks/",
-  "commands": "commands/",
-  "rules": "rules/",
-  "scripts": "scripts/",
-  "mcpServers": "./mcp-servers.json"
+  "minClaudeCodeVersion": "2.1.110"
 }
