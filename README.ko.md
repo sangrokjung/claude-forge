@@ -133,7 +133,7 @@ CC CHIPS 서브모듈은 옵션이며, 비어 있으면 설치기가 한 줄 안
 
 ### 왜 v3.0인가
 
-2026년 Anthropic Claude Code 표준이 크게 진화했습니다(Skills/Commands 통합, Hooks 21 이벤트, Subagent frontmatter 확장). v3.0은 이 표준에 완전 정렬하면서, 동시에 **의존성을 6 MCP → 3 MCP로 줄여** 신규 사용자 진입 장벽을 낮추고, dotclaude 운영 경험(보안 allowlist, breakage-safe migration)을 반영했습니다. 기존 v2.1 사용자는 `./install.sh --upgrade` 한 줄로 이동 가능합니다.
+2026년 Anthropic Claude Code 표준이 크게 진화했습니다(Skills/Commands 통합, Hooks 21 이벤트, Subagent frontmatter 확장). v3.0은 이 표준에 완전 정렬하면서, 동시에 **기본 MCP 의존성을 6개 → 4개로 축소**(v3.0은 3개 기본, v3.0.1에서 `chrome-devtools-mcp@0.23.0` 기본 세트로 승격) 신규 사용자 진입 장벽을 낮추고, dotclaude 운영 경험(보안 allowlist, breakage-safe migration)을 반영했습니다. 기존 v2.1 사용자는 `./install.sh --upgrade` 한 줄로 이동 가능합니다.
 
 ### 처음이신가요?
 
