@@ -274,8 +274,19 @@ link_files() {
     fi
 
     # Directories
+    # NOTE: cc-chips is a git submodule; if the user cloned without
+    # --recurse-submodules the directory exists but is empty, which would
+    # create a broken symlink that statusLine would then dereference. Skip
+    # with a one-line hint in that case so the rest of the install still
+    # succeeds.
     for dir in agents rules commands scripts skills hooks cc-chips cc-chips-custom; do
         if [ -d "$REPO_DIR/$dir" ]; then
+            if [ "$dir" = "cc-chips" ] && [ -z "$(ls -A "$REPO_DIR/$dir" 2>/dev/null)" ]; then
+                echo -e "  ${YELLOW}!${NC} Skipping cc-chips/: submodule not initialized."
+                echo "    Run: git submodule update --init cc-chips"
+                echo "    (statusLine chip renderer will be disabled until then.)"
+                continue
+            fi
             if [ "$DRY_RUN" -eq 1 ]; then
                 echo "  [DRY-RUN] would refresh $dir/"
                 continue
