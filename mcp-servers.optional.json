@@ -4,9 +4,9 @@
     "memory": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "args": ["-y", "@modelcontextprotocol/server-memory@2026.1.26"],
       "env": {},
-      "description": "Knowledge graph across sessions. NOTE: Claude Code 2026 ships Auto Memory (~/.claude/projects/.../memory/) — consider before adding.",
+      "description": "Knowledge graph across sessions. NOTE: Claude Code 2026 ships Auto Memory (~/.claude/projects/.../memory/) — consider before adding. Pinned to 2026.1.26; bump manually after audit.",
       "when_to_use": "Team-shared knowledge graph, cross-project memory, or when Auto Memory is insufficient."
     },
     "exa": {
@@ -18,11 +18,11 @@
     "github": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "args": ["-y", "@modelcontextprotocol/server-github@2025.4.8"],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
       },
-      "description": "GitHub repo/PR/issue via MCP.",
+      "description": "GitHub repo/PR/issue via MCP. Pinned to 2025.4.8; bump manually after audit.",
       "when_to_use": "When gh CLI is not installed or you prefer structured tool calls. Most users can use gh CLI via Bash directly."
     },
     "fetch": {
@@ -42,19 +42,19 @@
     "sequential-thinking": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
-      "description": "Structured multi-step reasoning tool.",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking@2025.12.18"],
+      "description": "Structured multi-step reasoning tool. Pinned to 2025.12.18; bump manually after audit.",
       "when_to_use": "Complex planning or chain-of-thought intensive tasks. Often redundant with Claude's own reasoning — measure before adding."
     },
     "supabase": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@supabase/mcp-server-supabase"],
+      "args": ["-y", "@supabase/mcp-server-supabase@0.7.0"],
       "env": {
         "SUPABASE_URL": "${SUPABASE_URL}",
         "SUPABASE_SERVICE_ROLE_KEY": "${SUPABASE_SERVICE_ROLE_KEY}"
       },
-      "description": "Supabase DB management (SQL, migrations, edge functions).",
+      "description": "Supabase DB management (SQL, migrations, edge functions). Pinned to 0.7.0; bump manually after audit.",
       "when_to_use": "Supabase projects — alternative to direct psql/CLI."
     }
   },

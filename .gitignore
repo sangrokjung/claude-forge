@@ -31,3 +31,4 @@ venv/
 # Archive
 archive/
 reports/
+.claude/

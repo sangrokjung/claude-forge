@@ -11,7 +11,7 @@
   "github": {
     "type": "stdio",
     "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-github"],
+    "args": ["-y", "@modelcontextprotocol/server-github@2025.4.8"],
     "env": {
       "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
     }
@@ -19,6 +19,6 @@
   "jina-reader": {
     "type": "stdio",
     "command": "npx",
-    "args": ["-y", "jina-mcp-tools"]
+    "args": ["-y", "jina-mcp-tools@1.2.3"]
   }
 }
