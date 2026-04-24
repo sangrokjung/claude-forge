@@ -225,49 +225,32 @@ closed before tagging the release.
 
 ### Step 3 — Submission details
 
-(Fields depend on the UI — typical fields include maintainer, license
-confirmation, "why does this belong here", and free-text context.
-Suggested values below.)
+The actual form has three short input blocks. Field-by-field values:
 
-**Maintainer**: `Sangrok Jung (@sangrokjung)`
+**지원 플랫폼 (Supported platforms)**
+- ☑ **Claude Code** — 체크 (유지)
+- ☐ **Claude Cowork** — **체크하지 말 것** (테스트 미수행; 안내문이 "제출하기
+  전에 이 플랫폼에서 플러그인이 작동하는지 테스트하세요"로 명시)
 
-**License confirmation**: `MIT` (LICENSE file at repo root)
-
-**왜 이 플러그인을 커뮤니티 디렉토리에 제출하나요? (Why submit?)**
+**라이선스 유형 (License type)**
 ```
-Provides a vetted, actively maintained baseline for developers who want to
-operate Claude Code at production quality without hand-assembling agents,
-commands, skills, and hooks. It fills the same role oh-my-zsh fills for zsh.
-A CI workflow (.github/workflows/validate.yml) enforces JSON syntax, plugin
-manifest schema, version drift, SemVer format, agent/skill frontmatter,
-installer dry-run, and secret scanning, so the directory entry is kept in
-sync automatically as new releases ship. CONTRIBUTING.md documents a
-"Publishing to the Plugin Directory" section with a pre-release QA
-checklist.
+MIT
 ```
 
-**추가 컨텍스트 (Additional context)**
-```
-Full submission packet with verification evidence for every reviewer item:
-https://github.com/sangrokjung/claude-forge/blob/main/docs/MARKETPLACE-SUBMISSION.md
+**개인정보 처리방침 URL (Privacy policy URL)**
+→ **공란으로 둘 것** (선택 항목, `*` 표시 없음)
 
-Install-path comparison (explains exactly what /plugin install covers vs
-./install.sh):
-https://github.com/sangrokjung/claude-forge/blob/main/docs/PLUGIN-VS-INSTALL-SH.md
+Why: claude-forge is a client-side tool distribution (slash commands,
+skills, hooks, agents). It does not collect or process personal data on
+any server, so no privacy policy URL exists. Putting a made-up URL or
+substituting `SECURITY.md` (which is a vulnerability-disclosure page, not
+a privacy policy) would be inaccurate. The field is optional.
 
-MCP server migration & license attribution:
-https://github.com/sangrokjung/claude-forge/blob/main/docs/MCP-MIGRATION.md
+**이메일 주소 (Email address)** *
+Pre-filled from the user's Anthropic account. Keep as-is.
 
-Current release: v3.0.1 (tagged + GitHub Release, 2026-04-23).
-All 11 npm MCP packages SemVer-pinned: playwright@0.0.70, context7@2.1.8,
-jina-mcp-tools@1.2.3, chrome-devtools@0.23.0, server-memory@2026.1.26,
-server-github@2025.4.8, sequential-thinking@2025.12.18,
-mcp-server-supabase@0.7.0.
-
-plugin.json follows the official Claude Code plugin manifest spec exactly
-(no custom fields — verified against reference plugins superpowers v5.0.7
-and claude-hud v0.0.11).
-```
+### Final step
+Click **"검토 요청 제출" (Submit for review)** at the bottom of Step 3.
 
 ### Legacy combined template (kept for reference / non-Korean forms)
 
