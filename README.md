@@ -137,7 +137,7 @@ servers come from `.mcp.json` / `mcp-servers.json`, which only Option 2 wires up
 
 ### Why v3.0?
 
-The 2026 Anthropic Claude Code standard evolved significantly (Skills/Commands integration, 21 hook events, expanded subagent frontmatter). v3.0 aligns fully with that standard, **cuts dependencies from 6 MCP servers to 3** to lower the barrier for new users, and incorporates dotclaude operational experience (security allowlists, breakage-safe migration). Existing v2.1 users can migrate with a single line: `./install.sh --upgrade`.
+The 2026 Anthropic Claude Code standard evolved significantly (Skills/Commands integration, 21 hook events, expanded subagent frontmatter). v3.0 aligns fully with that standard, **cuts default MCP dependencies from 6 down to 4** (v3.0 shipped a 3-server minimum; v3.0.1 promoted `chrome-devtools-mcp@0.23.0` into the default set) to lower the barrier for new users, and incorporates dotclaude operational experience (security allowlists, breakage-safe migration). Existing v2.1 users can migrate with a single line: `./install.sh --upgrade`.
 
 ### New here?
 
