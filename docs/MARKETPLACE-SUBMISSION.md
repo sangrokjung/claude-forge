@@ -146,7 +146,130 @@ Every box below has been verified against `main` at commit `51bef80` (2026-04-24
       `gh release view v3.0.1`.
 - [x] Latest 4-way skeptical review results are linked or summarized (see section 5).
 
-## 7. Submission body (template — copy/paste into the form)
+## 7. Submission form — field-by-field values (clau.de/plugin-directory-submission)
+
+The form has three steps. Below is the exact value to paste into every required field.
+
+### Step 1 — Introduction
+No input required (informational step).
+
+### Step 2 — Plugin information
+
+**플러그인 링크 (Plugin link)** *
+```
+https://github.com/sangrokjung/claude-forge
+```
+
+**플러그인 홈페이지 (Plugin homepage)** (optional — reuse GitHub URL)
+```
+https://github.com/sangrokjung/claude-forge
+```
+
+**플러그인 이름 (Plugin name)** *
+```
+claude-forge
+```
+
+**플러그인 설명 (Plugin description)** *
+```
+claude-forge is an "oh-my-zsh for Claude Code" — a cohesive, production-grade
+distribution of 11 specialized agents, 33 slash commands, 24 skills, 15 hooks
+(+ 9 opt-in examples covering 21 lifecycle events), 9 rule files, and a minimal
+4-server MCP set (playwright, context7, jina-reader, chrome-devtools pinned at
+0.23.0). It targets individual developers and small teams who want a security-
+reviewed baseline without hand-assembling the 2026 Anthropic Claude Code
+standard (Skills/Commands split, 21 hook events, subagent frontmatter v2).
+One install gives the complete set, and `install.sh --upgrade` migrates v2.1
+users in place with backup + diff preview.
+
+Plugin install path (/plugin marketplace add → /plugin install) currently
+covers Commands and most Skills. Agents / Hooks / Rules / 4 MCP servers /
+statusLine are delivered via ./install.sh because the Claude Code plugin
+loader does not yet surface those resource categories. The repository
+documents the trade-off explicitly in docs/PLUGIN-VS-INSTALL-SH.md so users
+and reviewers can pick the right entrypoint.
+
+All 11 npm-loaded MCP packages are SemVer-pinned (no `@latest`), and the
+plugin manifest follows the official spec exactly (no custom fields).
+A 4-way independent skeptical review (super-research / security / architect /
+codex) ran against the 3.0.1 cut on 2026-04-23; all blocking issues were
+closed before tagging the release.
+```
+
+**사용 사례 예시 (Use case examples)** *
+```
+예시 1: 새 기능을 TDD로 구현
+  /plan → /tdd → /code-review → /handoff-verify → /commit-push-pr → /sync
+  (claude-forge ships /plan, /tdd, /code-review, /handoff-verify, /commit-push-pr,
+   /sync as slash commands, and /auto wraps the whole loop for autonomous runs.)
+
+예시 2: 이미 존재하는 PR의 품질 검증
+  /handoff-verify 또는 /ultrareview
+  (tdd-guide / code-reviewer / security-reviewer / architect / database-reviewer
+   서브에이전트가 독립 컨텍스트에서 병렬 리뷰를 수행하고 상충되는 verdict는
+   합의 절차를 따름.)
+
+예시 3: Lighthouse / Core Web Vitals 정량 진단
+  chrome-devtools-mcp@0.23.0 가 기본 세트에 포함되어 있어 /ad-analysis 또는
+  performance-reviewer 서브에이전트를 통해 LCP / INP / CLS / TBT 측정과 퍼포먼스
+  트레이스 수집을 바로 수행. 각 호출은 비싸기 때문에 permissions.allow 가 아닌
+  ask 게이트로 의도적으로 승인을 받도록 설계.
+
+예시 4: 레거시 v2.1 하네스에서 2026 표준으로 안전 마이그레이션
+  ./install.sh --upgrade 한 줄로 v2.1 → v3.0.1 이행. 사전에 ~/.claude 를
+  백업하고 diff 프리뷰 후 사용자 확인을 받음. MCP 기본 세트가 6→4 로 축소
+  되었고 (Auto Memory / gh CLI / WebSearch / jina-reader fallback 로 대체),
+  v2.1 사용자가 의존하던 mcp-servers.optional.json 에서 필요한 서버를 선택
+  복원할 수 있는 경로 제공.
+```
+
+### Step 3 — Submission details
+
+(Fields depend on the UI — typical fields include maintainer, license
+confirmation, "why does this belong here", and free-text context.
+Suggested values below.)
+
+**Maintainer**: `Sangrok Jung (@sangrokjung)`
+
+**License confirmation**: `MIT` (LICENSE file at repo root)
+
+**왜 이 플러그인을 커뮤니티 디렉토리에 제출하나요? (Why submit?)**
+```
+Provides a vetted, actively maintained baseline for developers who want to
+operate Claude Code at production quality without hand-assembling agents,
+commands, skills, and hooks. It fills the same role oh-my-zsh fills for zsh.
+A CI workflow (.github/workflows/validate.yml) enforces JSON syntax, plugin
+manifest schema, version drift, SemVer format, agent/skill frontmatter,
+installer dry-run, and secret scanning, so the directory entry is kept in
+sync automatically as new releases ship. CONTRIBUTING.md documents a
+"Publishing to the Plugin Directory" section with a pre-release QA
+checklist.
+```
+
+**추가 컨텍스트 (Additional context)**
+```
+Full submission packet with verification evidence for every reviewer item:
+https://github.com/sangrokjung/claude-forge/blob/main/docs/MARKETPLACE-SUBMISSION.md
+
+Install-path comparison (explains exactly what /plugin install covers vs
+./install.sh):
+https://github.com/sangrokjung/claude-forge/blob/main/docs/PLUGIN-VS-INSTALL-SH.md
+
+MCP server migration & license attribution:
+https://github.com/sangrokjung/claude-forge/blob/main/docs/MCP-MIGRATION.md
+
+Current release: v3.0.1 (tagged + GitHub Release, 2026-04-23).
+All 11 npm MCP packages SemVer-pinned: playwright@0.0.70, context7@2.1.8,
+jina-mcp-tools@1.2.3, chrome-devtools@0.23.0, server-memory@2026.1.26,
+server-github@2025.4.8, sequential-thinking@2025.12.18,
+mcp-server-supabase@0.7.0.
+
+plugin.json follows the official Claude Code plugin manifest spec exactly
+(no custom fields — verified against reference plugins superpowers v5.0.7
+and claude-hud v0.0.11).
+```
+
+### Legacy combined template (kept for reference / non-Korean forms)
 
 ```
 Plugin name: claude-forge
