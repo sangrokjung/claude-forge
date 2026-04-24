@@ -28,7 +28,7 @@
   <a href="README.ko.md">한국어</a>
 </p>
 
-> 🎉 **v3.0.1 released (April 2026)** — installable as an official Claude Code plugin: `/plugin install sangrokjung/claude-forge`. Anthropic 2026 standard alignment (Hooks 21+ events · Subagent frontmatter v2 · Skills/Commands hybrid policy) plus a 4-server MCP minimum (playwright · context7 · jina-reader · chrome-devtools@0.23.0). See [MIGRATION.md](MIGRATION.md) / [MIGRATION.ko.md](MIGRATION.ko.md) and [Release v3.0.1](https://github.com/sangrokjung/claude-forge/releases/tag/v3.0.1).
+> 🎉 **v3.0.1 released (April 2026)** — installable as a Claude Code plugin via `/plugin marketplace add sangrokjung/claude-forge` then `/plugin install claude-forge`. Anthropic 2026 standard alignment (Hooks 21+ events · Subagent frontmatter v2 · Skills/Commands hybrid policy) plus a 4-server MCP minimum (playwright · context7 · jina-reader · chrome-devtools@0.23.0). See [MIGRATION.md](MIGRATION.md) / [MIGRATION.ko.md](MIGRATION.ko.md) and [Release v3.0.1](https://github.com/sangrokjung/claude-forge/releases/tag/v3.0.1).
 
 ---
 
@@ -42,40 +42,66 @@ Claude Forge is an open-source development environment for Claude Code that prov
 
 ## ⚡ Quick Start
 
-### Option 1 — Claude Code Plugin (Recommended, v3.0.1+)
+### Option 1 — Claude Code Plugin (partial coverage, v3.0.1+)
 
-Inside Claude Code:
+Inside Claude Code, register the marketplace once, then install the plugin:
 
 ```
-/plugin install sangrokjung/claude-forge
+/plugin marketplace add sangrokjung/claude-forge
+/plugin install claude-forge
 ```
 
-This installs claude-forge under `~/.claude/plugins/cache/sangrokjung/claude-forge/` and
-wires up 11 agents · 33 commands · 24 skills · 15 hooks · 9 rules · 4 MCP servers through
-the plugin manifest (`.claude-plugin/plugin.json`). Updates via `/plugin update`.
+Update later via `/plugin update claude-forge` (or from the `/plugin` UI).
 
-Alternatively you can add claude-forge to `~/.claude/plugins/known_marketplaces.json` as a
-`github` source (`{ "source": { "source": "github", "repo": "sangrokjung/claude-forge" } }`)
-to see it in the `/plugin` Discover tab.
+> ⚠️ **Partial coverage — please read before choosing.** The Claude Code plugin loader
+> currently recognizes `commands/` and (most of) `skills/` but does **not** auto-wire
+> `agents/`, `hooks/`, `rules/`, `statusLine`, `settings.json` env blocks, or the entries
+> inside `mcp-servers.json`. That is a loader limitation, not a claude-forge one — see
+> [`docs/PLUGIN-VS-INSTALL-SH.md`](docs/PLUGIN-VS-INSTALL-SH.md) for the full matrix. If
+> you want every resource (agents, hooks, rules, MCP, statusLine) wired up, use
+> **Option 2** below.
 
-### Option 2 — Classic install.sh (existing users, full symlink install)
+### Option 2 — Classic `install.sh` (full symlink install, recommended)
 
 ```bash
-# 1. Clone
+# 1. Clone (submodules optional — only needed for the CC CHIPS status bar)
 git clone --recurse-submodules https://github.com/sangrokjung/claude-forge.git
 cd claude-forge
 
-# 2. Install (creates symlinks to ~/.claude)
+# 2. Install (creates symlinks under ~/.claude)
 ./install.sh
 
 # 3. Launch Claude Code
 claude
 ```
 
-`install.sh` symlinks everything to `~/.claude/`, so `git pull` updates instantly.
-This legacy path also provisions extras that plugin-mode doesn't (shell aliases, CC CHIPS
-status bar submodule, optional MCP bootstrap). New users should prefer Option 1 unless
-they want a global install.
+`install.sh` symlinks every resource into `~/.claude/`, so `git pull` updates instantly,
+and it is the only install path that delivers agents, hooks, rules, the 4 MCP servers,
+and the status bar in one shot. Clone without `--recurse-submodules` still works: the CC
+CHIPS submodule is optional and the installer skips it cleanly if the directory is empty
+(a one-line hint is printed).
+
+### Which option should I pick?
+
+| Resource | Option 1 (`/plugin install`) | Option 2 (`./install.sh`) |
+|----------|:----------------------------:|:-------------------------:|
+| Commands (33)          | ✅ | ✅ |
+| Skills (24)            | ⚠️ partial¹                | ✅ |
+| Agents (11)            | ❌ | ✅ |
+| Hooks (15 + 9 examples)| ❌² | ✅ |
+| Rules (9)              | ❌ | ✅ |
+| MCP servers (4)        | ❌³ | ✅ |
+| statusLine (CC CHIPS)  | ❌ | ✅ (opt-in submodule) |
+| `settings.json` env    | ❌ | ✅ |
+
+¹ Plugin-loaded skills are supported, but QJC skill features that reach into
+`~/.claude/rules/` or `~/.claude/agents/` assume the symlink layout.
+² See `hooks/hooks.json`: Claude Code does not load a separate `hooks.json`; all hook
+settings must live in `settings.json`, which Option 1 does not merge.
+³ `plugin.json` does not currently surface `mcpServers` in a way the loader acts on. MCP
+servers come from `.mcp.json` / `mcp-servers.json`, which only Option 2 wires up.
+
+**Recommendation:** Use Option 2 unless you only need Commands + a subset of Skills.
 
 > If you find Claude Forge useful, please consider giving it a [star](https://github.com/sangrokjung/claude-forge/stargazers) -- it helps others discover this project.
 
@@ -95,7 +121,7 @@ they want a global install.
 
 | Change | Description |
 |:-------|:------------|
-| **Official Plugin Install** | `/plugin install sangrokjung/claude-forge` now works out of the box. [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) + [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json) both pinned to `3.0.1`; CI enforces version drift via the new `marketplace-schema` job. |
+| **Plugin Manifest shipped (partial)** | `/plugin marketplace add sangrokjung/claude-forge` + `/plugin install claude-forge` now work for Commands + Skills. [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) + [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json) both pinned to `3.0.1`; CI enforces version drift via the new `marketplace-schema` job. Agents / Hooks / Rules / MCP / statusLine still require `./install.sh` — see [`docs/PLUGIN-VS-INSTALL-SH.md`](docs/PLUGIN-VS-INSTALL-SH.md). |
 | **Chrome DevTools promoted** | Lighthouse / Core Web Vitals / memory snapshots now arrive with the default 4-server MCP set. Pinned at `chrome-devtools-mcp@0.23.0` (supply-chain hardening). |
 | **`hooks/_lib/timing.sh`** | New wrapper records SessionEnd hook timing into `~/.claude/logs/hook-timing.jsonl` (mode 600) so the real parallelism of `async: true` hooks can be audited post-hoc. ~35 ms overhead. |
 | **CI trigger expanded** | [`.github/workflows/validate.yml`](.github/workflows/validate.yml) now runs on every PR and on `main`/`feat/**`/`fix/**`/`chore/**`/`docs/**`/`ci/**` pushes (previously `main` only). 6 jobs total. |
@@ -254,20 +280,23 @@ Most developers either use Claude Code with no customization or spend hours asse
 
 ## 📥 Claude Forge Installation Guide
 
-### As a Claude Code Plugin (v3.0.1+)
+### As a Claude Code Plugin (v3.0.1+, partial coverage)
 
 Since v3.0.1 claude-forge ships a standard Claude Code plugin manifest
-(`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`), so the one-liner is:
+(`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`). Install via the
+standard two-step flow:
 
 ```
-/plugin install sangrokjung/claude-forge
+/plugin marketplace add sangrokjung/claude-forge
+/plugin install claude-forge
 ```
 
-Upgrade via `/plugin update sangrokjung/claude-forge` (or the `/plugin` UI). This path
-covers everything the plugin system manages — agents, skills, commands, hooks, rules, and
-the 4 MCP servers declared in `mcp-servers.json`. If you need shell aliases (`cc`, `ccr`),
-the CC CHIPS status bar submodule, or MCP credential templating, use the classic install
-below.
+Upgrade via `/plugin update claude-forge` (or the `/plugin` UI). What this path covers
+today (per Claude Code's current plugin loader): **Commands + most Skills.** Agents,
+Hooks, Rules, the 4 MCP servers, the statusLine, and `settings.json` env blocks still
+require the classic `./install.sh` below. See
+[`docs/PLUGIN-VS-INSTALL-SH.md`](docs/PLUGIN-VS-INSTALL-SH.md) for the resource-by-resource
+matrix. Most users should keep `./install.sh` as the primary install.
 
 ### Prerequisites
 
