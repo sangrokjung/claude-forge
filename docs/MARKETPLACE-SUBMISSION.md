@@ -4,7 +4,9 @@
 >
 > Submission form: <https://clau.de/plugin-directory-submission>
 >
-> **Status (2026-04-23):** Not yet submitted. This document is a dry-run packet — filling it in once before submission guarantees that every field the reviewers ask for is already agreed on inside the repo.
+> **Status (2026-04-24):** Ready for submission. All items in the reviewer-facing
+> checklist (§6) are verified against `main` at commit 51bef80. This document is the
+> final submission packet — values in §7 are ready to paste.
 
 ## 1. Plugin Metadata (paste into the submission form)
 
@@ -98,14 +100,20 @@ post-fix state.
   against <https://code.claude.com/docs/en/hooks> on 2026-04-23
 
 ### Known limitations (tracked publicly)
-- `@playwright/mcp` and `@upstash/context7-mcp` are still pinned to `@latest`. Tracked as
-  a follow-up in [`docs/adr/ADR-001-mcp-default-set.md`](./adr/ADR-001-mcp-default-set.md).
+- All 11 npm-loaded MCP packages are now SemVer-pinned (PRs #38, #41, #42). `uvx`-based
+  fetch/time in `mcp-servers.optional.json` use the upstream unversioned entrypoint —
+  tracked as a separate follow-up (different ecosystem).
 - Some `UNVERIFIED` settings fields (`tui`, `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`,
   `env.ENABLE_TOOL_SEARCH`) are not present in the public settings reference but work at
   runtime. Tracked in [`docs/SETTINGS-COMPATIBILITY.md`](./SETTINGS-COMPATIBILITY.md).
 - The Chrome DevTools plugin (maintained by Google) and the default MCP server entry in
   `mcp-servers.json` can both be enabled simultaneously. This is idempotent at the stdio
   layer but is documented as a follow-up (plugin-vs-manifest collision detection).
+- The Claude Code plugin loader currently covers only Commands + (most) Skills for this
+  repo. Agents / Hooks / Rules / MCP / statusLine / `settings.json` env are intentionally
+  wired through `./install.sh`. Fully documented in
+  [`docs/PLUGIN-VS-INSTALL-SH.md`](./PLUGIN-VS-INSTALL-SH.md) so reviewers and users
+  know exactly what the "plugin" entrypoint delivers vs the "install.sh" entrypoint.
 
 ### CI coverage (`.github/workflows/validate.yml`, 5 jobs)
 1. `json` — JSON syntax + MCP v3 minimum + settings.json v3 fields
@@ -117,24 +125,26 @@ post-fix state.
 
 ## 6. Reviewer-facing checklist
 
-Before opening the submission, every box below must be checked in the current
-`main` (or the release tag being submitted).
+Every box below has been verified against `main` at commit `51bef80` (2026-04-24).
 
-- [ ] README `Quick Start` shows the two-step plugin install (`/plugin marketplace add
+- [x] README `Quick Start` shows the two-step plugin install (`/plugin marketplace add
       sangrokjung/claude-forge` then `/plugin install claude-forge`) and clearly discloses
       that Agents / Hooks / Rules / MCP / statusLine currently require `./install.sh`.
-- [ ] `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` agree on the
-      same `version` (CI job `marketplace-schema` enforces this).
-- [ ] `version` follows SemVer `X.Y.Z`.
-- [ ] `license` is MIT (or an OSI-approved compatible license) and a `LICENSE` file
-      exists at the repo root.
-- [ ] `homepage` and `repository` URLs resolve and are public.
-- [ ] No existing entry named `claude-forge` in
+      Verified: `grep -c "/plugin marketplace add sangrokjung/claude-forge" README.md` = 4.
+- [x] `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` agree on the
+      same `version` (CI job `marketplace-schema` enforces this). Verified: all three
+      version fields are `3.0.1`.
+- [x] `version` follows SemVer `X.Y.Z`. Verified: `3.0.1` matches regex `^[0-9]+\.[0-9]+\.[0-9]+$`.
+- [x] `license` is MIT and a `LICENSE` file exists at the repo root. Verified: `ls LICENSE` succeeds.
+- [x] `homepage` and `repository` URLs resolve and are public. Verified: `HTTP/2 200`
+      on `https://github.com/sangrokjung/claude-forge`.
+- [x] No existing entry named `claude-forge` in
       `anthropics/claude-plugins-official/external_plugins/` at the time of submission.
-- [ ] MCP servers and their licenses are listed in `docs/MCP-MIGRATION.md` with sources.
-- [ ] A release tag (`v3.0.1` or the version being submitted) and a corresponding
-      GitHub Release exist.
-- [ ] Latest 4-way skeptical review results are linked or summarized (see section 5).
+      Verified: `HTTP/2 404` on the external_plugins/claude-forge path.
+- [x] MCP servers and their licenses are listed in `docs/MCP-MIGRATION.md` with sources.
+- [x] A release tag (`v3.0.1`) and a corresponding GitHub Release exist. Verified via
+      `gh release view v3.0.1`.
+- [x] Latest 4-way skeptical review results are linked or summarized (see section 5).
 
 ## 7. Submission body (template — copy/paste into the form)
 
@@ -161,8 +171,12 @@ Security & quality:
     completed 2026-04-23; all blocking issues closed in PR #38.
   - CI validate.yml enforces JSON syntax, plugin manifest schema, version drift,
     SemVer format, frontmatter schema, installer smoke, and secret scan.
-  - All default MCP servers point to audited sources; chrome-devtools-mcp pinned
-    to 0.23.0.
+  - All 11 npm-loaded MCP packages are SemVer-pinned (no `@latest`):
+    playwright@0.0.70, context7@2.1.8, jina-mcp-tools@1.2.3,
+    chrome-devtools@0.23.0, server-memory@2026.1.26, server-github@2025.4.8,
+    sequential-thinking@2025.12.18, mcp-server-supabase@0.7.0.
+  - plugin.json follows the official Claude Code plugin manifest spec exactly
+    (no custom fields — verified against reference plugins superpowers/claude-hud).
 
 Compatibility notes:
   - Requires Claude Code >= 2.1.110 (minClaudeCodeVersion declared in plugin.json).
