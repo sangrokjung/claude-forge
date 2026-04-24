@@ -89,7 +89,11 @@ jq '.servers.memory' mcp-servers.optional.json > /tmp/memory.json
 
 ## Settings.json Implications
 
-v3.0 ships `settings.json` with allowlist entries for the 3 default MCP namespaces only:
+v3.0 shipped `settings.json` with allowlist entries for the 3 MCP namespaces that were
+default at the time. v3.0.1 promoted `chrome-devtools` to the default set but intentionally
+kept it out of `permissions.allow` so that Lighthouse/Core-Web-Vitals runs (which are
+heavy and can take 30–60 seconds each) trigger an explicit user approval each time, rather
+than running silently in the background:
 
 ```json
 "allow": [
@@ -97,6 +101,8 @@ v3.0 ships `settings.json` with allowlist entries for the 3 default MCP namespac
   "mcp__context7__*",
   "mcp__jina-reader__*"
 ]
+// chrome-devtools is in enabledMcpjsonServers but intentionally not here
+// → every Lighthouse / perf trace call prompts for approval
 ```
 
 When adding a server back, also add its `mcp__<server>__*` to `permissions.allow`, and consider adding it to `enabledMcpjsonServers` for explicit activation.
@@ -106,8 +112,11 @@ When adding a server back, also add its `mcp__<server>__*` to `permissions.allow
 **Q: I have v2.1 workflows that call `mcp__memory__*`. Will they break?**
 A: Yes — the tool becomes unavailable. Either migrate to Auto Memory or restore the server from the optional file.
 
-**Q: Can I run more than 3 servers?**
-A: Yes. The 3-server default is a minimum, not a maximum. There is no practical cap; each server costs a few MB RAM + startup time.
+**Q: Can I run more than 4 servers?**
+A: Yes. The 4-server default (v3.0.1) is a sensible minimum, not a maximum — v3.0
+shipped with 3, and you can add any of the 6+ servers in `mcp-servers.optional.json`
+back in at any time. There is no practical cap; each server costs a few MB RAM + startup
+time.
 
 **Q: Does this affect plugin distribution?**
 A: No. `plugin.json` does not list MCP servers — they're project-scoped in `mcp-servers.json`.
