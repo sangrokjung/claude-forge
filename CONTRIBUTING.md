@@ -169,9 +169,11 @@ Before tagging a release, all of the following must be green:
 - [ ] GitHub Actions `validate.yml` passes all 5 jobs
       (`json`, `marketplace-schema`, `frontmatter`, `installer`, `security`)
 - [ ] `claude mcp list` shows 0 unexpected failures for default servers
-- [ ] Local smoke: add this repo to `~/.claude/plugins/known_marketplaces.json` as
-      `{ "source": { "source": "github", "repo": "sangrokjung/claude-forge" } }` and
-      confirm `/plugin install sangrokjung/claude-forge` installs the expected version.
+- [ ] Local smoke: run `/plugin marketplace add sangrokjung/claude-forge` followed by
+      `/plugin install claude-forge` in a throwaway Claude Code session and confirm the
+      expected `version` lands. (This exercises the same path a first-time user takes.
+      See [`docs/PLUGIN-VS-INSTALL-SH.md`](docs/PLUGIN-VS-INSTALL-SH.md) for what the
+      plugin loader does and does not cover.)
 
 ### Release Tag & GitHub Release
 
@@ -197,10 +199,16 @@ with community entries under `external_plugins/`. To propose inclusion:
 2. Reference this repo's `docs/MARKETPLACE-SUBMISSION.md` (the prepared submission
    packet — contains the required metadata and the security review summary).
 3. Once approved, users can install via either path:
-   - Direct: `/plugin install sangrokjung/claude-forge`
-   - Official: `/plugin install claude-forge@claude-plugins-official`
+   - Self-hosted marketplace (two-step, available today):
+     `/plugin marketplace add sangrokjung/claude-forge` → `/plugin install claude-forge`
+   - Official directory (after approval):
+     `/plugin install claude-forge@claude-plugins-official`
 
-Until approved, the GitHub direct install is the canonical path and must keep working.
+Until approved, the self-hosted-marketplace path is the canonical one and must keep
+working. Note the scope limitation documented in
+[`docs/PLUGIN-VS-INSTALL-SH.md`](docs/PLUGIN-VS-INSTALL-SH.md): the plugin loader
+currently wires only Commands + most Skills; Agents / Hooks / Rules / MCP / statusLine
+still require `./install.sh`.
 
 ### PR Template Additions (recommended)
 

@@ -4,16 +4,16 @@
     "playwright": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"],
+      "args": ["-y", "@playwright/mcp@0.0.70"],
       "env": {},
-      "description": "Headless browser automation (navigate, click, fill, screenshot, trace)"
+      "description": "Headless browser automation (navigate, click, fill, screenshot, trace). Pinned to 0.0.70 (stable 2026-04-24); bump manually after audit."
     },
     "context7": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "args": ["-y", "@upstash/context7-mcp@2.1.8"],
       "env": {},
-      "description": "Real-time library documentation (React 19, Next.js 15, etc.) — use BEFORE writing library code"
+      "description": "Real-time library documentation (React 19, Next.js 15, etc.) — use BEFORE writing library code. Pinned to 2.1.8 (stable 2026-04-24); bump manually after audit."
     },
     "jina-reader": {
       "type": "stdio",
