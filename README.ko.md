@@ -27,7 +27,7 @@
   <a href="README.md">English</a>
 </p>
 
-> 🎉 **v3.0.1 공개 (2026년 4월)** — Claude Code 플러그인으로 설치 가능: `/plugin marketplace add sangrokjung/claude-forge` 실행 후 `/plugin install claude-forge`. Anthropic 2026 표준 정렬(Hooks 21+ 이벤트 · Subagent frontmatter v2 · Skills/Commands 하이브리드 정책) + MCP 최소 구성(4개: playwright · context7 · jina-reader · chrome-devtools@0.23.0). 상세: [MIGRATION.md](MIGRATION.md) / [MIGRATION.ko.md](MIGRATION.ko.md), [Release v3.0.1](https://github.com/sangrokjung/claude-forge/releases/tag/v3.0.1).
+> 🎉 **v3.0.2 공개 (2026년 5월)** — v3.0.1 위에 추가된 docs-only patch: LLM-readable 설치 경로(루트 `INSTALL.md` + 상단 한-줄 설치) + 다채널 배포. v3.0.1 baseline은 Anthropic 2026 표준 정렬(Hooks 21+ 이벤트 · Subagent frontmatter v2 · Skills/Commands 하이브리드 정책) + MCP 최소 구성(4개: playwright · context7 · jina-reader · chrome-devtools@0.23.0). 상세: [MIGRATION.md](MIGRATION.md) / [MIGRATION.ko.md](MIGRATION.ko.md), [Release v3.0.2](https://github.com/sangrokjung/claude-forge/releases/tag/v3.0.2), [Release v3.0.1](https://github.com/sangrokjung/claude-forge/releases/tag/v3.0.1).
 
 > 🚀 **한 줄 설치** (전체 설치, 권장):
 > ```bash
@@ -433,8 +433,8 @@ claude-forge/
   ├── install.ps1                Windows 설치 (--upgrade 지원)
   ├── mcp-servers.json           MCP 기본 설정 (4 minimal)
   ├── mcp-servers.optional.json  MCP 선택 서버 (memory/exa/github/fetch/time/...)
-  ├── .claude-plugin/plugin.json 플러그인 매니페스트 (3.0.1)
-  ├── .claude-plugin/marketplace.json  마켓플레이스 엔트리 (3.0.1)
+  ├── .claude-plugin/plugin.json 플러그인 매니페스트 (3.0.2)
+  ├── .claude-plugin/marketplace.json  마켓플레이스 엔트리 (3.0.2)
   ├── settings.json              Claude Code 설정 (2026 필드)
   ├── MIGRATION.md               v2.1 → v3.0 마이그레이션 가이드 (EN)
   ├── MIGRATION.ko.md            v2.1 → v3.0 마이그레이션 가이드 (KO)

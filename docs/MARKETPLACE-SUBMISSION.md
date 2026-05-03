@@ -17,7 +17,7 @@
 | Public repository | <https://github.com/sangrokjung/claude-forge> |
 | Homepage | <https://github.com/sangrokjung/claude-forge> |
 | License | MIT |
-| Current version | `3.0.1` |
+| Current version | `3.0.2` |
 | Manifest file | `.claude-plugin/plugin.json` |
 | Marketplace manifest | `.claude-plugin/marketplace.json` |
 | Category | development |
@@ -133,8 +133,8 @@ Every box below has been verified against `main` at commit `51bef80` (2026-04-24
       Verified: `grep -c "/plugin marketplace add sangrokjung/claude-forge" README.md` = 4.
 - [x] `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` agree on the
       same `version` (CI job `marketplace-schema` enforces this). Verified: all three
-      version fields are `3.0.1`.
-- [x] `version` follows SemVer `X.Y.Z`. Verified: `3.0.1` matches regex `^[0-9]+\.[0-9]+\.[0-9]+$`.
+      version fields are `3.0.2`.
+- [x] `version` follows SemVer `X.Y.Z`. Verified: `3.0.2` matches regex `^[0-9]+\.[0-9]+\.[0-9]+$`.
 - [x] `license` is MIT and a `LICENSE` file exists at the repo root. Verified: `ls LICENSE` succeeds.
 - [x] `homepage` and `repository` URLs resolve and are public. Verified: `HTTP/2 200`
       on `https://github.com/sangrokjung/claude-forge`.
@@ -142,8 +142,8 @@ Every box below has been verified against `main` at commit `51bef80` (2026-04-24
       `anthropics/claude-plugins-official/external_plugins/` at the time of submission.
       Verified: `HTTP/2 404` on the external_plugins/claude-forge path.
 - [x] MCP servers and their licenses are listed in `docs/MCP-MIGRATION.md` with sources.
-- [x] A release tag (`v3.0.1`) and a corresponding GitHub Release exist. Verified via
-      `gh release view v3.0.1`.
+- [x] A release tag (`v3.0.2`) and a corresponding GitHub Release exist. Verified via
+      `gh release view v3.0.2`.
 - [x] Latest 4-way skeptical review results are linked or summarized (see section 5).
 - [ ] **Form actually submitted at <https://clau.de/plugin-directory-submission>** —
       date submitted: `____`, confirmation email received in `____` inbox.

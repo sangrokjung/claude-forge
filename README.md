@@ -28,7 +28,7 @@
   <a href="README.ko.md">한국어</a>
 </p>
 
-> 🎉 **v3.0.1 released (April 2026)** — installable as a Claude Code plugin via `/plugin marketplace add sangrokjung/claude-forge` then `/plugin install claude-forge`. Anthropic 2026 standard alignment (Hooks 21+ events · Subagent frontmatter v2 · Skills/Commands hybrid policy) plus a 4-server MCP minimum (playwright · context7 · jina-reader · chrome-devtools@0.23.0). See [MIGRATION.md](MIGRATION.md) / [MIGRATION.ko.md](MIGRATION.ko.md) and [Release v3.0.1](https://github.com/sangrokjung/claude-forge/releases/tag/v3.0.1).
+> 🎉 **v3.0.2 released (May 2026)** — docs-only patch on top of v3.0.1: LLM-readable install paths (root `INSTALL.md` + above-the-fold one-liner) and multi-channel distribution. The v3.0.1 baseline brought Anthropic 2026 standard alignment (Hooks 21+ events · Subagent frontmatter v2 · Skills/Commands hybrid policy) plus a 4-server MCP minimum (playwright · context7 · jina-reader · chrome-devtools@0.23.0). See [MIGRATION.md](MIGRATION.md) / [MIGRATION.ko.md](MIGRATION.ko.md), [Release v3.0.2](https://github.com/sangrokjung/claude-forge/releases/tag/v3.0.2), [Release v3.0.1](https://github.com/sangrokjung/claude-forge/releases/tag/v3.0.1).
 
 > 🚀 **Install in one line** (full install, recommended):
 > ```bash
@@ -442,8 +442,8 @@ claude-forge/
   ├── install.ps1                Windows installer (--upgrade supported)
   ├── mcp-servers.json           MCP server defaults (4 minimal)
   ├── mcp-servers.optional.json  Optional MCP servers (memory/exa/github/fetch/time/...)
-  ├── .claude-plugin/plugin.json Plugin manifest (3.0.1)
-  ├── .claude-plugin/marketplace.json  Marketplace entry (3.0.1)
+  ├── .claude-plugin/plugin.json Plugin manifest (3.0.2)
+  ├── .claude-plugin/marketplace.json  Marketplace entry (3.0.2)
   ├── settings.json              Claude Code settings (2026 fields)
   ├── MIGRATION.md               v2.1 → v3.0 migration guide (EN)
   ├── MIGRATION.ko.md            v2.1 → v3.0 migration guide (KO)
