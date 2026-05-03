@@ -263,3 +263,93 @@ jobs:
           if command -v shellcheck >/dev/null 2>&1; then
             shellcheck --severity=warning install.sh || true
           fi
+
+  links:
+    name: Markdown Links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore lychee cache
+        uses: actions/cache@v4
+        with:
+          path: .lycheecache
+          key: cache-lychee-${{ github.sha }}
+          restore-keys: cache-lychee-
+
+      - name: Link checker (lychee)
+        uses: lycheeverse/lychee-action@v2
+        with:
+          fail: true
+          # Targets: LLM-facing entry points + distribution docs.
+          # Excludes: clau.de (anti-bot), localhost, hub example URLs in skills.
+          args: >-
+            --no-progress
+            --cache
+            --max-cache-age 1d
+            --timeout 20
+            --max-retries 2
+            --max-concurrency 4
+            --exclude '^https?://clau\.de'
+            --exclude '^https?://localhost'
+            --exclude '^https?://(127\.|0\.0\.0\.0|192\.168\.|10\.)'
+            --exclude-mail
+            INSTALL.md
+            README.md
+            README.ko.md
+            'docs/**/*.md'
+            '.github/ISSUE_TEMPLATE/*.md'
+            '.github/ISSUE_TEMPLATE/*.yml'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  doc-version-sync:
+    name: Doc Version Sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect stale current-state version refs in user-facing docs
+        run: |
+          # Catches the failure mode discovered in the v3.0.2 ultrathink audit:
+          # plugin.json/marketplace.json get bumped, but specific *current-state*
+          # claims in user-facing docs drift behind. We intentionally do NOT
+          # check historical narration ("v3.0.1 introduced X", "since v3.0.1") —
+          # those are legitimate timeline references.
+          #
+          # Two precise patterns are checked:
+          #   1. README*.md file-structure tree:  ├── *.json ... (X.Y.Z)
+          #   2. MARKETPLACE-SUBMISSION.md table: | Current version | `X.Y.Z` |
+          PJV=$(jq -r '.version' .claude-plugin/plugin.json)
+          echo "Expected current version: ${PJV}"
+          STALE=0
+
+          # Pattern 1: README* file-structure tree refs
+          for f in README.md README.ko.md; do
+            FOUND=$(grep -hE '^\s*├──.*\.json.*\([0-9]+\.[0-9]+\.[0-9]+\)' "$f" 2>/dev/null \
+                    | grep -oE '\([0-9]+\.[0-9]+\.[0-9]+\)' \
+                    | tr -d '()' \
+                    | sort -u \
+                    | grep -v "^${PJV}$" || true)
+            if [ -n "$FOUND" ]; then
+              echo "::error file=${f}::stale file-structure tree version(s): ${FOUND} (expected ${PJV})"
+              STALE=$((STALE+1))
+            fi
+          done
+
+          # Pattern 2: MARKETPLACE-SUBMISSION "| Current version | `X.Y.Z` |"
+          FOUND=$(grep -hE '^\| Current version \|' docs/MARKETPLACE-SUBMISSION.md 2>/dev/null \
+                  | grep -oE '`[0-9]+\.[0-9]+\.[0-9]+`' \
+                  | tr -d '`' \
+                  | sort -u \
+                  | grep -v "^${PJV}$" || true)
+          if [ -n "$FOUND" ]; then
+            echo "::error file=docs/MARKETPLACE-SUBMISSION.md::stale 'Current version' row: ${FOUND} (expected ${PJV})"
+            STALE=$((STALE+1))
+          fi
+
+          if [ "$STALE" -gt 0 ]; then
+            echo "::error::${STALE} stale current-state version reference(s). Bump to ${PJV}."
+            exit 1
+          fi
+          echo "OK: no stale current-state version references in user-facing docs."
