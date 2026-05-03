@@ -145,6 +145,13 @@ Every box below has been verified against `main` at commit `51bef80` (2026-04-24
 - [x] A release tag (`v3.0.1`) and a corresponding GitHub Release exist. Verified via
       `gh release view v3.0.1`.
 - [x] Latest 4-way skeptical review results are linked or summarized (see section 5).
+- [ ] **Form actually submitted at <https://clau.de/plugin-directory-submission>** —
+      date submitted: `____`, confirmation email received in `____` inbox.
+      *If no confirmation email arrives within 24h, log a comment on
+      [anthropics/claude-plugins-official issue #984](https://github.com/anthropics/claude-plugins-official/issues/984)
+      (known portal-vs-directory sync gap) and check the submission portal directly.
+      This row exists to prevent the "submission packet prepared but form never
+      clicked" failure mode discovered during the 2026-05-02 audit.*
 
 ## 7. Submission form — field-by-field values (clau.de/plugin-directory-submission)
 
