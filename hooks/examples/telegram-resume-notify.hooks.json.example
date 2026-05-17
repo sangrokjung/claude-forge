@@ -1,0 +1,28 @@
+{
+  "_comment": "Merge into ~/.claude/settings.json. install.sh does this automatically.",
+  "_docs": "See scripts/telegram-resume/README.md for setup.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_FORGE_HOME/hooks/handoff-telegram.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_FORGE_HOME/hooks/telegram-resume-notify.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
