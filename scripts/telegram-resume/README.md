@@ -175,12 +175,29 @@ UserPromptSubmit 훅이 가로채서:
 - `/bridge` → 현재 bridge 상태 표시
 - `/end` → bridge 종료, Mac 터미널 사용 가능
 
-### 3) 종료 조건
+### 3) PC로 복귀 — 두 가지 길
 
-세 가지 자동 종료:
-- Telegram에서 `/end`
+**A. Mac 터미널에서 직접 종료 (NEW)**
+```
+/tg-end       # 또는 /end-tg, /handoff-end
+```
+훅이 가로채서 상태 파일 삭제 + Telegram에 "Mac으로 복귀" 알림 전송. 그 다음부터는 Mac 키보드로만 작업, 폰 동기화 끊김.
+
+**B. Telegram에서 종료**
+```
+/end
+```
+
+### 4) 자동 종료 조건
+
+위 두 가지 수동 종료 외에:
 - Mac 세션이 종료될 때 (Stop hook이 자동 정리)
 - 90분 idle (`TELEGRAM_BRIDGE_MAX_IDLE_MIN`)
+- jsonl/tmux 세션 사라짐 감지 시 (bridge.tick에서 알림 후 stop)
+
+### 5) 멀티라인 메시지
+
+Telegram에서 멀티라인 메시지를 보내면 `tmux paste-buffer -p`로 **bracketed paste** 시퀀스(`ESC[200~ ... ESC[201~`)와 함께 전달됩니다. Claude Code TUI(React-Ink 기반)는 BPM을 지원하므로 멀티라인을 단일 입력으로 인식. 단, 일부 line-buffered 도구는 각 newline을 별도 Enter로 처리할 수 있음 — 이 경우 메시지를 한 줄씩 보내거나 Claude에 paste 모드 사용을 유도하세요.
 
 ### Bridge 상태 파일 protocol
 

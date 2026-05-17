@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 #
 # handoff-telegram.sh — UserPromptSubmit hook.
-# Detects /tg | /handoff-tg | >>tg in the user's prompt and starts
-# bridge mode: writes a state file the bot watches, notifies the user
-# in Telegram, and blocks the prompt from reaching Claude.
 #
-# Cleanup mode: `handoff-telegram.sh --cleanup` (called from Stop hook).
+# Mac-side triggers (all block the prompt from reaching Claude):
+#   /tg | /handoff-tg | >>tg          → START bridge
+#   /tg-end | /end-tg | /handoff-end  → STOP bridge (clean PC-return)
+#
+# Cleanup mode (called by Stop hook on session exit):
+#   handoff-telegram.sh --cleanup
 #
 # Wire via hooks.json — install.sh registers automatically. See
 # hooks/examples/telegram-resume-notify.hooks.json.example for manual setup.
@@ -61,7 +63,8 @@ RESULT="$(TELEGRAM_BRIDGE_STATE_FILE="$STATE_FILE" \
     python3 - <<'PY'
 import sys, json, os, pathlib, datetime, re
 
-PROMPT_TRIGGER_RE = re.compile(r"^(/tg|/handoff-tg|>>tg)(\s|$)")
+PROMPT_START_RE = re.compile(r"^(/tg|/handoff-tg|>>tg)(\s|$)")
+PROMPT_END_RE   = re.compile(r"^(/tg-end|/end-tg|/handoff-end)(\s|$)")
 
 def emit(tag: str, *fields: str) -> None:
     print("\t".join([tag, *fields]))
@@ -73,7 +76,24 @@ except Exception as exc:
     emit("SKIP", f"bad-json:{exc}")
 
 prompt = payload.get("prompt") or ""
-if not PROMPT_TRIGGER_RE.match(prompt):
+
+# Mac-side END branch — clear state, notify Telegram, block the prompt.
+if PROMPT_END_RE.match(prompt):
+    state_file = pathlib.Path(os.environ["TELEGRAM_BRIDGE_STATE_FILE"])
+    if state_file.exists():
+        try:
+            existing = json.loads(state_file.read_text(encoding="utf-8"))
+            short_uuid = (existing.get("session_uuid") or "")[:8]
+        except (OSError, json.JSONDecodeError):
+            short_uuid = ""
+        try:
+            state_file.unlink()
+        except OSError:
+            pass
+        emit("ENDED", short_uuid or "(unknown)")
+    emit("ENDED-NOOP", "활성 bridge 없음")
+
+if not PROMPT_START_RE.match(prompt):
     emit("SKIP", "no-trigger")
 
 bot_token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
@@ -159,8 +179,25 @@ case "$TAG" in
   ALREADY)
     cat >&2 <<EOF
 🔌 $REST
-   이미 활성 — Telegram에서 계속 작업하거나, '/end' 후 다시 /tg 하세요.
+   이미 활성 — Telegram에서 계속 작업하거나, '/tg-end' 후 다시 /tg 하세요.
 EOF
+    exit 2
+    ;;
+  ENDED)
+    if [[ -x "$NOTIFY_SH" && -n "${TELEGRAM_BOT_TOKEN:-}" ]]; then
+      "$NOTIFY_SH" \
+        --text "🛑 _Mac 키보드로 복귀 — bridge 종료됨._ (\`${REST}\`)" \
+        --silent 2>/dev/null || true
+    fi
+    cat >&2 <<EOF
+🛑 Telegram bridge 종료됨
+   세션: ${REST}
+   이제 Mac에서 평소처럼 입력하세요. 폰 동기화 끊김.
+EOF
+    exit 2
+    ;;
+  ENDED-NOOP)
+    echo "ℹ️  활성 bridge 없음 — 종료할 것 없음" >&2
     exit 2
     ;;
   OK)
@@ -173,7 +210,7 @@ EOF
       TEXT+="tmux: \`${OK_TMUX}\`"$'\n\n'
       TEXT+="_입력한 메시지가 Mac tmux에 자동 주입되고,_"$'\n'
       TEXT+="_Claude 응답이 실시간으로 여기에 표시됩니다._"$'\n\n'
-      TEXT+="종료: \`/end\`"
+      TEXT+="종료: Telegram에서 \`/end\` 또는 Mac에서 \`/tg-end\`"
       "$NOTIFY_SH" --text "$TEXT" --silent 2>/dev/null || true
     fi
 
@@ -184,7 +221,7 @@ EOF
    상태: ${STATE_FILE}
 
 📱 Telegram 앱을 열어 메시지를 입력하세요.
-   종료: Telegram에서 '/end' 입력
+   종료: Telegram에서 '/end' 또는 Mac에서 '/tg-end'
 EOF
     exit 2
     ;;

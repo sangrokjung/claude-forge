@@ -256,15 +256,19 @@ class BridgeManager:
 
         try:
             if "\n" in text:
-                # Multi-line: use the paste buffer so each newline is honored
-                # as Enter inside whatever app owns the pane.
+                # Multi-line: paste via tmux's buffer with bracketed-paste
+                # markers (-p).  Modern TUIs (Claude Code's React-Ink shell
+                # included) recognise the BPM escape and accumulate the
+                # whole block as a single user message instead of treating
+                # each \n as Enter.  Falls back gracefully on terminals that
+                # don't honour BPM — same behaviour as the old plain paste.
                 subprocess.run(
                     ["tmux", "load-buffer", "-b", "cf-bridge", "-"],
                     input=text, text=True,
                     check=True, capture_output=True, timeout=5,
                 )
                 subprocess.run(
-                    ["tmux", "paste-buffer", "-b", "cf-bridge", "-d", "-t", target],
+                    ["tmux", "paste-buffer", "-b", "cf-bridge", "-p", "-d", "-t", target],
                     check=True, capture_output=True, text=True, timeout=5,
                 )
                 subprocess.run(
