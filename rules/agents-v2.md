@@ -20,37 +20,12 @@
 using-superpowers의 "1% 규칙"에 의해 매 턴 agent-router 체크가 강제된다.
 단순 질문/정보 요청은 라우팅하지 않고 직접 답변한다.
 
-주요 라우팅 대상 (34 에이전트):
-- 개발: planner, code-reviewer, architect, tdd-guide, build-error-resolver, verify-agent, e2e-runner, security-reviewer, database-reviewer, refactor-cleaner, doc-updater
-- 비즈니스: product-strategist, quotation, crm-manager, qjc-business, qjc-operations
-- 법무/재무: contract-legal, financial-accountant, patent-attorney, gov-support-strategist
-- 마케팅/콘텐츠: seo-geo-aeo-strategist, copywriting, ad-optimizer-team, performance-growth-marketer, qjc-content, storyteller
-- 크리에이티브: web-designer, remotion-creator
-- 리서치: researcher, ai-researcher, research-pi
-- 리뷰: codex-reviewer, gemini-reviewer
-- 메타 사고: first-principles-thinker
+See `/agent-router` skill for the full routing table (34+ agents across dev, business, legal, marketing, creative, research domains).
 
-상세 라우팅 테이블: `/agent-router` 스킬 참조.
+## Key Rules
 
-## Parallel Task Execution
+- Independent tasks: always parallel. Sequential only when dependent.
+- Subagents: for focused tasks (result only). Agent Teams: for collaborative tasks (discussion needed).
+- Agent memory: `~/.claude/agent-memory/{agent-name}/`
 
-독립 작업은 항상 병렬 실행. 순차 실행이 필요한 경우만 예외.
-
-## Subagents vs Agent Teams
-
-| | Subagents | Agent Teams |
-|---|---|---|
-| 통신 | 메인에게만 보고 | 리더 경유 (hub-and-spoke) |
-| 최적 용도 | 결과만 중요한 집중 작업 | 논의/협업이 필요한 복잡한 작업 |
-| 토큰 비용 | 낮음 | 높음 |
-
-상세: agents-teams-ref.md, agents-config-ref.md 참조.
-
-## Agent Memory
-
-`~/.claude/agent-memory/{agent-name}/`. 상세: agents-config-ref.md 참조.
-
-## Agent Pipeline / Parallel Agents
-
-- 호출 순서: ~/qjc-office/dotclaude/reference/agent-pipeline.md
-- 병렬 가이드: ~/qjc-office/dotclaude/reference/parallel-agents-guide.md
+> Detail: reference/agents-detail.md § Routing Table, Subagents vs Teams, Agent Memory, Pipeline Guide
