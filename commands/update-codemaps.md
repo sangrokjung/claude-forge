@@ -1,3 +1,8 @@
+---
+description: Analyze codebase structure and update architecture documentation in codemaps/
+allowed-tools: Read, Write, Glob, Bash
+---
+
 # Update Codemaps
 
 Analyze the codebase structure and update architecture documentation:
