@@ -1,7 +1,7 @@
 ---
 name: verify-agent
 description: Fresh-context verification sub-agent. Runs build/type/lint/test verification pipeline.
-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "Task"]
 model: sonnet
 memory: project
 color: cyan
