@@ -251,7 +251,7 @@ function Copy-ConfigFiles {
         New-Item -ItemType Directory -Path $ClaudeDir -Force | Out-Null
     }
 
-    $directories = @("agents", "rules", "commands", "skills", "hooks", "cc-chips")
+    $directories = @("agents", "rules", "commands", "scripts", "skills", "hooks", "cc-chips", "cc-chips-custom")
     foreach ($dir in $directories) {
         $source = Join-Path $RepoDir $dir
         if (Test-Path $source) {
@@ -333,7 +333,7 @@ function Test-Installation {
     Write-Host "설치 확인 중... (Verifying installation)" -ForegroundColor White
     $errors = 0
 
-    $items = @("agents", "rules", "commands", "skills", "cc-chips", "hooks.json", "settings.json")
+    $items = @("agents", "rules", "commands", "scripts", "skills", "cc-chips", "cc-chips-custom", "hooks.json", "settings.json")
     foreach ($item in $items) {
         $path = Join-Path $ClaudeDir $item
         if (Test-Path $path) {
