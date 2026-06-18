@@ -26,14 +26,8 @@ MANDATORY workflow:
 5. Refactor (IMPROVE)
 6. Verify coverage (80%+)
 
-## Troubleshooting Test Failures
+## Troubleshooting
 
-1. Use **tdd-guide** agent
-2. Check test isolation
-3. Verify mocks are correct
-4. Fix implementation, not tests (unless tests are wrong)
+Use **tdd-guide** agent proactively. Fix implementation, not tests (unless tests are wrong).
 
-## Agent Support
-
-- **tdd-guide** - Use PROACTIVELY for new features, enforces write-tests-first
-- **e2e-runner** - Playwright E2E testing specialist
+> Detail: reference/testing-detail.md § Troubleshooting Checklist and Agent Support
