@@ -1,6 +1,6 @@
 ---
-name: using-superpowers
-description: Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions
+name: "using-superpowers"
+description: "Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions"
 ---
 
 <SUBAGENT-STOP>
@@ -29,13 +29,15 @@ If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "alw
 
 **In Claude Code:** Use the `Skill` tool. When you invoke a skill, its content is loaded and presented to you—follow it directly. Never use the Read tool on skill files.
 
+**In Copilot CLI:** Use the `skill` tool. Skills are auto-discovered from installed plugins. The `skill` tool works the same as Claude Code's `Skill` tool.
+
 **In Gemini CLI:** Skills activate via the `activate_skill` tool. Gemini loads skill metadata at session start and activates the full content on demand.
 
 **In other environments:** Check your platform's documentation for how skills are loaded.
 
 ## Platform Adaptation
 
-Skills use Claude Code tool names. Non-CC platforms: see `references/codex-tools.md` (Codex) for tool equivalents. Gemini CLI users get the tool mapping loaded automatically via GEMINI.md.
+Skills use Claude Code tool names. Non-CC platforms: see `references/copilot-tools.md` (Copilot CLI), `references/codex-tools.md` (Codex) for tool equivalents. Gemini CLI users get the tool mapping loaded automatically via GEMINI.md.
 
 # Using Skills
 
@@ -50,8 +52,6 @@ digraph skill_flow {
     "Already brainstormed?" [shape=diamond];
     "Invoke brainstorming skill" [shape=box];
     "Might any skill apply?" [shape=diamond];
-    "Domain-specific task?" [shape=diamond];
-    "Invoke agent-router" [shape=box];
     "Invoke Skill tool" [shape=box];
     "Announce: 'Using [skill] to [purpose]'" [shape=box];
     "Has checklist?" [shape=diamond];
@@ -65,11 +65,8 @@ digraph skill_flow {
     "Invoke brainstorming skill" -> "Might any skill apply?";
 
     "User message received" -> "Might any skill apply?";
-    "Might any skill apply?" -> "Domain-specific task?" [label="yes"];
+    "Might any skill apply?" -> "Invoke Skill tool" [label="yes, even 1%"];
     "Might any skill apply?" -> "Respond (including clarifications)" [label="definitely not"];
-    "Domain-specific task?" -> "Invoke agent-router" [label="yes (법률,재무,특허,마케팅...)"];
-    "Domain-specific task?" -> "Invoke Skill tool" [label="no, use other skill"];
-    "Invoke agent-router" -> "Respond (including clarifications)";
     "Invoke Skill tool" -> "Announce: 'Using [skill] to [purpose]'";
     "Announce: 'Using [skill] to [purpose]'" -> "Has checklist?";
     "Has checklist?" -> "Create TodoWrite todo per item" [label="yes"];
@@ -96,22 +93,16 @@ These thoughts mean STOP—you're rationalizing:
 | "I'll just do this one thing first" | Check BEFORE doing anything. |
 | "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
 | "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
-| "I can handle this myself" | If a specialized agent exists, delegate. Check agent-router. |
-| "Spawning an agent is overkill" | Agents exist for a reason. Let them handle their domain. |
-| "I'll just do this quickly" | Quick for you = worse quality. Agent = expert result. |
 
 ## Skill Priority
 
 When multiple skills could apply, use this order:
 
-1. **Process skills first** (brainstorming, debugging) - determine HOW to approach
-2. **Agent routing second** (agent-router) - determine WHO should handle (domain delegation)
-3. **Implementation skills third** (frontend-design, mcp-builder) - guide execution
+1. **Process skills first** (brainstorming, debugging) - these determine HOW to approach the task
+2. **Implementation skills second** (frontend-design, mcp-builder) - these guide execution
 
 "Let's build X" → brainstorming first, then implementation skills.
 "Fix this bug" → debugging first, then domain-specific skills.
-"계약서 검토해줘" → agent-router → contract-legal agent spawned.
-"세금 계산해줘" → agent-router → financial-accountant agent spawned.
 
 ## Skill Types
 

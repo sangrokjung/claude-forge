@@ -1,7 +1,7 @@
 ---
 allowed-tools: Bash(git:*), Read, Grep
 description: 간단한 수정용 빠른 커밋 (v6)
-argument-hint: [커밋 메시지]
+argument-hint: "[커밋 메시지]"
 ---
 
 # /quick-commit - 빠른 커밋 (v6)
@@ -32,7 +32,7 @@ git diff --stat
 - 변경 파일 3개 초과 또는 20줄 초과 시 경고:
   ```
   변경이 큽니다. 전체 워크플로우 권장:
-  /handoff-verify → /commit-push-pr
+  /handoff-verify → /sync-docs → /commit-push-pr --merge
 
   그래도 빠른 커밋하려면 "계속"이라고 입력하세요.
   ```
@@ -69,8 +69,6 @@ git push
   커밋: {short_hash}
   메시지: {메시지}
   변경: +{N} -{N} ({N} files)
-
-  다음 단계: /sync (git pull + 문서 동기화)
 
 ════════════════════════════════════════════════════════════════
 ```

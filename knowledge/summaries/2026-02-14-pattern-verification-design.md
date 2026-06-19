@@ -59,7 +59,7 @@ verification-engine (기존)     verify-implementation (신규)
 
 ### 3-3. 왜 에이전트 중복 감지를 넣었나
 
-시스템에는 다수의 전문 에이전트가 있다.
+우리 시스템에는 이미 53개 전문 에이전트가 있다.
 
 ```
 security-reviewer    -> 보안 검증 담당

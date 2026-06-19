@@ -40,10 +40,37 @@
       "id": "2026-02-14-pattern-verification-design",
       "title": "패턴 검증 시스템 설계 문서 (manage-skills + verify-implementation)",
       "source_type": "internal",
-      "source_url": "internal",
+      "source_url": "https://github.com/qjc-office/dotclaude/pull/1",
       "date": "2026-02-14",
-      "tags": ["verification", "skills", "design-doc", "pattern-checking"],
+      "tags": ["verification", "skills", "design-doc", "pattern-checking", "kimoring"],
       "file": "summaries/2026-02-14-pattern-verification-design.md"
+    },
+    {
+      "id": "2026-02-25-ptc-pattern",
+      "title": "PTC (Python Tool Chaining) 패턴",
+      "source_type": "internal",
+      "source_url": "https://github.com/shanraisshan/claude-code-best-practice",
+      "date": "2026-02-25",
+      "tags": ["optimization", "python", "tool-chaining", "claude-code", "shanraisshan"],
+      "file": "summaries/2026-02-25-ptc-pattern.md"
+    },
+    {
+      "id": "2026-02-25-agent-frontmatter-reference",
+      "title": "Agent Frontmatter 레퍼런스",
+      "source_type": "internal",
+      "source_url": "internal",
+      "date": "2026-02-25",
+      "tags": ["agent", "frontmatter", "reference", "claude-code", "configuration"],
+      "file": "summaries/2026-02-25-agent-frontmatter-reference.md"
+    },
+    {
+      "id": "2026-02-25-settings-reference",
+      "title": "Claude Code Settings 레퍼런스",
+      "source_type": "internal",
+      "source_url": "internal",
+      "date": "2026-02-25",
+      "tags": ["settings", "hooks", "reference", "claude-code", "configuration"],
+      "file": "summaries/2026-02-25-settings-reference.md"
     }
   ]
 }

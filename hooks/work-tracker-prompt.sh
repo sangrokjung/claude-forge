@@ -53,8 +53,12 @@ else:
         'ts': ts
     }
 
+import fcntl
 with open(buffer, 'a') as f:
+    fcntl.flock(f, fcntl.LOCK_EX)
     f.write(json.dumps(rec, ensure_ascii=False) + '\n')
+    f.flush()
+    fcntl.flock(f, fcntl.LOCK_UN)
 " 2>/dev/null
 
 exit 0

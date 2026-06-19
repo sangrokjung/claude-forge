@@ -89,6 +89,9 @@ if not blocked_reason:
         r'\bcat\s+.*/\.ssh/',
         r'\bexport\s+-p\s*$',
         r'\bexport\s+-p\s*\|',
+        r'\bcat\s+.*seed\.txt\b',
+        r'\bcat\s+.*wallet\.json\b',
+        r'\bcat\s+.*keystore\b',
     ]
     for pat in secret_patterns:
         if re.search(pat, cmd, re.IGNORECASE):

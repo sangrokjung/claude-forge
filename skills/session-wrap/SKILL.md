@@ -1,8 +1,6 @@
 ---
 name: session-wrap
-description: |
-  세션 종료 전 자동 정리 스킬. 4개 병렬 subagent가 문서 업데이트, 반복 패턴, 학습 포인트, 후속 작업을 동시 탐지하고, 1개 검증 subagent가 중복 제거 후 사용자에게 선택지를 제시한다.
-  트리거: /session-wrap, 세션 마무리, 세션 정리, 작업 마무리
+description: Use when wrapping up a session before ending. 4 parallel subagents detect doc updates, repeated patterns, learning points, and follow-ups, then a verifier deduplicates and presents choices. Triggers on /session-wrap, session wrap, session cleanup, end of session.
 argument-hint: '[--dry-run] [--skip-docs] [--skip-learning] [--skip-scout] [--skip-followup]'
 ---
 
@@ -211,11 +209,7 @@ AskUserQuestion으로 사용자 입력을 받는다.
 /tmp/session-wrap/skill-candidates.md
 ```
 
-후속 작업 파일(`session-wrap-followups.md`)은 다음 세션 시작 시 `/sync`로 로드할 수 있다.
-
-### 권장 다음 단계
-- `/sync-docs` - 세션 중 변경된 문서를 프로젝트에 동기화
-- `/sync` - git pull + sync-docs 한 번에 실행 (다음 세션 시작 시)
+후속 작업 파일(`session-wrap-followups.md`)은 다음 세션 시작 시 `/context-sync`로 로드할 수 있다.
 
 ## 에러 처리
 

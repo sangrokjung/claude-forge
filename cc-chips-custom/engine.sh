@@ -69,7 +69,6 @@ case "$model" in
     *opus*4.6*|*opus-4-6*) model_display="Opus 4.6" ;;
     *opus*4.5*|*opus-4-5*) model_display="Opus 4.5" ;;
     *opus*4*|*opus-4*) model_display="Opus 4" ;;
-    *sonnet*4.6*|*sonnet-4-6*) model_display="Sonnet 4.6" ;;
     *sonnet*4.5*|*sonnet-4-5*) model_display="Sonnet 4.5" ;;
     *sonnet*4*|*sonnet-4*) model_display="Sonnet 4" ;;
     *sonnet*3.5*|*sonnet-3-5*) model_display="Sonnet 3.5" ;;
@@ -108,26 +107,12 @@ for ((i=0; i<5; i++)); do
 done
 
 # ═══════════════════════════════════════════════════════════════════
-# COST (model-based pricing per 1M tokens, in cents)
-#   Opus:   $15 in, $75 out, $1.50 cache read, $18.75 cache write
-#   Sonnet: $3 in,  $15 out, $0.30 cache read, $3.75 cache write
-#   Haiku:  $0.80 in, $4 out, $0.08 cache read, $1.00 cache write
+# COST (Opus 4.5: $15/M in, $75/M out, $1.50/M cache read, $18.75/M cache write)
 # ═══════════════════════════════════════════════════════════════════
-case "$model_display" in
-    Sonnet*)
-        price_input=300; price_output=1500
-        price_cache_read=30; price_cache_write=375 ;;
-    Haiku*)
-        price_input=80; price_output=400
-        price_cache_read=8; price_cache_write=100 ;;
-    *)
-        price_input=1500; price_output=7500
-        price_cache_read=150; price_cache_write=1875 ;;
-esac
-cost_input_cents=$(( (input_tokens * price_input) / 1000000 ))
-cost_output_cents=$(( (output_tokens * price_output) / 1000000 ))
-cost_cache_read_cents=$(( (cache_read * price_cache_read) / 1000000 ))
-cost_cache_write_cents=$(( (cache_write * price_cache_write) / 1000000 ))
+cost_input_cents=$(( (input_tokens * 1500) / 1000000 ))
+cost_output_cents=$(( (output_tokens * 7500) / 1000000 ))
+cost_cache_read_cents=$(( (cache_read * 150) / 1000000 ))
+cost_cache_write_cents=$(( (cache_write * 1875) / 1000000 ))
 total_cents=$((cost_input_cents + cost_output_cents + cost_cache_read_cents + cost_cache_write_cents))
 
 # ═══════════════════════════════════════════════════════════════════

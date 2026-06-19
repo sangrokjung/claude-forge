@@ -1,8 +1,8 @@
 #!/bin/bash
 # Continuous Learning v2 - Observer Agent Launcher
 #
-# Starts the background observer agent that analyzes observations
-# and creates instincts. Uses Haiku model for cost efficiency.
+# 수정 (2026-03-30): shlock 기반 싱글턴 + pgrep 이중 확인
+# 원인: PID 파일 레이스 컨디션으로 64+ 프로세스 누적 버그
 #
 # Usage:
 #   start-observer.sh        # Start observer in background
@@ -13,6 +13,7 @@ set -e
 
 CONFIG_DIR="${HOME}/.claude/homunculus"
 PID_FILE="${CONFIG_DIR}/.observer.pid"
+LOCK_FILE="${CONFIG_DIR}/.observer-start.lock"
 LOG_FILE="${CONFIG_DIR}/observer.log"
 OBSERVATIONS_FILE="${CONFIG_DIR}/observations.jsonl"
 
@@ -20,20 +21,21 @@ mkdir -p "$CONFIG_DIR"
 
 case "${1:-start}" in
   stop)
+    # 모든 observer 프로세스 정리 (PID 파일 + pgrep)
     if [ -f "$PID_FILE" ]; then
       pid=$(cat "$PID_FILE")
       if kill -0 "$pid" 2>/dev/null; then
         echo "Stopping observer (PID: $pid)..."
         kill "$pid"
-        rm -f "$PID_FILE"
-        echo "Observer stopped."
-      else
-        echo "Observer not running (stale PID file)."
-        rm -f "$PID_FILE"
       fi
-    else
-      echo "Observer not running."
+      rm -f "$PID_FILE"
     fi
+    # PID 파일에 없는 고아 프로세스도 정리
+    pgrep -f 'start-observer.sh' 2>/dev/null | grep -v "$$" | while read orphan_pid; do
+      kill "$orphan_pid" 2>/dev/null && echo "Killed orphan observer: $orphan_pid"
+    done
+    rm -f "$LOCK_FILE"
+    echo "Observer stopped."
     exit 0
     ;;
 
@@ -44,6 +46,11 @@ case "${1:-start}" in
         echo "Observer is running (PID: $pid)"
         echo "Log: $LOG_FILE"
         echo "Observations: $(wc -l < "$OBSERVATIONS_FILE" 2>/dev/null || echo 0) lines"
+        # 고아 프로세스 경고
+        orphan_count=$(pgrep -f 'start-observer.sh' 2>/dev/null | grep -v "$pid" | grep -v "$$" | wc -l | tr -d ' ')
+        if [ "$orphan_count" -gt 0 ]; then
+          echo "WARNING: $orphan_count orphan observer processes detected. Run 'stop' to clean up."
+        fi
         exit 0
       else
         echo "Observer not running (stale PID file)"
@@ -57,7 +64,14 @@ case "${1:-start}" in
     ;;
 
   start)
-    # Check if already running
+    # shlock 기반 싱글턴 보장 (macOS)
+    if ! /usr/bin/shlock -f "$LOCK_FILE" -p $$ 2>/dev/null; then
+      echo "Another start-observer.sh is already running (lock held)"
+      exit 0
+    fi
+    trap 'rm -f "$LOCK_FILE"' EXIT
+
+    # PID 파일 기반 확인
     if [ -f "$PID_FILE" ]; then
       pid=$(cat "$PID_FILE")
       if kill -0 "$pid" 2>/dev/null; then
@@ -65,6 +79,17 @@ case "${1:-start}" in
         exit 0
       fi
       rm -f "$PID_FILE"
+    fi
+
+    # pgrep 이중 확인: 이미 observer 서브셸이 실행 중인지
+    existing=$(pgrep -f 'sleep 300' 2>/dev/null | head -1)
+    if [ -n "$existing" ]; then
+      # sleep 300이 observer의 것인지 확인
+      parent_cmd=$(ps -o command= -p "$(ps -o ppid= -p "$existing" 2>/dev/null | tr -d ' ')" 2>/dev/null)
+      if echo "$parent_cmd" | grep -q 'start-observer'; then
+        echo "Observer subshell already running (sleep PID: $existing)"
+        exit 0
+      fi
     fi
 
     echo "Starting observer agent..."
@@ -83,7 +108,6 @@ case "${1:-start}" in
         echo "[$(date)] Analyzing $obs_count observations..." >> "$LOG_FILE"
 
         # Use Claude Code with Haiku to analyze observations
-        # This spawns a quick analysis session
         if command -v claude &> /dev/null; then
           claude --model haiku --max-turns 3 --print \
             "Read $OBSERVATIONS_FILE and identify patterns. If you find 3+ occurrences of the same pattern, create an instinct file in $CONFIG_DIR/instincts/personal/ following the format in the observer agent spec. Be conservative - only create instincts for clear patterns." \

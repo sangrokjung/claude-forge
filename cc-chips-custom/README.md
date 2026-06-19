@@ -9,8 +9,7 @@ CC CHIPS 서브모듈 위에 덮어쓰는 커스텀 패치입니다.
 
 | 항목 | 설명 |
 |------|------|
-| 모델 감지 | Opus 4.6, Sonnet 4.6, Sonnet 4.5, Haiku 4.5 패턴 추가 |
-| 모델별 비용 계산 | Opus/Sonnet/Haiku별 차등 단가 적용 (기존: Opus 단가 고정) |
+| 모델 감지 | Opus 4.6, Sonnet 4.5, Haiku 4.5 패턴 추가 |
 | 세션 ID | Chip 3에 키 아이콘 + 세션 ID 앞 8자 표시 |
 | 캐시 히트율 | Chip 4 추가 - `cache_read / 전체 입력 토큰 × 100` |
 | API 응답시간 | Chip 4 추가 - `total_api_duration_ms`를 초 단위로 표시 |

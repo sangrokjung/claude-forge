@@ -1,10 +1,11 @@
 ---
-description: Incrementally fix TypeScript and build errors one at a time
+description: 빌드 에러를 자동으로 분석하고 수정합니다.
+allowed-tools: Read, Edit, Glob, Grep, Bash(npm:*), Bash(pnpm:*), Bash(npx:*)
 ---
 
-# Build and Fix
+> 참고: 이 스킬은 build-error-resolver 에이전트를 호출하지 않고 인라인 실행됩니다. 에이전트의 memory 학습이 필요하면 Agent 도구로 build-error-resolver를 직접 호출하세요.
 
-> **참고**: 빌드 에러가 아키텍처 문제에서 기인하는 경우, `/plan`으로 구조적 해결 방안을 먼저 수립하세요.
+# Build and Fix
 
 Incrementally fix TypeScript and build errors:
 
@@ -33,13 +34,3 @@ Incrementally fix TypeScript and build errors:
    - New errors introduced
 
 Fix one error at a time for safety!
-
----
-
-## 다음 단계
-
-| 빌드 수정이 끝나면 | 커맨드 |
-|:-----------------|:-------|
-| 전체 검증 | `/handoff-verify` |
-| 빠른 커밋 | `/quick-commit` |
-| 문서 동기화 | `/sync` |

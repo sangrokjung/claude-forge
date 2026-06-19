@@ -259,7 +259,7 @@ function Install-ClaudeConfig {
     Write-Host ""
     Write-Host "[5/6] Claude Code 설정 파일 설치..." -ForegroundColor Cyan
 
-    $configDir = Join-Path $env:USERPROFILE "claude-forge"
+    $configDir = Join-Path $env:USERPROFILE "claude-code-config"
 
     if (Test-Path $configDir) {
         Write-Host "  [OK] 설정 저장소가 이미 존재합니다: $configDir" -ForegroundColor Gray

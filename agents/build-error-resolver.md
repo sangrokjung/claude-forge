@@ -1,21 +1,12 @@
 ---
 name: build-error-resolver
-description: Build and TypeScript error resolution specialist. Use PROACTIVELY when build fails or type errors occur. Fixes build/type errors only with minimal diffs, no architectural edits. Focuses on getting the build green quickly.
+description: |
+  빌드 실패·타입 에러·컴파일 오류·import 에러·의존성 이슈를 최소 변경으로 그린 복구. 리팩토링·아키텍처 변경 절대 금지. Use proactively when CI/빌드가 빨간불이거나, 터미널에 타입 에러·컴파일 에러가 표시될 때 즉시. 런타임 로직 버그는 systematic-debugger, 아키텍처 변경은 architect 사용.
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: sonnet
 memory: project
+maxTurns: 15
 color: cyan
-# v3.0 optional fields (uncomment when needed):
-# isolation: worktree       # isolate agent work in a git worktree
-# background: true          # run in background without blocking
-# maxTurns: 20              # cap conversation length
-# skills: [build-fix]       # preload skills
-# mcpServers: [context7]    # scoped MCP access
-# effort: max               # deep reasoning
-# hooks:                    # agent-specific hooks
-#   PreToolUse: [...]
-# permissionMode: acceptEdits
-# disallowedTools: [WebFetch]
 ---
 
 <Agent_Prompt>
@@ -130,3 +121,10 @@ color: cyan
 ## Related Skills
 
 - build-fix, fix, systematic-debugging
+
+## Examples
+
+Context: Build is failing
+user: "빌드 에러 나는데 고쳐줘"
+assistant: "build-error-resolver 에이전트를 사용하여 최소 변경으로 빌드 에러를 수정하겠습니다."
+(Build failure triggers build-error-resolver for minimal fix)

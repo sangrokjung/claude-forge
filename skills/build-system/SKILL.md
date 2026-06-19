@@ -1,7 +1,7 @@
 ---
 name: build-system
 version: 1.0.0
-description: 프로젝트 빌드 시스템 자동 감지 및 실행 스킬
+description: Use when detecting and running project build systems automatically. Supports npm/yarn/pnpm/pip/poetry/gradle/maven/cargo/go/make. Triggers on build, test run, project setup, package manager detection.
 last_updated: 2026-01-31
 ---
 

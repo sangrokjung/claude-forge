@@ -72,7 +72,12 @@ def parse_instinct_file(content: str) -> list[dict]:
                 key = key.strip()
                 value = value.strip().strip('"').strip("'")
                 if key == 'confidence':
-                    current[key] = float(value)
+                    # v16: support both numeric (0.7) and text (HIGH/MEDIUM/LOW) confidence
+                    confidence_map = {'high': 0.9, 'medium': 0.6, 'low': 0.3}
+                    try:
+                        current[key] = float(value)
+                    except ValueError:
+                        current[key] = confidence_map.get(value.lower(), 0.5)
                 else:
                     current[key] = value
         else:
@@ -93,11 +98,14 @@ def load_all_instincts() -> list[dict]:
     for directory in [PERSONAL_DIR, INHERITED_DIR]:
         if not directory.exists():
             continue
-        for file in directory.glob("*.yaml"):
+        for file in list(directory.glob("*.yaml")) + list(directory.glob("*.md")):
             try:
                 content = file.read_text()
                 parsed = parse_instinct_file(content)
                 for inst in parsed:
+                    # v16: .md instincts use 'name' instead of 'id'
+                    if not inst.get('id') and inst.get('name'):
+                        inst['id'] = inst['name'].lower().replace(' ', '-').replace('/', '-')
                     inst['_source_file'] = str(file)
                     inst['_source_type'] = directory.name
                 instincts.extend(parsed)

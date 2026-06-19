@@ -181,7 +181,7 @@ git commit -m "chore: .gitignore에 Claude Code 자동 생성 파일 추가"
 
 ```bash
 # 방법 1: 한쪽 버전 선택
-git checkout --theirs .claude/context/hyperbrowser-ready.md
+git checkout --theirs .claude/context/playwright-ready.md
 git add .
 git commit -m "chore: 충돌 해결"
 

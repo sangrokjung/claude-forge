@@ -1,6 +1,6 @@
 ---
 name: team-orchestrator
-description: Agent Teams 오케스트레이션 엔진 - 팀 구성, 작업 분배, 의존성 관리, 결과 집계
+description: Use when orchestrating Agent Teams for parallel development - team composition, task distribution, dependency management, and result aggregation. Triggers on /orchestrate, multi-agent coordination, parallel team work, task delegation to teammates.
 version: 1.1.0
 ---
 
@@ -11,9 +11,7 @@ Agent Teams를 구성하고 작업을 분배하며 결과를 집계하는 오케
 
 ## 전제조건
 
-- `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`를 `1`로 설정해야 동작
-- 설정 위치: settings.json의 `env` 또는 셸 환경변수
-- 미설정 시 TeamCreate 등 팀 도구 사용 불가
+Agent Teams 전제조건(환경변수 설정)은 `reference/agents-teams-ref.md` 참조.
 
 ---
 
@@ -236,7 +234,8 @@ Require plan approval before they make any changes.
   테스트: [PASS/FAIL]
 
   다음 단계:
-    /handoff-verify → /commit-push-pr --merge --notify
+    /handoff-verify → /sync-docs → /commit-push-pr --merge --notify
+    (sync-docs는 머지 전 의무 — commit-push-pr v7이 게이트 내장)
 
 ════════════════════════════════════════════════════════════════
 ```

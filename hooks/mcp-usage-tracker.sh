@@ -26,7 +26,7 @@ server = parts[1] if len(parts) >= 2 else ''
 session = d.get('session_id', '') or f'{os.getppid()}'
 
 kst = timezone(timedelta(hours=9))
-ts = datetime.now(kst).strftime('%Y-%m-%d %H:%M:%S')
+ts = datetime.now(kst).isoformat()
 
 log = os.path.expanduser('~/.claude/mcp-usage.log')
 with open(log, 'a') as f:

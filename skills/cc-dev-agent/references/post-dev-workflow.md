@@ -97,9 +97,9 @@ CLAUDE.local.md
 │ 3. /handoff - 의도 문서화                                    │
 │ 4. /clear - Context Bias 제거                                │
 │ 5. /verify-loop - 자동 재검증 (3회)                          │
-│ 6. /commit-push-pr --merge - 커밋 & PR & 머지               │
-│ 7. /web-checklist - 웹 테스트 체크리스트                      │
-│ 8. /sync-docs - 문서 동기화                                  │
+│ 6. /sync-docs - 문서 동기화 (머지 전 의무 게이트)             │
+│ 7. /commit-push-pr --merge - 커밋 & PR & 머지               │
+│ 8. /web-checklist - 웹 테스트 체크리스트                      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -114,11 +114,11 @@ CLAUDE.local.md
 /clear
 /verify-loop
 
-# 3. 검증 통과 후
-/commit-push-pr --merge
-
-# 4. 문서 동기화
+# 3. 검증 통과 후 — 문서 동기화 (머지 전 의무)
 /sync-docs
+
+# 4. 커밋 & PR & 머지 (v7: sync-docs 게이트 내장)
+/commit-push-pr --merge
 ```
 
 ### 병렬 개발 예시 (Agent Teams)
@@ -198,6 +198,7 @@ CLAUDE.local.md
 ### `/commit-push-pr`
 
 검증 완료 후 커밋 & PR & 머지. **전제조건**: `/verify` 통과.
+**v7**: 머지 옵션 사용 시 4.5단계에서 `/sync-docs`를 **의무 실행**한다 (머지 전 문서 동기화 게이트). 문서 변경분은 같은 커밋에 포함된다.
 
 | 인자 | 설명 |
 |------|------|
@@ -206,6 +207,7 @@ CLAUDE.local.md
 | `--rebase` | PR 생성 + rebase merge |
 | `--draft` | Draft PR 생성 (머지 안 함) |
 | `--no-verify` | 빌드/테스트 스킵 |
+| `--skip-sync-docs` | 문서 동기화 게이트 스킵 (긴급 hotfix 전용) |
 
 ```bash
 /commit-push-pr --merge              # 즉시 머지
@@ -220,14 +222,16 @@ CLAUDE.local.md
 | `spec.md` | 변경된 스펙 반영 |
 | `CLAUDE.md` | 배운 규칙 추가 |
 
-#### 📍 실행 시점
+#### 📍 실행 시점 (v7 — 머지 전 의무)
 
-PR 머지 후 `git pull origin main`으로 변경사항을 가져온 뒤 실행.
+**머지 전 실행이 표준이다.** `/commit-push-pr --merge`가 4.5단계 게이트로 자동 실행하므로 누락돼도 보장되지만, 수동 플로우에서는 커밋 전에 직접 실행한다.
 
 ```bash
-git pull origin main    # 머지된 변경사항 가져오기
-/sync-docs              # 최신 main에서 문서 동기화
+/sync-docs                  # 머지 전 문서 동기화 (변경분이 머지 커밋에 포함)
+/commit-push-pr --merge     # v7: sync-docs 게이트 내장
 ```
+
+> 구버전(v6)은 "머지 후 `git pull` → `/sync-docs`" 순서였으나, 문서 누락 상태의 머지를 차단하기 위해 v7부터 **머지 전**으로 변경됐다.
 
 ---
 

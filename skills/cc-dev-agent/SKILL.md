@@ -1,6 +1,6 @@
 ---
 name: cc-dev-agent
-description: "Claude Code 개발 워크플로우 최적화. Context Engineering, Sub-agents, TDD, 개발 후 검증 워크플로우 제공. 트리거: CC 프로젝트 시작, CLAUDE.md/spec.md 작성, /handoff /verify /commit-push-pr, sub-agent/Explore, Agent Teams 병렬 개발 요청 시."
+description: Use when starting Claude Code projects, writing CLAUDE.md/spec.md, dispatching subagents, or requesting Agent Teams parallel development. Covers Spec-Driven Development, Context Engineering, and post-dev workflow.
 ---
 
 # Claude Code Agent
@@ -46,8 +46,9 @@ Claude Code를 활용한 Spec-Driven 개발 워크플로우 및 Context Engineer
 
 ```
 /orchestrate (선택) → 개발 → /handoff-verify
+→ /sync-docs (머지 전 문서 동기화 의무)
 → /commit-push-pr --merge
-→ /web-checklist → /sync-docs
+→ /web-checklist
 ```
 
 ### 단계별 역할
@@ -57,9 +58,9 @@ Claude Code를 활용한 Spec-Driven 개발 워크플로우 및 Context Engineer
 | 1 | `/orchestrate` (선택) | Agent Teams 병렬 개발 |
 | 2 | 개발 | 기능 구현 |
 | 3 | `/handoff-verify` | 의도 문서화 + fresh context 자동 검증 (v6 통합) |
-| 4 | `/commit-push-pr --merge` | 커밋 & PR & 머지 |
-| 5 | `/web-checklist` | 웹 테스트 체크리스트 |
-| 6 | `/sync-docs` | 문서 동기화 |
+| 4 | `/sync-docs` | **머지 전 문서 동기화 (의무 게이트)** — 문서 변경분이 머지 커밋에 포함됨 |
+| 5 | `/commit-push-pr --merge` | 커밋 & PR & 머지 (v7: sync-docs 게이트 내장 — 4단계 누락 시 자동 실행) |
+| 6 | `/web-checklist` | 웹 테스트 체크리스트 |
 
 → **상세 가이드**: `references/post-dev-workflow.md`
 

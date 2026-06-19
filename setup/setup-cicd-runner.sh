@@ -2,8 +2,8 @@
 set -e
 
 #
-# GitHub Actions Self-Hosted Runner Setup for Mac server
-# Configures the existing Mac server as a CI/CD runner
+# GitHub Actions Self-Hosted Runner Setup for iMac Pro
+# Configures the existing iMac Pro as a CI/CD runner
 #
 # Usage: ./setup-cicd-runner.sh --repo OWNER/REPO --token RUNNER_TOKEN
 #
@@ -17,7 +17,7 @@ NC='\033[0m'
 REPO=""
 TOKEN=""
 RUNNER_DIR="$HOME/actions-runner"
-LABELS="self-hosted,macOS,$(uname -m)"
+LABELS="self-hosted,macOS,Intel,iMac-Pro"
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
@@ -29,7 +29,7 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-echo -e "${BLUE}GitHub Actions Runner Setup (Mac server)${NC}"
+echo -e "${BLUE}GitHub Actions Runner Setup (iMac Pro)${NC}"
 echo "======================================="
 echo ""
 
@@ -130,7 +130,7 @@ setup_runner() {
         --url "https://github.com/$REPO" \
         --token "$TOKEN" \
         --labels "$LABELS" \
-        --name "$(hostname)-runner" \
+        --name "imac-pro-runner" \
         --work "_work" \
         --replace
 
@@ -175,7 +175,7 @@ verify_runner() {
     echo "Usage in workflow:"
     echo "  jobs:"
     echo "    build:"
-    echo "      runs-on: [self-hosted, macOS, Intel, mac-server]"
+    echo "      runs-on: [self-hosted, macOS, Intel, iMac-Pro]"
     echo ""
     echo "System info:"
     echo "  CPU: $(sysctl -n machdep.cpu.brand_string)"

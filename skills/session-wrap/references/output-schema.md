@@ -111,5 +111,5 @@ Phase 5에서 터미널에 표시하는 리포트:
 /tmp/session-wrap/skill-candidates.md
 
 ### 다음 세션에서
-`/sync`로 프로젝트 문서 동기화를 시작하세요.
+`/context-sync`로 외부 채널 동기화를 시작하세요.
 ```

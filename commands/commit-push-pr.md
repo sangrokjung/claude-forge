@@ -1,7 +1,7 @@
 ---
-allowed-tools: Bash(git:*), Bash(gh:*), Bash(npm:*), Bash(python:*), Bash(go:*), Bash(cargo:*), Bash(make:*), Read, Grep, Glob
-description: 검증 완료 후 커밋 & PR & 머지 + MCP 알림 (v6)
-argument-hint: [커밋 메시지] [--merge|--squash|--rebase] [--draft] [--no-verify] [--no-checklist] [--skip-security] [--notify]
+allowed-tools: Bash(git:*), Bash(gh:*), Bash(npm:*), Bash(python:*), Bash(go:*), Bash(cargo:*), Bash(make:*), Read, Grep, Glob, Edit, Write, Skill(sync-docs)
+description: 머지 전 /sync-docs 문서 동기화 의무 게이트 → 검증 → 커밋 & PR & 머지 + MCP 알림 (v7)
+argument-hint: "[커밋 메시지] [--merge|--squash|--rebase] [--draft] [--no-verify] [--no-checklist] [--skip-security] [--skip-sync-docs] [--notify]"
 ---
 
 ## Task
@@ -30,6 +30,7 @@ gh --version 2>/dev/null | head -1 || echo "not installed"
 - `--no-verify` → 빌드/테스트 스킵
 - `--no-checklist` → 머지 후 웹 체크리스트 생성 스킵
 - `--skip-security` → 보안 사전 검증 스킵
+- `--skip-sync-docs` → 문서 동기화 게이트 스킵 (긴급 hotfix 전용, v7 신규 — 머지 모드에서는 경고 출력)
 - `--notify` → 머지 후 MCP 알림 발송 (v6 신규)
 - 나머지 → 커밋 메시지
 
@@ -226,6 +227,47 @@ MEDIUM: [N]건
 
 ---
 
+### 4.5단계: /sync-docs 문서 동기화 게이트 (머지 전 의무, v7 CRITICAL)
+
+> **머지 옵션(`--merge`/`--squash`/`--rebase`)이 있으면 이 단계는 의무다.**
+> 인라인 요약 갱신으로 대체 금지 — 반드시 **Skill 도구로 실제 `/sync-docs` 스킬을 실행**한다.
+> 사용자에게 되묻지 않고 자동 실행한다 (frontmatter `Skill(sync-docs)` 사전 승인).
+
+**실행 규칙:**
+
+| 모드 | 동작 |
+|------|------|
+| 머지 모드 (`--merge`/`--squash`/`--rebase`) | **`sync-docs` 의무 실행. 스킵 불가** (`--skip-sync-docs` 명시 시에만 경고 후 스킵 — 긴급 hotfix 전용) |
+| PR-only / `--draft` | `sync-docs` 기본 실행 (`--skip-sync-docs`로 스킵 가능) |
+
+**실행 방법 (자동 — 사용자 확인 불필요):**
+
+```
+Skill 도구 호출: skill = "sync-docs"
+```
+
+`/sync-docs` v7.1이 수행하는 것:
+1. `prompt_plan.md` → 완료 항목 체크 + 진행 상황 갱신
+2. `spec.md` → 구현 기능/API/데이터 모델 반영
+3. `CLAUDE.md` → 명령어/구조 변경 반영 (200줄 원칙)
+4. `.claude/rules/` → glob 매핑 기반 규칙 동기화
+5. 흩어진 파일 housekeeping scan (PII/시크릿 감지)
+
+**게이트 규칙:**
+- sync-docs가 변경한 문서는 5단계 `git add -A`로 **같은 커밋에 포함**한다 (별도 커밋 생성 금지)
+- sync-docs housekeeping scan이 `alert`(PII/시크릿)를 반환하면 → **커밋/머지 중단** + `/save-work --apply` 안내
+- `--skip-sync-docs` + 머지 모드 조합 시 경고 출력 후 진행:
+
+```
+⚠ 문서 동기화 게이트를 건너뜁니다 (--skip-sync-docs)
+   머지 후 반드시 /sync-docs를 수동 실행하세요. (긴급 hotfix 전용)
+```
+
+**동기화 결과 변수 저장:**
+- `$SYNC_DOCS_STATUS` → "done" | "no-change" | "skipped"
+
+---
+
 ### 5단계: 스테이징 & 커밋
 
 ```bash
@@ -403,15 +445,41 @@ CI 체크 실패
 | `--squash` | `gh pr merge --squash --delete-branch` |
 | `--rebase` | `gh pr merge --rebase --delete-branch` |
 
-**머지 실패 (충돌 등):**
-```
-머지 실패
+**머지 실패 시 자동 에스컬레이션:**
 
-[에러 메시지]
+**Stage 1: 자동 rebase 시도 (최대 1회)**
+1. `git fetch origin main && git rebase origin/main` 실행
+2. 충돌 없으면 → `git push --force-with-lease` → 머지 재시도
+3. 충돌 발생 시 → `git rebase --abort` → Stage 2로
+
+**Stage 2: escalation-fixer (Opus)**
+4. Agent 도구로 escalation-fixer 호출:
+   - prompt: 머지 충돌 에러 + `git diff` + 충돌 파일 목록
+   - 에이전트가 충돌 해결 → 커밋 → 푸시 → 머지 재시도
+5. 머지 성공 시 → 9단계로
+6. 실패 시 → Stage 3
+
+**Stage 3: Telegram Hard Block**
+7. Telegram 알림: `telegram-notify.sh escalation` (머지 실패)
+8. 안내:
+```
+════════════════════════════════════════════════════════════════
+🚨 MERGE FAILED - 자동 해결 실패
+════════════════════════════════════════════════════════════════
+
+에러: [머지 에러 메시지]
+시도:
+  Stage 1: auto rebase → 실패 (충돌)
+  Stage 2: escalation-fixer → 실패
+  Stage 3: Telegram Hard Block
 
 수동 해결:
 1. 충돌 해결: git fetch && git rebase origin/main
 2. 재시도: /commit-push-pr --merge
+
+📱 Telegram 알림 발송 완료
+⏸️ 작업 중단 - 사람 지시 대기
+════════════════════════════════════════════════════════════════
 ```
 → 중단
 
@@ -558,29 +626,30 @@ Slack/Discord 등 추가 채널에 알림 트리거.
 **PR만 생성 (머지 옵션 없음):**
 ```
 ════════════════════════════════════════════════════════════════
-  Commit & PR Complete (v6)
+  Commit & PR Complete (v7)
 ════════════════════════════════════════════════════════════════
 
   커밋: [해시] [메시지]
   브랜치: [브랜치] → [베이스]
   PR #[번호]: [URL]
+  문서 동기화: [sync-docs 완료 | 변경 없음 | 스킵 (--skip-sync-docs)]
   보안: [스캔 안 함 (PR only)]
 
 다음 단계:
   PR 리뷰 후: /commit-push-pr --merge --notify
-  /sync-docs
 ════════════════════════════════════════════════════════════════
 ```
 
 **PR 생성 + 머지 완료 (체크리스트 포함):**
 ```
 ════════════════════════════════════════════════════════════════
-  Commit & PR & Merge Complete (v6)
+  Commit & PR & Merge Complete (v7)
 ════════════════════════════════════════════════════════════════
 
   커밋: [해시] [메시지]
   머지: [브랜치] → [베이스] ([merge/squash/rebase])
   브랜치 삭제됨: [브랜치]
+  문서 동기화: [sync-docs 완료 | 변경 없음 | 스킵 (--skip-sync-docs)]
   보안: Pass (CWE scan clean) | Warn ([N]건) | Skipped
   알림: [발송됨 (--notify) | 미발송]
 
@@ -615,32 +684,31 @@ Slack/Discord 등 추가 채널에 알림 트리거.
 
 다음 단계:
   위 체크리스트 확인
-  /sync-docs
 ════════════════════════════════════════════════════════════════
 ```
 
 **PR 생성 + 머지 완료 (--no-checklist 시):**
 ```
 ════════════════════════════════════════════════════════════════
-  Commit & PR & Merge Complete (v6)
+  Commit & PR & Merge Complete (v7)
 ════════════════════════════════════════════════════════════════
 
   커밋: [해시] [메시지]
   머지: [브랜치] → [베이스] ([merge/squash/rebase])
   브랜치 삭제됨: [브랜치]
+  문서 동기화: [sync-docs 완료 | 변경 없음 | 스킵 (--skip-sync-docs)]
   보안: Pass (CWE scan clean) | Warn ([N]건) | Skipped
   알림: [발송됨 (--notify) | 미발송]
 
 다음 단계:
   /web-checklist - 웹 테스트 체크리스트 (수동)
-  /sync-docs
 ════════════════════════════════════════════════════════════════
 ```
 
 **Draft PR:**
 ```
 ════════════════════════════════════════════════════════════════
-  Draft PR Created (v6)
+  Draft PR Created (v7)
 ════════════════════════════════════════════════════════════════
 
   커밋: [해시] [메시지]
@@ -669,6 +737,7 @@ Ready 전환:
 | `--no-verify` | 빌드/테스트 스킵 |
 | `--no-checklist` | 머지 후 웹 체크리스트 생성 스킵 |
 | `--skip-security` | 보안 사전 검증 스킵 |
+| `--skip-sync-docs` | 문서 동기화 게이트 스킵 (긴급 hotfix 전용, v7 신규) |
 | `--notify` | 머지 후 MCP 알림 발송 (v6 신규) |
 
 ## 사용 예시
@@ -677,10 +746,10 @@ Ready 전환:
 # PR만 생성 (리뷰 필요할 때)
 /commit-push-pr
 
-# PR 생성 + 즉시 머지 + 보안 검증 (기본)
+# PR 생성 + 즉시 머지 (v7 기본 플로우: sync-docs 게이트 → 검증 → 머지)
 /commit-push-pr --merge
 
-# 머지 + MCP 알림 (v6 핵심 플로우)
+# 머지 + MCP 알림
 /commit-push-pr --merge --notify
 
 # 머지하되 체크리스트 스킵 (docs만 변경 등)
@@ -695,10 +764,10 @@ Ready 전환:
 # Draft PR (WIP)
 /commit-push-pr --draft
 
-# 긴급 수정 + 즉시 머지 + 모든 검증 스킵 + 알림
-/commit-push-pr fix: hotfix --merge --no-verify --no-checklist --skip-security --notify
+# 긴급 수정 + 즉시 머지 + 모든 검증 스킵 + 알림 (hotfix 전용 — 머지 후 /sync-docs 수동 실행 의무)
+/commit-push-pr fix: hotfix --merge --no-verify --no-checklist --skip-security --skip-sync-docs --notify
 
-# 보안 검증만 스킵 (빌드/테스트는 유지)
+# 보안 검증만 스킵 (빌드/테스트와 sync-docs 게이트는 유지)
 /commit-push-pr --merge --skip-security
 ```
 

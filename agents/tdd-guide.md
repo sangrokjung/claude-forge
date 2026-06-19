@@ -1,21 +1,14 @@
 ---
 name: tdd-guide
-description: Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Ensures 80%+ test coverage.
-tools: ["Read", "Write", "Edit", "Bash", "Grep"]
-model: opus
+description: |
+  Red-Green-Refactor TDD 사이클 강제. 테스트 먼저 작성 → 최소 코드 구현 → 리팩토링. 커버리지 80%+ 엣지 케이스 분석 포함. Use proactively when 새 기능 구현, 버그 수정, 리팩토링을 시작할 때 — 특히 "TDD로", "테스트 먼저", "테스트 작성"이 포함된 요청. 빌드 에러 수정은 build-error-resolver, E2E는 e2e-runner 사용.
+tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+model: sonnet
 memory: project
+maxTurns: 20
+isolation: worktree
 color: cyan
-# v3.0 optional fields (uncomment when needed):
-# isolation: worktree       # isolate agent work in a git worktree
-# background: true          # run in background without blocking
-# maxTurns: 20              # cap conversation length
-# skills: [tdd]             # preload skills
-# mcpServers: [context7]    # scoped MCP access
-# effort: max               # deep reasoning
-# hooks:                    # agent-specific hooks
-#   PreToolUse: [...]
-# permissionMode: acceptEdits
-# disallowedTools: [WebFetch]
+skills: ["superpowers:test-driven-development", "superpowers:executing-plans", "superpowers:using-git-worktrees", "superpowers:using-superpowers"]
 ---
 
 <Agent_Prompt>
@@ -159,6 +152,7 @@ color: cyan
     - Ignoring existing patterns: Using a different framework or naming convention. Match the codebase.
     - Testing implementation details: Testing internal state instead of user-visible behavior.
     - Shared test state: Tests that depend on execution order or shared mutable data.
+    - Testing anti-patterns (mock abuse, test-only methods): See ~/qjc-office/dotclaude/reference/testing-anti-patterns.md
   </Failure_Modes_To_Avoid>
 
   <Final_Checklist>
@@ -182,16 +176,9 @@ color: cyan
 
 - tdd, tdd-workflow, test-driven-development, frontend-testing, e2e, test-coverage
 
-## Memory Recording (Required)
+## Examples
 
-After completing each task, record learnings in `~/.claude/agent-memory/{agent-name}/`:
-1. Identify new patterns or edge cases encountered
-2. Record as `## Learnings` format with date
-3. Reference previous learnings in future tasks
-
-Format:
-```
-## Learnings
-- [date] [project] Discovery: [pattern/edge-case]
-- [date] [project] Improvement: [old approach] -> [new approach]
-```
+Context: User wants to add a new feature with tests
+user: "사용자 프로필 수정 기능 TDD로 만들어줘"
+assistant: "tdd-guide 에이전트를 사용하여 Red-Green-Refactor 사이클로 구현하겠습니다."
+(Feature request with testing requirement triggers tdd-guide)

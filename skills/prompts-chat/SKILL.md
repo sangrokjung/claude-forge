@@ -1,6 +1,6 @@
 ---
 name: prompts-chat
-description: 스킬/프롬프트 탐색 및 검색 통합 스킬. 사용자가 스킬 설치, 프롬프트 검색, 프롬프트 개선을 요청할 때 활성화.
+description: Use when searching, installing, or improving AI skills and prompts via prompts.chat or skills.sh. Triggers on skill search, prompt lookup, install skill, improve prompt, prompts.chat.
 ---
 
 # Prompts & Skills Lookup

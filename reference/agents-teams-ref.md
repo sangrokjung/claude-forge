@@ -77,6 +77,8 @@ settings.json의 `teammateMode` 설정:
 
 CLI 플래그: `claude --teammate-mode in-process`
 
+현재 설정: `"tmux"` (iTerm2 분할 창 자동 감지)
+
 - **In-process**: Shift+Up/Down으로 팀원 전환 (추가 설정 불필요)
 - **분할 창 (tmux/iTerm2)**: 각 팀원 별도 창, 클릭으로 직접 상호작용
 - **미지원**: VS Code 통합 터미널, Windows Terminal, Ghostty
@@ -187,8 +189,8 @@ TeamCreate → TaskCreate (tasks 배정) → Task (teammates 생성)
 - [결정] API 인증은 JWT 대신 세션 기반으로 채택
   - 이유: 모바일 앱 미지원, 서버 사이드만
   - 거부한 대안: JWT (토큰 관리 복잡도)
-- [결정] DB는 팀 경험에 따라 선택
-  - 이유: 팀의 기술 스택 습숙도와 인프라 연동 고려
+- [결정] DB는 Supabase PostgreSQL 사용
+  - 이유: 팀 경험, MCP 연동
 ```
 
 **규칙:**
@@ -287,3 +289,69 @@ TeamCreate → 새 팀원 3명 생성 (구현 역할)
 
 - **In-process**: Shift+Up/Down → 선택 → 입력. Enter로 세션 보기, Escape로 중단, Ctrl+T로 작업 목록
 - **분할 창**: 팀원 창 클릭 → 직접 상호작용
+
+### 핸드오프 프로토콜
+
+팀원은 리더의 대화 기록을 상속하지 않으므로, 구조화된 컨텍스트 전달이 필수다.
+
+#### 컨텍스트 패키지 (팀원 생성 시)
+
+리더가 팀원을 생성할 때, 다음 템플릿을 프롬프트에 포함하여 램프업 낭비를 제거한다.
+패키지 내용은 git/파일시스템에서 **동적으로 수집**하며, 하드코딩하지 않는다.
+
+```markdown
+## Task Context (자동생성)
+### 프로젝트 상태
+- Branch: `git branch --show-current`
+- 최근 커밋: `git log --oneline -3`
+- 수정 파일: `git diff --name-only HEAD`
+
+### 태스크 세부
+- 목표: {TaskCreate description에서 추출}
+- 의존성: {blockedBy 태스크 목록}
+- 파일 소유권: {이 팀원에게 할당된 파일 경로}
+
+### 관련 결정 (최근 5건)
+- {.claude/decisions.md 또는 compact-snapshots에서 최근 5건}
+
+### 제약
+- golden-principles.md 핵심: 불변성, TDD, 800줄/50줄 제한, zod 검증
+- sprint-contract.md DoD (존재 시)
+```
+
+#### 결과 핸드오프 파일 (팀원 종료 시)
+
+`teammate-context-handoff.sh` 훅이 SubagentStop 이벤트에 반응하여 자동 생성한다.
+저장 경로: `$PROJECT/.claude/handoffs/{agent_name}-{timestamp}.md`
+
+파일 형식:
+```markdown
+# Task Result: {agent_name}
+Generated: {timestamp}
+
+## 변경 사항
+- 수정 파일: {git diff --name-only 결과}
+- 추가 라인: {insertions}
+- 삭제 라인: {deletions}
+
+## 핵심 요약
+(팀원이 SendMessage로 리더에게 보낸 메시지 참조)
+
+## 후속 작업
+- 다음 에이전트가 알아야 할 사항
+```
+
+#### .claude/handoffs/ 디렉토리
+
+| 항목 | 설명 |
+|------|------|
+| 용도 | 팀원 간 작업 결과 인수인계 |
+| 생성 주체 | `teammate-context-handoff.sh` (SubagentStop 훅) |
+| 파일명 규칙 | `{agent_name}-{YYYYMMDD-HHMMSS}.md` |
+| 정리 시점 | TeamDelete 후 또는 다음 /orchestrate 실행 전 |
+| git 추적 | `.gitignore`에 추가 권장 (임시 파일) |
+
+활용:
+- 새 팀원 생성 시 이전 팀원의 핸드오프 파일 경로를 spawn 프롬프트에 포함
+- 페이즈 기반 팀 운영 시, Phase N의 핸드오프 파일을 Phase N+1 팀원에게 전달
+- 리더가 decisions.md와 함께 핸드오프 파일을 참조하여 전체 진행 상황 파악

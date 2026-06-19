@@ -1,63 +1,38 @@
+---
+name: git-workflow-v2
+load: conditional
+audience: team
+sensitivity: L1
+category: meta
+critical: false
+description: Git 커밋/PR/브랜치 워크플로우 표준
+paths:
+  - ".gitignore"
+  - ".github/**"
+---
 # Git Workflow
 
 ## Commit Message Format
 
 ```
 <type>: <description>
-
-<optional body>
 ```
 
-Types: feat, fix, refactor, docs, test, chore, perf, ci
+Types: feat, fix, refactor, docs, test, chore, perf, ci. Attribution disabled via ~/.claude/settings.json.
 
-## Pull Request Workflow
+## PR Workflow
 
-When creating PRs:
-1. Analyze full commit history (not just latest commit)
-2. Use `git diff [base-branch]...HEAD` to see all changes
-3. Draft comprehensive PR summary
-4. Include test plan with TODOs
-5. Push with `-u` flag if new branch
+1. `git diff [base-branch]...HEAD`로 전체 변경 분석 (최신 커밋만 보지 말 것)
+2. PR 요약 + 테스트 계획 포함. `-u` 플래그로 push
 
-## Feature Implementation Workflow
+## Feature Implementation
 
-1. **Plan First**
-   - Use **planner** agent to create implementation plan
-   - Identify dependencies and risks
-   - Break down into phases
+Plan(planner) → TDD(tdd-guide) → Review(code-reviewer) → Commit
 
-2. **TDD Approach**
-   - Use **tdd-guide** agent
-   - Write tests first (RED)
-   - Implement to pass tests (GREEN)
-   - Refactor (IMPROVE)
-   - Verify 80%+ coverage
+## GitHub Org
 
-3. **Code Review**
-   - Use **code-reviewer** agent immediately after writing code
-   - Address CRITICAL and HIGH issues
-   - Fix MEDIUM issues when possible
+`qjc-office` org. 새 리포: `gh repo create qjc-office/<name> --private --source=. --push`
 
-4. **Commit & Push**
-   - Detailed commit messages
-   - Follow conventional commits format
+## 방향 전환
 
-## GitHub Organization
-
-### New Repo
-
-```bash
-# From existing local project
-cd ~/my-new-project
-git init && git add . && git commit -m "init: system files"
-gh repo create your-org/my-new-project --private --source=. --push
-
-# Create empty repo first
-gh repo create your-org/my-new-project --private --clone
-```
-
-### Clone All (New Machine)
-
-```bash
-gh repo list your-org --limit 50 --json sshUrl -q '.[].sshUrl' | xargs -n1 git clone
-```
+3회 패치 실패 → `git reset` 후 범위 축소 재시작. 패치의 패치는 기술 부채.

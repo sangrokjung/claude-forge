@@ -27,7 +27,7 @@
 
 아래 정보는 Mac 관리자가 알려줍니다. 미리 받아두세요.
 
-- [ ] Git 저장소 URL (예: `https://github.com/회사명/claude-forge.git`)
+- [ ] Git 저장소 URL (예: `https://github.com/회사명/claude-code-config.git`)
 - [ ] Mac 서버 호스트명 (예: `mac-mini.tail1234.ts.net`)
 - [ ] Mac 서버 접속 사용자명 (예: `dev`)
 - [ ] Tailscale 팀 초대 링크

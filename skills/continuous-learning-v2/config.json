@@ -17,9 +17,9 @@
     "max_instincts": 100
   },
   "observer": {
-    "enabled": false,
+    "enabled": true,
     "model": "haiku",
-    "run_interval_minutes": 5,
+    "run_interval_minutes": 15,
     "min_observations_to_analyze": 20,
     "patterns_to_detect": [
       "user_corrections",
@@ -30,9 +30,9 @@
     ]
   },
   "evolution": {
-    "cluster_threshold": 3,
+    "cluster_threshold": 5,
     "evolved_path": "~/.claude/homunculus/evolved/",
-    "auto_evolve": false
+    "auto_evolve": true
   },
   "integration": {
     "skill_creator_api": "https://skill-creator.app/api",

@@ -1,136 +1,79 @@
 #!/bin/bash
-# Rate Limiter - PreToolUse Hook
-# 원격 세션에서 도구 호출 속도를 제한하는 보안 훅
+# Rate Limiter - PreToolUse Hook (경량화 버전)
+# Python → bash 산술 전환, atomic write
 #
-# Hook trigger: PreToolUse (모든 도구)
+# Hook trigger: PreToolUse (mcp__*)
 # Exit codes: 0 = 허용, 2 = 차단 (속도 제한 초과)
 #
-# 제한:
-#   - 분당 30회 (슬라이딩 윈도우)
-#   - 시간당 500회
-#   - 일일 5000회
-#
-# 카운터 저장: ~/.openclaw/sessions/rate-limits.json
-# 로깅: ~/.claude/security.log
+# 제한 (로컬): 분당 60, 시간당 1000, 일 8000
+# 제한 (원격): 분당 30, 시간당 500, 일 5000
 
-# 원격 세션이 아니면 검사 건너뜀
-if [[ -z "${OPENCLAW_SESSION_ID:-}" ]]; then
-    exit 0
+# 세션 ID 결정
+if [[ -n "${OPENCLAW_SESSION_ID:-}" ]]; then
+  SESSION_ID="${OPENCLAW_SESSION_ID}"
+  LIMIT_MIN=30; LIMIT_HOUR=500; LIMIT_DAY=5000
+else
+  SESSION_ID="local-${PPID}"
+  LIMIT_MIN=60; LIMIT_HOUR=1000; LIMIT_DAY=8000
 fi
 
-# 카운터 파일 경로
-RATE_FILE="$HOME/.openclaw/sessions/rate-limits.json"
+# 타임스탬프 파일 (/tmp로 전환 — 디스크 I/O 감소)
+RATE_FILE="/tmp/claude-rate-limits-${SESSION_ID}.log"
 SECURITY_LOG="$HOME/.claude/security.log"
 
-# 디렉토리 보장
-mkdir -p "$(dirname "$RATE_FILE")"
+NOW=$(date +%s)
+MIN_AGO=$((NOW - 60))
+HOUR_AGO=$((NOW - 3600))
+DAY_AGO=$((NOW - 86400))
 
-# Python 스크립트에 파일 경로/세션 ID 전달
-export _RATE_FILE="$RATE_FILE"
-export _SECURITY_LOG="$SECURITY_LOG"
-export _SESSION_ID="${OPENCLAW_SESSION_ID}"
+# 오래된 항목 정리 + 카운팅 (1회 순회)
+COUNT_MIN=0
+COUNT_HOUR=0
+COUNT_DAY=0
+CLEANED=""
 
-python3 << 'RATE_SCRIPT'
-import os
-import sys
-import json
-import time
-import fcntl
-from datetime import datetime
-
-rate_file = os.environ.get("_RATE_FILE", "")
-security_log = os.environ.get("_SECURITY_LOG", "")
-session_id = os.environ.get("_SESSION_ID", "unknown")
-# 제한값 하드코딩 (환경변수 오버라이드 불가 — 보안 정책)
-limit_per_min = 30
-limit_per_hour = 500
-limit_per_day = 5000
-
-now = time.time()
-
-# 카운터 파일 읽기 (파일 잠금으로 경쟁 조건 방지)
-def load_rate_data():
-    if not os.path.exists(rate_file):
-        return {}
-    try:
-        with open(rate_file, "r") as f:
-            fcntl.flock(f.fileno(), fcntl.LOCK_SH)
-            data = json.load(f)
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-            return data
-    except (json.JSONDecodeError, IOError):
-        return {}
-
-def save_rate_data(data):
-    try:
-        with open(rate_file, "a+") as f:
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-            f.seek(0)
-            f.truncate()
-            json.dump(data, f, indent=2)
-            f.flush()
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-    except IOError:
-        pass
-
-def log_rate_limit(limit_type, count, limit):
-    if not security_log:
-        return
-    try:
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        entry = (
-            f"{timestamp} | RATE_LIMITED | type={limit_type} | "
-            f"count={count}/{limit} | session={session_id}\n"
-        )
-        with open(security_log, "a") as f:
-            f.write(entry)
-    except IOError:
-        pass
-
-# 세션별 타임스탬프 배열 로드
-data = load_rate_data()
-session_data = data.get(session_id, {"timestamps": []})
-timestamps = session_data.get("timestamps", [])
-
-# 오래된 타임스탬프 정리 (24시간 이전 제거)
-day_ago = now - 86400
-timestamps = [t for t in timestamps if t > day_ago]
-
-# 슬라이딩 윈도우 카운팅
-minute_ago = now - 60
-hour_ago = now - 3600
-
-count_min = sum(1 for t in timestamps if t > minute_ago)
-count_hour = sum(1 for t in timestamps if t > hour_ago)
-count_day = len(timestamps)
+if [[ -f "$RATE_FILE" ]]; then
+  while IFS= read -r ts; do
+    # 숫자가 아니면 건너뜀
+    [[ "$ts" =~ ^[0-9]+$ ]] || continue
+    if (( ts > DAY_AGO )); then
+      CLEANED="${CLEANED}${ts}\n"
+      (( COUNT_DAY++ ))
+      if (( ts > HOUR_AGO )); then
+        (( COUNT_HOUR++ ))
+        if (( ts > MIN_AGO )); then
+          (( COUNT_MIN++ ))
+        fi
+      fi
+    fi
+  done < "$RATE_FILE"
+fi
 
 # 제한 검사
-blocked = False
-if count_min >= limit_per_min:
-    print(f"BLOCKED: 분당 속도 제한 초과 ({count_min}/{limit_per_min})", file=sys.stderr)
-    log_rate_limit("per_minute", count_min, limit_per_min)
-    blocked = True
-elif count_hour >= limit_per_hour:
-    print(f"BLOCKED: 시간당 속도 제한 초과 ({count_hour}/{limit_per_hour})", file=sys.stderr)
-    log_rate_limit("per_hour", count_hour, limit_per_hour)
-    blocked = True
-elif count_day >= limit_per_day:
-    print(f"BLOCKED: 일일 속도 제한 초과 ({count_day}/{limit_per_day})", file=sys.stderr)
-    log_rate_limit("per_day", count_day, limit_per_day)
-    blocked = True
+BLOCKED=""
+if (( COUNT_MIN >= LIMIT_MIN )); then
+  BLOCKED="분당 속도 제한 초과 (${COUNT_MIN}/${LIMIT_MIN})"
+  LIMIT_TYPE="per_minute"
+elif (( COUNT_HOUR >= LIMIT_HOUR )); then
+  BLOCKED="시간당 속도 제한 초과 (${COUNT_HOUR}/${LIMIT_HOUR})"
+  LIMIT_TYPE="per_hour"
+elif (( COUNT_DAY >= LIMIT_DAY )); then
+  BLOCKED="일일 속도 제한 초과 (${COUNT_DAY}/${LIMIT_DAY})"
+  LIMIT_TYPE="per_day"
+fi
 
-if blocked:
-    # 타임스탬프는 추가하지 않음 (차단된 요청은 카운트하지 않음)
-    session_data["timestamps"] = timestamps
-    data[session_id] = session_data
-    save_rate_data(data)
-    sys.exit(2)
+if [[ -n "$BLOCKED" ]]; then
+  echo "BLOCKED: $BLOCKED" >&2
+  # 정리만 저장 (차단된 요청은 카운트 안 함)
+  printf '%b' "$CLEANED" > "${RATE_FILE}.tmp" && mv "${RATE_FILE}.tmp" "$RATE_FILE"
+  # 보안 로그
+  if [[ -n "$SECURITY_LOG" ]]; then
+    echo "$(date '+%Y-%m-%d %H:%M:%S') | RATE_LIMITED | type=${LIMIT_TYPE} | session=${SESSION_ID}" >> "$SECURITY_LOG" 2>/dev/null
+  fi
+  exit 2
+fi
 
-# 현재 요청 타임스탬프 추가
-timestamps.append(now)
-session_data["timestamps"] = timestamps
-data[session_id] = session_data
-save_rate_data(data)
+# 현재 타임스탬프 추가 + 정리된 데이터 저장 (atomic write)
+printf '%b' "${CLEANED}${NOW}\n" > "${RATE_FILE}.tmp" && mv -f "${RATE_FILE}.tmp" "$RATE_FILE"
 
-sys.exit(0)
-RATE_SCRIPT
+exit 0

@@ -5,20 +5,14 @@
 # Claude Code passes hook data via stdin as JSON.
 #
 # Hook config (in ~/.claude/settings.json):
+# PostToolUse에만 등록 (PreToolUse는 성능상 미등록)
 # {
 #   "hooks": {
-#     "PreToolUse": [{
-#       "matcher": "*",
-#       "hooks": [{ "type": "command", "command": "~/.claude/skills/continuous-learning-v2/hooks/observe.sh" }]
-#     }],
 #     "PostToolUse": [{
-#       "matcher": "*",
 #       "hooks": [{ "type": "command", "command": "~/.claude/skills/continuous-learning-v2/hooks/observe.sh" }]
 #     }]
 #   }
 # }
-
-set -e
 
 CONFIG_DIR="${HOME}/.claude/homunculus"
 OBSERVATIONS_FILE="${CONFIG_DIR}/observations.jsonl"
@@ -37,6 +31,12 @@ INPUT_JSON=$(cat)
 
 # Exit if no input
 if [ -z "$INPUT_JSON" ]; then
+  exit 0
+fi
+
+# 서브에이전트 내부에서는 observation 기록 불필요
+# Anthropic 공식: agent_id 필드가 있으면 서브에이전트 컨텍스트
+if echo "$INPUT_JSON" | grep -q '"agent_id"' 2>/dev/null; then
   exit 0
 fi
 

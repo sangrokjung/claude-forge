@@ -1,5 +1,6 @@
 ---
 description: 테스트 먼저 만들고 코드 작성. 한 단위 작업에 사용.
+allowed-tools: Agent, Read, Glob, Grep
 ---
 
 # TDD Command
@@ -14,16 +15,22 @@ This command invokes the **tdd-guide** agent to enforce test-driven development 
 4. **Refactor** - Improve code while keeping tests green (REFACTOR)
 5. **Verify Coverage** - Ensure 80%+ test coverage
 
-> **참고**: 3개 이상 파일이 변경될 예상이라면 `/plan`을 먼저 실행하세요 (Golden Principle #9: HARD-GATE).
-
 ## When to Use
 
 Use `/tdd` when:
 - Implementing new features
 - Adding new functions/components
-- Fixing bugs (write test that reproduces bug first)
+- **Fixing bugs** → Prove-It Pattern: 버그 재현 테스트 먼저, 수정은 그 다음
 - Refactoring existing code
 - Building critical business logic
+
+### Prove-It Pattern (버그 수정 전용)
+
+```
+BUG REPORT → REPRODUCE TEST (RED) → VERIFY FAIL → FIX (GREEN) → VERIFY PASS
+```
+
+버그 수정 시 "고쳤다"의 증거는 **실패→성공 전환**이다. 테스트 없이 수정하면 증상만 가린 것일 수 있다.
 
 ## How It Works
 
@@ -313,7 +320,7 @@ Never skip the RED phase. Never write code before tests.
 
 ## Integration with Other Commands
 
-- **반드시** `/plan`을 먼저 실행하여 구현 계획을 확인하라 (3파일 이상 변경 시 필수 — Golden Principle #9)
+- Use `/plan` first to understand what to build
 - Use `/tdd` to implement with tests
 - Use `/build-and-fix` if build errors occur
 - Use `/code-review` to review implementation
@@ -331,7 +338,5 @@ And can reference the `tdd-workflow` skill at:
 
 ## 다음 단계
 
-| 구현이 끝나면 | 커맨드 |
-|:-------------|:-------|
-| 코드 검사 | `/code-review` |
-| 빌드/테스트 검증 | `/handoff-verify` |
+구현이 완료되면:
+- `/code-review`로 품질 검사

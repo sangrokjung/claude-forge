@@ -1,6 +1,6 @@
 ---
 name: security-pipeline
-description: 보안 파이프라인 - CWE Top 25 + STRIDE 자동 검증
+description: Use when security verification is needed - pre-commit security checks, vulnerability scanning, STRIDE threat analysis. Integrates with /handoff-verify --security and /commit-push-pr. CWE Top 25 based.
 version: 2.0.0
 ---
 

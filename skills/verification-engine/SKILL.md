@@ -1,43 +1,13 @@
 ---
 name: verification-engine
-description: 통합 검증 엔진 - 서브에이전트 기반 fresh-context 검증 루프 (v6)
+description: Use when verifying build/test/lint before commit, PR, or completion claims. Runs verification pipeline in fresh subagent context with auto-repair. Triggers on /handoff-verify, pre-commit check, build verification, test validation.
 version: 2.0.0
 ---
 
 ## 검증 원칙
 
-### The Iron Law
-
-```
-NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
-```
-
-검증 커맨드를 이번 메시지에서 실행하지 않았다면, 통과했다고 주장할 수 없다.
-
-### The Gate Function
-
-```
-BEFORE claiming any status or expressing satisfaction:
-
-1. IDENTIFY: What command proves this claim?
-2. RUN: Execute the FULL command (fresh, complete)
-3. READ: Full output, check exit code, count failures
-4. VERIFY: Does output confirm the claim?
-   - If NO: State actual status with evidence
-   - If YES: State claim WITH evidence
-5. ONLY THEN: Make the claim
-
-Skip any step = lying, not verifying
-```
-
-### Common Failures
-
-| Claim | Requires | Not Sufficient |
-|-------|----------|----------------|
-| Tests pass | Test command output: 0 failures | Previous run, "should pass" |
-| Build succeeds | Build command: exit 0 | Linter passing, logs look good |
-| Bug fixed | Test original symptom: passes | Code changed, assumed fixed |
-| Agent completed | VCS diff shows changes | Agent reports "success" |
+Iron Law, Gate Function, Common Failures 체크리스트는 `rules/verification.md`에 정의되어 있다.
+이 스킬은 해당 원칙의 **실행 엔진**이다.
 
 ---
 

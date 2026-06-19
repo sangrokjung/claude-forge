@@ -1,10 +1,12 @@
 ---
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(git:*)
-description: prompt_plan.md, spec.md, CLAUDE.md + rules/ 문서 동기화 (v7)
-argument-hint: [--check-only]
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(git:*), Bash(~/.claude/scripts/sync-housekeeping-scan.sh:*)
+description: prompt_plan.md, spec.md, CLAUDE.md + rules/ 문서 동기화 (v7.1 — 흩어진 파일 housekeeping scan 통합)
+argument-hint: "[--check-only]"
 ---
 
-# /sync-docs - 문서 동기화 (v7)
+# /sync-docs - 문서 동기화 (v7.1)
+
+> Scope: prompt_plan.md, spec.md, CLAUDE.md, .claude/rules/ 등 핵심 프로젝트 메타 문서 동기화. 일반 문서(README, API docs, 가이드)는 /update-docs를 사용하세요.
 
 ---
 
@@ -16,6 +18,28 @@ argument-hint: [--check-only]
 ```bash
 git log --oneline -5
 ```
+
+---
+
+## 0.5단계: 흩어진 파일 housekeeping scan (CRITICAL, 2026-05-29 신설)
+
+> 규칙: `~/qjc-office/dotclaude/rules/sync-housekeeping.md`
+
+문서 동기화 전, cwd에 흩어진 untracked 파일을 감지한다. 실제 이동은 본 명령어가 수행하지 않으며, 감지만.
+
+```bash
+~/.claude/scripts/sync-housekeeping-scan.sh --json > /tmp/sync-docs-housekeeping.json
+LEVEL=$(python3 -c "import json; print(json.load(open('/tmp/sync-docs-housekeeping.json'))['level'])")
+```
+
+| Level | 동작 |
+|-------|------|
+| `alert` (PII/시크릿 패턴 감지) | **즉시 중단** + `/save-work --apply`로 sanitize 권장 안내 |
+| `warn` (민감 파일 의심 또는 10개+ 흩어진 문서) | 한국어 배너 stderr 출력 + 진행 유지 + `/save-work --apply` 권장 |
+| `info` (흩어진 파일 1~9개) | 한 줄 카운트 출력 + 진행 유지 |
+| `ok` (정상) | 출력 없이 진행 |
+
+비활성: `export QJC_SYNC_HOUSEKEEPING_DISABLED=1`
 
 ---
 
@@ -100,7 +124,7 @@ Glob 패턴으로 `spec.md`를 탐색한다:
 
 ---
 
-## 5단계: CLAUDE.md 동기화 (60줄 제한)
+## 5단계: CLAUDE.md 동기화 (200줄 원칙 (Anthropic 공식))
 
 Glob 패턴으로 `CLAUDE.md`를 탐색한다:
 - `./CLAUDE.md`
@@ -108,9 +132,9 @@ Glob 패턴으로 `CLAUDE.md`를 탐색한다:
 
 발견된 경로를 이후 단계에서도 일관되게 사용한다.
 
-### 60줄 제한 규칙 (CRITICAL)
+### 200줄 원칙 (Anthropic 공식) (CRITICAL)
 
-CLAUDE.md는 **60줄 이하**를 유지한다. 이를 초과하면 Claude가 규칙을 무시하기 시작한다.
+CLAUDE.md는 **200줄 미만**을 유지한다. 이를 초과하면 Claude가 규칙을 무시하기 시작한다.
 
 **CLAUDE.md에 허용되는 내용 (Core 정보만):**
 - 프로젝트 개요 (1-3줄)
@@ -137,7 +161,7 @@ CLAUDE.md는 **60줄 이하**를 유지한다. 이를 초과하면 Claude가 규
    - 파일 구조 변경 → CLAUDE.md에 반영
    - 새로운 의존성 → CLAUDE.md에 기록
    - 코딩 규칙/패턴 상세 → **rules/ 파일로 라우팅** (6단계로)
-4. 업데이트 후 **60줄 초과 여부**를 검증한다.
+4. 업데이트 후 **200줄 초과 여부**를 검증한다.
 5. 초과하면 상세 내용을 rules/ 파일로 분리한다.
 
 ---
@@ -154,18 +178,42 @@ Glob: .claude/rules/**/*.md
 
 기존 rules 파일 목록과 각 파일의 주제를 파악한다.
 
-### 6-2. 변경 내용 → rules 매핑
+### 6-2. 변경 내용 → rules 매핑 (실행 규칙, CRITICAL)
 
-변경된 코드의 성격에 따라 대상 rules 파일을 결정한다:
+**glob 패턴 기반 자동 라우팅** — 변경 파일 목록을 아래 패턴과 매칭하여 대상 rules를 결정한다. 한 파일이 여러 패턴에 매칭되면 모두 업데이트 대상.
 
-| 변경 성격 | 대상 rules 파일 | 동작 |
-|----------|----------------|------|
-| API 엔드포인트 추가/변경 | `rules/api-design.md` | 엔드포인트 목록 업데이트 |
-| DB 스키마/마이그레이션 | `rules/database.md` | 테이블/컬럼 변경 반영 |
-| 컴포넌트 패턴 변경 | `rules/frontend.md` | 패턴 규칙 업데이트 |
-| 테스트 설정 변경 | `rules/testing.md` | 테스트 규칙 업데이트 |
-| 인증/보안 변경 | `rules/security.md` | 보안 규칙 업데이트 |
-| 빌드/CI 변경 | `rules/build.md` | 빌드 규칙 업데이트 |
+| 파일 패턴 (glob) | 대상 rules 파일 | 업데이트 동작 |
+|------------------|-----------------|---------------|
+| `supabase/functions/**/_shared/notify.ts` | `rules/discord-bot.md` | MENTION_ALLOWLIST 목록 / 새 NotificationType 반영 |
+| `supabase/functions/**/_shared/*.ts` | `rules/edge-functions.md` | 공유 모듈 변경 기록 |
+| `supabase/migrations/**/*.sql` | `rules/supabase.md` | 신규 테이블/RPC/인덱스 목록 |
+| `supabase/functions/*/handlers/*.ts` | `rules/edge-functions.md` | 엔드포인트 목록 |
+| `supabase/functions/*/index.ts` | `rules/edge-functions.md` | 라우팅 변경 |
+| `dashboard/app/api/**/*.ts` | `rules/api-design.md` | API Route 추가/변경 |
+| `dashboard/app/**/page.tsx`, `dashboard/app/**/_*.tsx` | `rules/react-components.md` | Server/Client 경계 점검 (rsc-guard 연동) |
+| `dashboard/middleware.ts`, `**/auth/**` | `rules/security.md` | 인증/권한 경로 변경 |
+| `dashboard/lib/skill-catalog.json` | `rules/three-tools.md` | 3대 원툴 목록 변경 감지 시 |
+| `.claude/commands/*.md`, `.claude/agents/*.md` | `rules/three-tools.md` / `rules/agents.md` | 새 스킬/에이전트 등재 |
+| `.claude/hooks/*.sh` | `rules/doc-sync.md` | 자동화 훅 변경 기록 |
+| `.env*`, `*credentials*`, `*secret*` | `rules/env-sync.md` + `rules/security.md` | 환경변수 동기화 필수 |
+| 패키지 버전 (`package.json`, `package-lock.json`) | `rules/doc-sync.md` (프로젝트 루트) | 주요 의존성 업데이트 기록 |
+| 빌드/배포 설정 (`vercel.json`, `*.config.*`) | `rules/deploy.md` 또는 CLAUDE.md "Dashboard" 섹션 | 빌드 규칙 |
+| `tests/**`, `*.test.*`, `*.spec.*` | `rules/testing.md` | 테스트 규칙 |
+
+### 6-2-a. 매핑 실행 절차
+
+1. **변경 파일 목록 수집** (2단계의 diff 결과 재사용)
+2. **파일마다 glob 매칭** — 해당되는 대상 rules 후보 세트 생성
+3. **기존 rules 파일 존재 여부 확인** — `.claude/rules/<name>.md` 없으면 5단계 예외 조항(300줄 초과 시) 외에는 **신규 생성 금지**, 알림만 출력
+4. **변경 내용 요약** — diff를 읽고 해당 rules 파일의 관련 섹션을 간략히 업데이트 (5-10줄 이내)
+5. **각 rules 파일 업데이트 시 frontmatter `paths` 유지/추가** — 해당 glob 패턴을 paths에 자동 등록
+
+### 6-2-b. 명시적 skip 규칙
+
+아래 파일은 rules 동기화 대상이 아니며 로그만 남긴다:
+- `dashboard/app/guide/_*.{ts,tsx,json}` — 가이드 페이지 데이터는 skill-catalog에서 파생되므로 별도 rules 갱신 불필요
+- `**/*.lock`, `**/scheduled_tasks.lock` — runtime artifact
+- `.claude/qa-*.{md,json}`, `.claude/handoff.md` — session-local
 
 ### 6-3. Path-Specific frontmatter 유지
 
@@ -183,7 +231,7 @@ paths:
 - 기존 rules 파일에 해당 주제가 있으면 → **해당 파일 업데이트**
 - 해당 주제의 rules 파일이 없으면 → **새 rules 파일 생성하지 않음** (알림만)
 - CLAUDE.md에서 분리해야 할 내용이 있으면 → 기존 rules 파일에 이동하거나, 없으면 알림
-- **예외:** 7단계에서 CLAUDE.md가 80줄을 초과하여 분리가 필수인 경우, 적절한 이름으로 새 rules 파일을 생성할 수 있다. 이 경우 paths frontmatter를 포함한다.
+- **예외:** 7단계에서 CLAUDE.md가 300줄을 초과하여 분리가 필수인 경우, 적절한 이름으로 새 rules 파일을 생성할 수 있다. 이 경우 paths frontmatter를 포함한다.
 
 ---
 
@@ -193,18 +241,22 @@ paths:
 
 | 줄 수 | 상태 | 동작 |
 |-------|------|------|
-| ≤ 60 | 정상 | 완료 |
-| 61-80 | 경고 | 출력에 경고 표시, 분리 제안 |
-| > 80 | 초과 | 상세 내용을 rules/로 분리 실행 (6-4 예외 조항 적용) |
+| ≤ 200 | 정상 | 완료 |
+| 201-300 | 경고 | 출력에 경고 표시, 분리 제안 |
+| > 300 | 초과 | 상세 내용을 rules/로 분리 실행 (6-4 예외 조항 적용) |
 
 ---
 
-## 8단계: 커밋 안내
+## 8단계: 커밋 안내 + project-status-snapshot 제안
 
 동기화로 파일이 변경된 경우 다음 액션을 안내한다:
 - `--check-only` 모드 → "적용하려면: /sync-docs"
 - 변경 있음 → "다음: /quick-commit"
 - 변경 없음 → 안내 생략
+
+**프로젝트 상태 블록 제안 (Phase 9 통합)**:
+- 레포 루트에 `README.md` 또는 `docs/STATUS.md`가 있고 `<!-- qjc-auto-status:start -->` 블록이 탐지되거나 os_projects에 프로젝트 등록됐으면 → 출력 말미에 **"권장: `/project-status-snapshot --dry-run`으로 진행상황 블록 갱신"** 한 줄 추가
+- 자동 실행하지 않음 — 사용자 판단 유도
 
 ---
 
@@ -229,7 +281,7 @@ paths:
     - [변경 항목 1]
     - [변경 항목 2]
 
-  CLAUDE.md: N줄 (정상 / 경고: 60줄 초과)
+  CLAUDE.md: N줄 (정상 / 경고: 200줄 초과)
 
   다음: /quick-commit
 
@@ -254,7 +306,7 @@ paths:
 
   CLAUDE.md (현재 N줄):
     - 새 명령어 추가 필요: pnpm db:migrate
-    - 경고: 80줄 초과 → rules/ 분리 필요
+    - 경고: 300줄 초과 → rules/ 분리 필요
       → 코딩 컨벤션 (15줄) → rules/code-style.md로 이동 제안
 
   rules/:
@@ -291,13 +343,13 @@ paths:
   Sync Docs v7 (CLAUDE.md 분리)
 ════════════════════════════════════════════════════════════════
 
-  CLAUDE.md가 N줄 → 60줄로 축소
+  CLAUDE.md가 N줄 → 200줄로 축소
 
   분리된 내용:
     → rules/code-style.md (15줄 이동, 신규 생성)
     → rules/testing.md (12줄 이동, 기존 파일)
 
-  CLAUDE.md: N줄 → 60줄 (정상)
+  CLAUDE.md: N줄 → 200줄 (정상)
 
 ════════════════════════════════════════════════════════════════
 ```

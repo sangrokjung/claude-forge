@@ -68,7 +68,7 @@ Mac 한 대를 개발 서버로 두고, Windows PC를 사용하는 팀원들이 
 **터미널 열기**: Spotlight (Cmd + Space) 에서 "Terminal" 검색 후 실행
 
 ```bash
-cd ~/claude-forge/setup
+cd ~/claude-code-config/setup
 ./setup-mac-server.sh --hostname mac-mini
 ```
 
@@ -214,8 +214,8 @@ winget install --id Git.Git --accept-source-agreements --accept-package-agreemen
 **저장소 복제:**
 ```powershell
 cd $env:USERPROFILE
-git clone https://github.com/sangrokjung/claude-forge.git
-cd claude-forge\setup
+git clone https://github.com/qjc-office/dotclaude.git
+cd claude-code-config\setup
 ```
 
 > SSH 키가 아직 없으므로 HTTPS 방식으로 복제합니다. 나중에 SSH 키 설정이 완료되면 SSH 방식으로 전환할 수 있습니다.
@@ -593,7 +593,7 @@ tmux list-sessions
 **원인**: SSH 키가 GitHub에 등록되지 않았거나 HTTPS를 사용해야 함
 **해결**: 초기 설정 시에는 HTTPS 방식으로 clone:
 ```powershell
-git clone https://github.com/sangrokjung/claude-forge.git
+git clone https://github.com/qjc-office/dotclaude.git
 ```
 SSH 방식은 GitHub에 SSH 키를 등록한 후 사용 가능합니다.
 

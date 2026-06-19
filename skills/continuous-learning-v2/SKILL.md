@@ -246,37 +246,6 @@ v2 is fully compatible with v1:
 - No actual code or conversation content is shared
 - You control what gets exported
 
-## Agent Memory Integration
-
-continuous-learning-v2의 instinct 시스템은 에이전트의 Self-Evolution Protocol과 상호보완적으로 동작한다.
-
-### 관계도
-
-````
-Continuous Learning v2 (세션 관찰 기반)
-  └─ observations.jsonl → instincts/personal/ → evolved/
-        ↕ 상호 참조
-Agent Self-Evolution (작업 완료 기반)
-  └─ 에이전트 작업 결과 → ~/.claude/agent-memory/{agent-name}/
-````
-
-### 차이점
-
-| 차원 | Continuous Learning v2 | Agent Self-Evolution |
-|------|----------------------|---------------------|
-| 트리거 | 세션 관찰 (hooks) | 에이전트 작업 완료 |
-| 저장소 | `~/.claude/homunculus/instincts/` | `~/.claude/agent-memory/` |
-| 형태 | 원자적 instinct (trigger + action) | Learnings 리스트 (발견/개선) |
-| 대상 | 전체 (범용) | 개별 에이전트 |
-| 자동화 | Hook → Observer → Instinct (자동) | 에이전트 작업 완료 후 자체 기록 |
-
-### 통합 사용 시나리오
-
-1. **세션 중**: continuous-learning-v2 hooks가 관찰 데이터 수집
-2. **에이전트 작업 후**: 에이전트가 Self-Evolution으로 자체 memory 업데이트
-3. **세션 종료**: `/session-wrap`이 양쪽 데이터를 종합하여 정리
-4. **다음 세션 시작**: `/sync`로 프로젝트 문서 동기화
-
 ## Related
 
 - [Skill Creator](https://skill-creator.app) - Generate instincts from repo history

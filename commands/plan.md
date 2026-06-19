@@ -1,5 +1,6 @@
 ---
 description: AI가 구현 계획을 세워줍니다. 확인 후 코딩 시작.
+allowed-tools: Agent, Read, Glob, Grep
 ---
 
 # Plan Command
@@ -91,6 +92,26 @@ Agent (planner):
 **WAITING FOR CONFIRMATION**: Proceed with this plan? (yes/no/modify)
 ```
 
+## Common Rationalizations — 계획 건너뛰기 합리화 차단
+
+| 변명 | 현실 |
+|------|------|
+| "간단해서 계획 안 해도 돼" | 간단한 것도 3+ 파일 수정이면 계획 필요. "간단하다"는 착각이 가장 위험. |
+| "이미 머릿속에 다 있어" | 머릿속 계획은 빠진 게 보이지 않는다. 문서화하면 빈 곳이 드러남. |
+| "시간 없어서 바로 코딩" | 계획 없이 코딩 → 재작업 시간이 계획 시간의 3~5배. |
+| "요구사항이 명확해서" | 명확한 요구사항도 구현 순서/의존성/리스크는 계획에서 드러남. |
+| "프로토타입이니까" | 프로토타입이 프로덕션 되는 법. 최소한의 계획이라도 세워라. |
+| "코드 보면서 파악할게" | 코드 읽기는 탐색이지 계획이 아니다. 방향 없는 탐색은 시간 낭비. |
+| "이전에 비슷한 거 해봤으니까" | 비슷하다고 같지 않다. 차이점이 버그의 원인. |
+
+## Red Flags — 즉시 /plan 실행
+
+- 수정할 파일이 3개 이상인데 계획 없이 시작
+- "일단 해보고 안 되면 고치자"
+- 코드 작성 시작 후 "아, 이것도 바꿔야 하네" 연쇄 발생
+- 30분 이상 코딩했는데 완료 기준이 불명확
+- 팀원/사용자에게 "얼마나 걸려?" 질문에 답 못 함
+
 ## Important Notes
 
 **CRITICAL**: The planner agent will **NOT** write any code until you explicitly confirm the plan with "yes" or "proceed" or similar affirmative response.
@@ -114,19 +135,8 @@ This command invokes the `planner` agent located at:
 
 ---
 
-## 후처리: 계획 저장
-
-사용자가 계획을 확인하면, 확정된 계획을 `prompt_plan.md`에 저장한다:
-1. 프로젝트 루트의 `prompt_plan.md`에 계획 내용을 기록
-2. 기존 `prompt_plan.md`가 있으면 이전 내용을 "## 이전 계획" 섹션으로 아카이브 후 덮어쓰기
-3. 저장 후 안내: "계획이 prompt_plan.md에 저장되었습니다."
-
-이렇게 하면 다음 세션에서 `/sync`로 계획을 불러올 수 있다.
-
 ## 다음 단계
 
-| 계획이 확정되면 | 커맨드 |
-|:---------------|:-------|
-| 테스트하면서 구현 | `/tdd` |
-| 한 번에 자동 실행 | `/auto` |
-| 문서 동기화 | `/sync` (다른 세션에서 이어서 작업 시) |
+계획이 확정되면:
+- `/tdd`로 구현 시작
+- `/auto`로 전체 자동 진행

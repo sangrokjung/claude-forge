@@ -9,8 +9,10 @@ Claude Code 워크플로우용 복사-붙여넣기 프롬프트.
 ## 워크플로우 순서
 
 ```
-1. ORCHESTRATE (선택) → 2. 개발 → 3. HANDOFF → 4. /clear → 5. VERIFY → 6. COMMIT-PUSH-PR → 7. SYNC-DOCS
+1. ORCHESTRATE (선택) → 2. 개발 → 3. HANDOFF → 4. /clear → 5. VERIFY → 6. SYNC-DOCS → 7. COMMIT-PUSH-PR
 ```
+
+> **SYNC-DOCS가 COMMIT-PUSH-PR(머지)보다 먼저다** — 문서 동기화 변경분이 머지 커밋에 포함되어야 한다 (머지 전 의무 게이트, v7).
 
 ---
 
@@ -55,7 +57,18 @@ Agent Teams로 병렬 개발을 시작해줘.
    - 보안 취약점
 4. 빌드 & 테스트 & 린트 실행
 5. 결과: Critical / Warning / Info 분류
-6. 통과 시 handoff.md 삭제, "/commit-push-pr" 안내
+6. 통과 시 handoff.md 삭제, "SYNC-DOCS → /commit-push-pr --merge" 안내
+```
+
+### SYNC-DOCS (머지 전 의무)
+
+```
+개발 문서를 동기화해줘. (커밋/머지 전에 실행 — 문서 변경분이 머지 커밋에 포함되도록)
+
+1. git log --oneline -5로 최근 커밋 확인
+2. prompt_plan.md: 완료 Task [ ] → [x]
+3. spec.md: 변경된 스펙 반영
+4. CLAUDE.md: 배운 규칙 추가
 ```
 
 ### COMMIT-PUSH-PR
@@ -63,26 +76,16 @@ Agent Teams로 병렬 개발을 시작해줘.
 ```
 검증 통과 후 커밋 & PR & 머지를 진행해줘.
 
-**옵션**: --merge / --squash / --rebase / --draft / --no-verify
+**옵션**: --merge / --squash / --rebase / --draft / --no-verify / --skip-sync-docs(긴급 전용)
 
 1. git status, branch 확인
 2. main 브랜치면 경고
 3. 빌드/테스트 검증 (--no-verify 없으면)
-4. git add -A && git commit (Conventional Commits)
-5. git push
-6. gh pr create
-7. 옵션에 따라 gh pr merge
-```
-
-### SYNC-DOCS
-
-```
-개발 문서를 동기화해줘.
-
-1. git log --oneline -5로 최근 커밋 확인
-2. prompt_plan.md: 완료 Task [ ] → [x]
-3. spec.md: 변경된 스펙 반영
-4. CLAUDE.md: 배운 규칙 추가
+4. 문서 동기화 게이트: SYNC-DOCS 미실행 상태면 지금 실행 (머지 전 의무 — --skip-sync-docs 시에만 경고 후 스킵)
+5. git add -A && git commit (Conventional Commits — 문서 동기화 변경분 포함)
+6. git push
+7. gh pr create
+8. 옵션에 따라 gh pr merge
 ```
 
 ---
