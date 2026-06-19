@@ -266,9 +266,9 @@ graph LR
 | 카테고리 | 수량 | 주요 항목 |
 |:--------:|:----:|:----------|
 | **에이전트** | 11 | `planner` `architect` `code-reviewer` `security-reviewer` `tdd-guide` `database-reviewer` (Opus) / `build-error-resolver` `e2e-runner` `refactor-cleaner` `doc-updater` `verify-agent` (Sonnet) — frontmatter v2 지원 |
-| **커맨드** | 40 | `/commit-push-pr` `/handoff-verify` `/explore` `/tdd` `/plan` `/orchestrate` `/security-review` ... (하이브리드 정책) |
-| **스킬** | 15+ | `build-system` `security-pipeline` `eval-harness` `team-orchestrator` `session-wrap` ... (+커맨드에서 이전 8개) |
-| **훅** | 18 + 9 예제 | 보안 방어 6개 + 유틸리티 12개(built-in) + 21 lifecycle 이벤트 샘플 9개(opt-in) |
+| **커맨드** | 33 | `/commit-push-pr` `/handoff-verify` `/explore` `/tdd` `/plan` `/orchestrate` `/security-review` ... (하이브리드 정책) |
+| **스킬** | 24 | `build-system` `security-pipeline` `eval-harness` `team-orchestrator` `session-wrap` ... (16 native + 커맨드에서 이전 8개) |
+| **훅** | 15 + 9 예제 | 보안 방어 6개 + 유틸리티 9개(built-in) + 21 lifecycle 이벤트 샘플 9개(opt-in) |
 | **규칙** | 9 | `coding-style` `security` `git-workflow` `golden-principles` `agents-v2` `verification` ... |
 | **MCP 서버** | 4 (minimal) | `playwright` `context7` `jina-reader` `chrome-devtools@0.23.0` — 7개 이상은 [`mcp-servers.optional.json`](mcp-servers.optional.json) |
 
@@ -371,8 +371,8 @@ vim ~/.claude/settings.local.json
 graph TB
     subgraph REPO["claude-forge (git 리포)"]
         A["agents/ (11)"]
-        C["commands/ (40)"]
-        S["skills/ (15)"]
+        C["commands/ (33)"]
+        S["skills/ (24)"]
         H["hooks/ (15)"]
         R["rules/ (9)"]
         SC["scripts/"]
@@ -419,16 +419,16 @@ claude-forge/
   ├── agents/                    에이전트 정의 (11 .md, frontmatter v2)
   ├── cc-chips/                  상태바 서브모듈
   ├── cc-chips-custom/           커스텀 상태바 오버레이
-  ├── commands/                  슬래시 커맨드 (32 .md, 8개는 skills/로 이동)
+  ├── commands/                  슬래시 커맨드 (33 .md, 8개는 skills/로 이동)
   ├── docs/                      스크린샷, 다이어그램, 정책 문서 (v3.0 가이드)
-  ├── hooks/                     이벤트 기반 스크립트 (18)
+  ├── hooks/                     이벤트 기반 스크립트 (15)
   │   └── examples/              21 lifecycle 이벤트 샘플 opt-in (9)
   ├── knowledge/                 지식 베이스
   ├── reference/                 참조 문서 (+ agent-schema.json)
   ├── rules/                     자동 로드 규칙 파일 (9)
   ├── scripts/                   유틸리티 스크립트
   ├── setup/                     설치 가이드 + CLAUDE.md 템플릿
-  ├── skills/                    다단계 스킬 워크플로우 (15+, 하이브리드 정책)
+  ├── skills/                    다단계 스킬 워크플로우 (24, 하이브리드 정책)
   ├── install.sh                 macOS/Linux 설치 (--upgrade 지원)
   ├── install.ps1                Windows 설치 (--upgrade 지원)
   ├── mcp-servers.json           MCP 기본 설정 (4 minimal)
@@ -529,19 +529,17 @@ claude-forge/
 
 | 커맨드 | 설명 |
 |:-------|:-----|
+| `/agent-router` | 전문 에이전트 자동 라우팅 |
+| `/auto` | 계획부터 PR까지 원버튼 자동 실행 |
 | `/build-fix` | 빌드 오류 자동 수정 |
 | `/checkpoint` | 현재 상태 체크포인트 저장 |
 | `/code-review` | 방금 작성한 코드를 보안+품질 검사 |
 | `/commit-push-pr` | 커밋, 푸시, PR 생성 자동화 |
-| `/debugging-strategies` | 디버깅 전략 가이드 |
-| `/dependency-upgrade` | 의존성 업그레이드 관리 |
 | `/e2e` | E2E 테스트 실행 |
 | `/eval` | 코드 모델 평가 |
-| `/evaluating-code-models` | 코드 모델 벤치마크 |
-| `/evaluating-llms-harness` | LLM 하네스 평가 |
 | `/explore` | 코드베이스를 탐색하여 구조를 파악 |
-| `/extract-errors` | 오류 추출 및 분석 |
 | `/forge-update` | Claude Forge 프레임워크를 최신 버전으로 업데이트 |
+| `/guide` | 처음 사용자를 위한 3분 인터랙티브 가이드 |
 | `/handoff-verify` | 빌드/테스트/린트 한 번에 자동 검증 |
 | `/init-project` | 프로젝트 초기 설정 |
 | `/learn` | 학습 및 지식 축적 |
@@ -551,13 +549,11 @@ claude-forge/
 | `/pull` | 원격 변경사항 가져오기 |
 | `/quick-commit` | 빠른 커밋 & 푸시 |
 | `/refactor-clean` | 리팩토링 및 코드 정리 |
-| `/security-compliance` | 보안 컴플라이언스 검증 |
 | `/security-review` | 보안 리뷰 실행 |
-| `/stride-analysis-patterns` | STRIDE 위협 모델링 |
+| `/show-setup` | 설치 상태와 프로젝트 정보 보기 |
 | `/suggest-automation` | 자동화 기회 제안 |
-| `/summarize` | 코드/문서 요약 |
-| `/sync-docs` | 문서 동기화 |
 | `/sync` | 최신 변경사항 풀 + 프로젝트 문서 동기화 (prompt_plan.md, spec.md, CLAUDE.md, rules). 워크플로우 완료 후 또는 세션 시작 시 사용. |
+| `/sync-docs` | 문서 동기화 |
 | `/tdd` | 테스트 먼저 만들고 코드 작성 |
 | `/test-coverage` | 테스트 커버리지 분석 |
 | `/update-codemaps` | 코드맵 업데이트 |
@@ -566,14 +562,11 @@ claude-forge/
 | `/web-checklist` | 웹 체크리스트 검사 |
 | `/worktree-cleanup` | 워크트리 정리 |
 | `/worktree-start` | 워크트리 시작 |
-| `/auto` | 계획부터 PR까지 원버튼 자동 실행 |
-| `/guide` | 처음 사용자를 위한 3분 인터랙티브 가이드 |
-| `/show-setup` | 설치 상태와 프로젝트 정보 보기 |
 
 </details>
 
 <details>
-<summary><strong>🎯 전체 스킬 목록 (15개)</strong></summary>
+<summary><strong>🎯 전체 스킬 목록 (24개)</strong></summary>
 
 | 스킬 | 설명 |
 |:-----|:-----|
@@ -581,15 +574,24 @@ claude-forge/
 | `cache-components` | 캐시 컴포넌트 패턴 |
 | `cc-dev-agent` | Claude Code 개발 에이전트 워크플로우 |
 | `continuous-learning-v2` | 지속적 학습 및 진화 시스템 |
+| `debugging-strategies` | 디버깅 전략 가이드 |
+| `dependency-upgrade` | 의존성 업그레이드 관리 |
 | `eval-harness` | LLM 평가 하네스 |
+| `evaluating-code-models` | 코드 모델 벤치마크 |
+| `evaluating-llms-harness` | LLM 하네스 평가 |
+| `extract-errors` | 오류 추출 및 분석 |
 | `frontend-code-review` | 프론트엔드 코드 리뷰 |
 | `manage-skills` | 스킬 관리 도구 |
 | `prompts-chat` | 프롬프트 채팅 |
+| `security-compliance` | 보안 컴플라이언스 검증 |
 | `security-pipeline` | 보안 파이프라인 |
 | `session-wrap` | 세션 정리 및 래핑 |
 | `skill-factory` | 스킬 생성 팩토리 |
 | `strategic-compact` | 전략적 컴팩트 |
+| `stride-analysis-patterns` | STRIDE 위협 모델링 |
+| `summarize` | 코드/문서 요약 |
 | `team-orchestrator` | 팀 오케스트레이터 |
+| `using-superpowers` | 스킬 발견 및 사용 가이드 |
 | `verification-engine` | 검증 엔진 |
 | `verify-implementation` | 구현 검증 |
 

@@ -258,8 +258,8 @@ Most developers either use Claude Code with no customization or spend hours asse
 | Feature | Claude Forge | Basic `.claude/` Setup | Individual Plugins |
 |:--------|:------------|:-----------------------|:-------------------|
 | **Agents** | 11 pre-configured (frontmatter v2) | Manual setup required | Varies by plugin |
-| **Slash Commands** | 40 ready-to-use (hybrid policy) | None | Per-plugin basis |
-| **Skill Workflows** | 15+ multi-step pipelines | None | Per-plugin basis |
+| **Slash Commands** | 33 ready-to-use (hybrid policy) | None | Per-plugin basis |
+| **Skill Workflows** | 24 multi-step pipelines | None | Per-plugin basis |
 | **Hooks** | 15 built-in + 9 opt-in examples (21 events) | None by default | Per-plugin basis |
 | **MCP Servers** | 3 minimal (8+ optional) | None | Per-plugin basis |
 | **Installation** | 5 min, one command | Hours of manual config | Per-plugin install |
@@ -277,8 +277,8 @@ Most developers either use Claude Code with no customization or spend hours asse
 | Category | Count | Highlights |
 |:--------:|:-----:|:-----------|
 | **Agents** | 11 | `planner` `architect` `code-reviewer` `security-reviewer` `tdd-guide` `database-reviewer` + 5 more (frontmatter v2) |
-| **Commands** | 40 | `/commit-push-pr` `/handoff-verify` `/explore` `/tdd` `/plan` `/orchestrate` `/security-review` ... |
-| **Skills** | 15+ | `build-system` `security-pipeline` `eval-harness` `team-orchestrator` `session-wrap` ... (+8 migrated from commands/) |
+| **Commands** | 33 | `/commit-push-pr` `/handoff-verify` `/explore` `/tdd` `/plan` `/orchestrate` `/security-review` ... |
+| **Skills** | 24 | `build-system` `security-pipeline` `eval-harness` `team-orchestrator` `session-wrap` ... (+8 migrated from commands/) |
 | **Hooks** | 15 + 9 examples | 15 built-in (secret filtering, remote command guard, DB protection, security auto-trigger, rate limiting ...) + 9 opt-in samples covering 21 lifecycle events |
 | **Rules** | 9 | `coding-style` `security` `git-workflow` `golden-principles` `agents` `interaction` `verification` ... |
 | **MCP Servers** | 4 (minimal) | `playwright` `context7` `jina-reader` `chrome-devtools@0.23.0` — 7+ more available in [`mcp-servers.optional.json`](mcp-servers.optional.json) |
@@ -384,8 +384,8 @@ vim ~/.claude/settings.local.json
 graph TB
     subgraph REPO["claude-forge (git repo)"]
         A["agents/ (11)"]
-        C["commands/ (40)"]
-        S["skills/ (15)"]
+        C["commands/ (33)"]
+        S["skills/ (24)"]
         H["hooks/ (15)"]
         R["rules/ (9)"]
         SC["scripts/"]
@@ -428,16 +428,16 @@ claude-forge/
   ├── agents/                    Agent definitions (11 .md files, frontmatter v2)
   ├── cc-chips/                  Status bar submodule
   ├── cc-chips-custom/           Custom status bar overlay
-  ├── commands/                  Slash commands (32 .md, 8 dirs moved to skills/)
+  ├── commands/                  Slash commands (33 .md, 8 dirs moved to skills/)
   ├── docs/                      Screenshots, diagrams, policy docs (v3.0 guides)
-  ├── hooks/                     Event-driven shell scripts (18)
+  ├── hooks/                     Event-driven shell scripts (15)
   │   └── examples/              Opt-in .example samples for 21 lifecycle events (9)
   ├── knowledge/                 Knowledge base entries
   ├── reference/                 Reference docs (+ agent-schema.json)
   ├── rules/                     Auto-loaded rule files (9)
   ├── scripts/                   Utility scripts
   ├── setup/                     Installation guides + CLAUDE.md template
-  ├── skills/                    Multi-step skill workflows (15+, hybrid policy)
+  ├── skills/                    Multi-step skill workflows (24, hybrid policy)
   ├── install.sh                 macOS/Linux installer (--upgrade supported)
   ├── install.ps1                Windows installer (--upgrade supported)
   ├── mcp-servers.json           MCP server defaults (4 minimal)
@@ -533,7 +533,7 @@ Each agent has a **color** in the UI for quick visual identification:
 ## 📋 All Claude Forge Commands
 
 <details>
-<summary><strong>40 Commands (click to expand)</strong></summary>
+<summary><strong>33 Commands (click to expand)</strong></summary>
 
 #### Core Workflow
 
@@ -625,7 +625,7 @@ Each agent has a **color** in the UI for quick visual identification:
 ## 🧩 All Claude Forge Skills
 
 <details>
-<summary><strong>15 Skills (click to expand)</strong></summary>
+<summary><strong>24 Skills (click to expand)</strong></summary>
 
 | Skill | Description |
 |:------|:------------|
@@ -633,15 +633,24 @@ Each agent has a **color** in the UI for quick visual identification:
 | **cache-components** | Next.js Cache Components and Partial Prerendering (PPR) guidance. |
 | **cc-dev-agent** | Claude Code development workflow optimization (context engineering, sub-agents, TDD). |
 | **continuous-learning-v2** | Instinct-based learning: observe sessions via hooks, create atomic instincts with confidence scoring. |
+| **debugging-strategies** | Systematic debugging techniques and profiling. |
+| **dependency-upgrade** | Major dependency upgrades with compatibility analysis. |
 | **eval-harness** | Formal evaluation framework for eval-driven development (EDD). |
+| **evaluating-code-models** | Benchmark code generation models (HumanEval, MBPP). |
+| **evaluating-llms-harness** | Benchmark LLMs across 60+ academic benchmarks. |
+| **extract-errors** | Extract and catalog error messages. |
 | **frontend-code-review** | Frontend file review (.tsx, .ts, .js) with checklist rules. |
 | **manage-skills** | Analyze session changes, detect missing verification skills, create/update skills. |
 | **prompts-chat** | Skill/prompt exploration, search, and improvement. |
+| **security-compliance** | SOC2, ISO27001, GDPR, HIPAA compliance checks. |
 | **security-pipeline** | CWE Top 25 + STRIDE automated security verification pipeline. |
 | **session-wrap** | End-of-session cleanup: 4 parallel subagents detect docs, patterns, learnings, follow-ups. |
 | **skill-factory** | Convert reusable session patterns into Claude Code skills automatically. |
 | **strategic-compact** | Suggest manual context compaction at logical intervals to preserve context. |
+| **stride-analysis-patterns** | Systematic STRIDE methodology for threat identification. |
+| **summarize** | Summarize URLs, podcasts, transcripts, local files. |
 | **team-orchestrator** | Agent Teams engine: team composition, task distribution, dependency management. |
+| **using-superpowers** | Discover and invoke installed skills before responding to any request. |
 | **verification-engine** | Integrated verification engine: fresh-context subagent verification loop. |
 | **verify-implementation** | Run all project verify skills and generate unified pattern verification report. |
 
