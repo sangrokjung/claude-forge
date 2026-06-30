@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<title>安装方法 — Claude Forge</title>
+<style>
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Regular.woff') format('woff'); font-weight:400; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Medium.woff') format('woff'); font-weight:500; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-SemiBold.woff') format('woff'); font-weight:600; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Bold.woff') format('woff'); font-weight:700; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Black.woff') format('woff'); font-weight:900; font-style:normal; }
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#ffffff; font-family:'Pretendard', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+
+.canvas {
+  width:1200px;
+  height:480px;
+  padding:48px;
+  background:#ffffff;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+/* header */
+.header { text-align:center; margin-bottom:36px; }
+.header-label {
+  display:inline-block;
+  background:#fff7ed; color:#c2410c; border:1.5px solid #fed7aa;
+  border-radius:50px; padding:5px 18px;
+  font-size:13px; font-weight:700; letter-spacing:0.3px; margin-bottom:12px;
+  word-break:keep-all;
+}
+.header-title {
+  font-size:26px; font-weight:900; color:#0f172a; letter-spacing:-0.3px; word-break:keep-all;
+}
+.header-sub {
+  font-size:14px; font-weight:400; color:#64748b; margin-top:6px; word-break:keep-all; overflow-wrap:anywhere;
+}
+
+/* steps row */
+.steps-row {
+  display:flex;
+  align-items:stretch;
+  gap:0;
+  flex:1;
+}
+
+/* arrow between steps */
+.step-arrow {
+  display:flex; align-items:center; justify-content:center;
+  width:52px; flex-shrink:0;
+}
+
+/* individual step */
+.step {
+  flex:1;
+  background:#f8fafc;
+  border:1.5px solid #e2e8f0;
+  border-radius:16px;
+  padding:28px 24px 24px 24px;
+  display:flex; flex-direction:column;
+  position:relative;
+  overflow:hidden;
+}
+.step::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, #f97316, #fb923c);
+}
+
+.step-num {
+  width:40px; height:40px;
+  background:linear-gradient(135deg, #f97316, #fb923c);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:18px; font-weight:900; color:#ffffff;
+  margin-bottom:16px; flex-shrink:0;
+}
+.step-icon { font-size:28px; margin-bottom:10px; }
+.step-title { font-size:18px; font-weight:800; color:#0f172a; margin-bottom:8px; word-break:keep-all; }
+.step-desc { font-size:13px; font-weight:400; color:#64748b; line-height:1.65; flex:1; word-break:keep-all; overflow-wrap:anywhere; }
+
+/* code block */
+.code-block {
+  background:#0f172a; border-radius:10px;
+  padding:12px 16px; margin-top:14px;
+  font-family:'SF Mono', 'Fira Code', 'Courier New', monospace;
+  font-size:11.5px; color:#e2e8f0; line-height:1.5;
+  word-break:break-all;
+}
+.code-block .prompt { color:#f97316; }
+.code-block .cmd { color:#86efac; }
+
+/* badge */
+.step-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;
+  border-radius:50px; padding:4px 12px; margin-top:12px;
+  font-size:12px; font-weight:600; word-break:keep-all;
+}
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <div class="header">
+    <div class="header-label">⚡ 完整安装（推荐）</div>
+    <div class="header-title">三步完成安装 — 一条命令，30秒</div>
+    <div class="header-sub">一行脚本自动将所有组件连接到 <code>~/.claude</code>，无需手动配置。</div>
+  </div>
+
+  <div class="steps-row">
+
+    <!-- Step 1 -->
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-icon">📋</div>
+      <div class="step-title">粘贴一行命令</div>
+      <div class="step-desc">打开终端，将下面这一行粘贴进去即可。这是您需要手动输入的全部内容。</div>
+      <div class="code-block">
+        <span class="prompt">$&nbsp;</span><span class="cmd">curl -fsSL https://raw.githubusercontent.com/</span><br>
+        <span class="cmd">&nbsp;&nbsp;sangrokjung/claude-forge/main/install.sh | bash</span>
+      </div>
+    </div>
+
+    <div class="step-arrow">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M6 14h16M16 8l6 6-6 6" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-icon">⚙️</div>
+      <div class="step-title">自动安装中</div>
+      <div class="step-desc">安装脚本将 11 个代理、34 个命令、25 个技能、15 个钩子、9 条规则、4 个 MCP 自动连接到 <code>~/.claude</code>，无需手动配置。</div>
+      <div class="step-badge">✅ 代理 · 命令 · 技能 · 钩子 · 规则 · MCP</div>
+    </div>
+
+    <div class="step-arrow">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M6 14h16M16 8l6 6-6 6" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-icon">🚀</div>
+      <div class="step-title">运行 Claude Code，完成！</div>
+      <div class="step-desc">在项目文件夹中运行 Claude Code，所有工具立即可用。输入 <strong>/plan</strong> 开始您的第一个工作流。</div>
+      <div class="code-block">
+        <span class="prompt">$&nbsp;</span><span class="cmd">cd my-project</span><br>
+        <span class="prompt">$&nbsp;</span><span class="cmd">claude</span><br>
+        <span style="color:#94a3b8"># → /plan, /tdd, /code-review 立即可用</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>

@@ -5,6 +5,10 @@
 </picture>
 
 <p align="center">
+  <a href="README.md"><b>English</b></a> · <a href="README.ko.md">한국어</a> · <a href="README.zh.md">中文</a>
+</p>
+
+<p align="center">
   <strong>oh-my-zsh for Claude Code — one install, full professional kit</strong>
 </p>
 

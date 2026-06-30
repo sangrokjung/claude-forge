@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<title>开发流水线 — Claude Forge</title>
+<style>
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Regular.woff') format('woff'); font-weight:400; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Medium.woff') format('woff'); font-weight:500; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-SemiBold.woff') format('woff'); font-weight:600; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Bold.woff') format('woff'); font-weight:700; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Black.woff') format('woff'); font-weight:900; font-style:normal; }
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#ffffff; font-family:'Pretendard', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+
+.canvas {
+  width:1200px;
+  height:440px;
+  padding:44px 48px;
+  background:#ffffff;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+/* header */
+.header { text-align:center; margin-bottom:32px; }
+.header-label {
+  display:inline-block;
+  background:#fff7ed; color:#c2410c; border:1.5px solid #fed7aa;
+  border-radius:50px; padding:5px 18px;
+  font-size:12px; font-weight:700; letter-spacing:0.3px; margin-bottom:10px;
+  word-break:keep-all;
+}
+.header-title {
+  font-size:24px; font-weight:900; color:#0f172a; letter-spacing:-0.3px; word-break:keep-all;
+}
+.header-sub {
+  font-size:13.5px; font-weight:400; color:#64748b; margin-top:6px; word-break:keep-all; overflow-wrap:anywhere;
+}
+.header-sub strong { color:#f97316; font-weight:700; }
+
+/* pipeline row */
+.pipeline {
+  display:flex;
+  align-items:stretch;
+  flex:1;
+  gap:0;
+}
+
+/* arrow */
+.pipe-arrow {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  width:44px; flex-shrink:0; padding-top:8px;
+}
+.pipe-arrow .auto-label {
+  font-size:9px; font-weight:700; color:#f97316;
+  letter-spacing:0.4px; margin-top:4px; white-space:nowrap;
+}
+
+/* step card */
+.step-card {
+  flex:1;
+  background:#f8fafc;
+  border:1.5px solid #e2e8f0;
+  border-radius:14px;
+  padding:20px 18px;
+  display:flex; flex-direction:column;
+  position:relative; overflow:hidden;
+}
+.step-card::after {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+}
+.step-card:nth-child(1)::after { background:#6366f1; }
+.step-card:nth-child(3)::after { background:#0ea5e9; }
+.step-card:nth-child(5)::after { background:#8b5cf6; }
+.step-card:nth-child(7)::after { background:#f97316; }
+.step-card:nth-child(9)::after { background:#10b981; }
+
+/* step number */
+.step-n {
+  position:absolute; top:16px; right:16px;
+  width:26px; height:26px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:900; color:#ffffff;
+}
+.n1 { background:#6366f1; }
+.n2 { background:#0ea5e9; }
+.n3 { background:#8b5cf6; }
+.n4 { background:#f97316; }
+.n5 { background:#10b981; }
+
+.step-icon { font-size:30px; margin-bottom:10px; }
+.step-cmd {
+  font-family:'SF Mono', 'Fira Code', monospace;
+  font-size:14px; font-weight:700; color:#0f172a; margin-bottom:5px;
+}
+.step-label {
+  font-size:13px; font-weight:800; color:#374151; margin-bottom:8px; word-break:keep-all;
+}
+.step-desc {
+  font-size:12px; color:#64748b; line-height:1.6; flex:1; word-break:keep-all; overflow-wrap:anywhere;
+}
+.step-pill {
+  display:inline-block; margin-top:10px;
+  border-radius:50px; padding:3px 10px;
+  font-size:11px; font-weight:600; word-break:keep-all;
+}
+.pill-indigo { background:#eef2ff; color:#4f46e5; }
+.pill-sky    { background:#e0f2fe; color:#0369a1; }
+.pill-violet { background:#f5f3ff; color:#7c3aed; }
+.pill-orange { background:#fff7ed; color:#c2410c; }
+.pill-green  { background:#f0fdf4; color:#15803d; }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <div class="header">
+    <div class="header-label">🔗 自动衔接流水线</div>
+    <div class="header-title">核心开发流程 — 5 个步骤，自动依次推进</div>
+    <div class="header-sub">每条命令都会<strong>自动流转到下一步</strong>，无需手动衔接。</div>
+  </div>
+
+  <div class="pipeline">
+
+    <!-- Step 1: /plan -->
+    <div class="step-card">
+      <div class="step-n n1">1</div>
+      <div class="step-icon">📋</div>
+      <div class="step-cmd">/plan</div>
+      <div class="step-label">制定计划</div>
+      <div class="step-desc">AI 整理需求并生成 <code>plan.md</code>，经人工审批后方可开始编写代码。</div>
+      <div class="step-pill pill-indigo">审批门控</div>
+    </div>
+
+    <div class="pipe-arrow">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M4 13h18M16 7l6 6-6 6" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="auto-label">自动</div>
+    </div>
+
+    <!-- Step 2: /tdd -->
+    <div class="step-card">
+      <div class="step-n n2">2</div>
+      <div class="step-icon">🧪</div>
+      <div class="step-cmd">/tdd</div>
+      <div class="step-label">测试优先</div>
+      <div class="step-desc">先编写失败测试 → 实现使其通过 → 重构。TDD 智能体自主完成 RED→GREEN 循环。</div>
+      <div class="step-pill pill-sky">RED → GREEN</div>
+    </div>
+
+    <div class="pipe-arrow">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M4 13h18M16 7l6 6-6 6" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="auto-label">自动</div>
+    </div>
+
+    <!-- Step 3: /code-review -->
+    <div class="step-card">
+      <div class="step-n n3">3</div>
+      <div class="step-icon">🔍</div>
+      <div class="step-cmd">/code-review</div>
+      <div class="step-label">代码审查</div>
+      <div class="step-desc">Codex、Gemini、安全专家、架构师 4 人并行评审，捕获独自审查容易遗漏的问题。</div>
+      <div class="step-pill pill-violet">4 位评审并行</div>
+    </div>
+
+    <div class="pipe-arrow">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M4 13h18M16 7l6 6-6 6" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="auto-label">自动</div>
+    </div>
+
+    <!-- Step 4: /handoff-verify -->
+    <div class="step-card">
+      <div class="step-n n4">4</div>
+      <div class="step-icon">✅</div>
+      <div class="step-cmd">/handoff-verify</div>
+      <div class="step-label">一次性验证</div>
+      <div class="step-desc">计划与实现的一致性校验、测试运行、安全钩子检查一并完成，全部通过方可放行。</div>
+      <div class="step-pill pill-orange">全绿门控</div>
+    </div>
+
+    <div class="pipe-arrow">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M4 13h18M16 7l6 6-6 6" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="auto-label">自动</div>
+    </div>
+
+    <!-- Step 5: /commit-push-pr -->
+    <div class="step-card">
+      <div class="step-n n5">5</div>
+      <div class="step-icon">🚢</div>
+      <div class="step-cmd">/commit-push-pr</div>
+      <div class="step-label">提交并发起 PR</div>
+      <div class="step-desc">自动完成提交、推送，并生成包含计划与评审内容的 PR 说明后提交。</div>
+      <div class="step-pill pill-green">PR 自动创建</div>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>

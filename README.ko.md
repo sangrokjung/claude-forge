@@ -5,6 +5,10 @@
 </picture>
 
 <p align="center">
+  <a href="README.md">English</a> · <a href="README.ko.md"><b>한국어</b></a> · <a href="README.zh.md">中文</a>
+</p>
+
+<p align="center">
   <strong>Claude Code(AI 코딩 조수)에 전문 장비 풀세트를 한 번에 장착하는 프레임워크</strong>
 </p>
 

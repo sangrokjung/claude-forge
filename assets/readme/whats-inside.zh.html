@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>安装后能得到什么 — Claude Forge</title>
+<style>
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Regular.woff') format('woff'); font-weight:400; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Medium.woff') format('woff'); font-weight:500; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-SemiBold.woff') format('woff'); font-weight:600; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Bold.woff') format('woff'); font-weight:700; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Black.woff') format('woff'); font-weight:900; font-style:normal; }
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#ffffff; font-family:'Pretendard', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+
+.canvas {
+  width:1200px;
+  height:820px;
+  padding:44px 48px 44px 48px;
+  background:#ffffff;
+  overflow:hidden;
+}
+
+/* ── top tagline ── */
+.tagline {
+  display:flex; align-items:center; justify-content:center; gap:14px;
+  margin-bottom:32px;
+}
+.tg-pill {
+  display:flex; align-items:center; gap:8px;
+  background:#f8fafc; border:1.5px solid #e2e8f0;
+  border-radius:50px; padding:9px 22px;
+  font-size:15px; font-weight:500; color:#64748b;
+  white-space:nowrap; word-break:keep-all;
+}
+.tg-pill.accent {
+  background:#fff7ed; border-color:#f97316; color:#c2410c; font-weight:700;
+}
+.tg-arrow { font-size:22px; color:#cbd5e1; }
+
+/* ── center node ── */
+.center-wrap {
+  display:flex; justify-content:center; margin-bottom:32px;
+}
+.center-node {
+  background:linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  border-radius:18px;
+  padding:22px 48px;
+  box-shadow:0 10px 40px rgba(15,23,42,0.22), 0 0 0 1px rgba(249,115,22,0.25);
+  text-align:center;
+}
+.cn-title {
+  font-size:30px; font-weight:900; color:#ffffff; letter-spacing:-0.5px;
+}
+.cn-title span { color:#f97316; }
+.cn-sub {
+  font-size:13px; font-weight:500; color:#94a3b8; margin-top:5px; letter-spacing:0.3px;
+}
+
+/* ── connector ── */
+.connector-row {
+  display:flex; justify-content:center; margin-bottom:16px;
+}
+.connector-line {
+  width:2px; height:24px; background:linear-gradient(to bottom, #f97316, #e2e8f0);
+}
+
+/* ── cards grid ── */
+.cards-grid {
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:18px;
+}
+.card {
+  background:#f8fafc;
+  border:1.5px solid #e2e8f0;
+  border-top:3px solid #f97316;
+  border-radius:12px;
+  padding:22px 24px;
+}
+.card-header {
+  display:flex; align-items:center; gap:12px; margin-bottom:10px;
+}
+.card-icon { font-size:28px; line-height:1; }
+.card-count {
+  font-size:28px; font-weight:900; color:#0f172a; line-height:1;
+}
+.card-name {
+  font-size:14px; font-weight:700; color:#374151; margin-top:1px;
+  letter-spacing:0px;
+}
+.card-desc {
+  font-size:13px; font-weight:400; color:#64748b; line-height:1.65;
+  word-break:keep-all; overflow-wrap:anywhere;
+}
+.card-tag {
+  display:inline-block; margin-top:10px;
+  background:#fff7ed; color:#c2410c; font-size:11px; font-weight:600;
+  border-radius:6px; padding:2px 8px; letter-spacing:0.3px;
+}
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- tagline -->
+  <div class="tagline">
+    <div class="tg-pill">🖥️ 裸用 Claude Code</div>
+    <div class="tg-arrow">→</div>
+    <div class="tg-pill accent">⚡ 安装 claude-forge</div>
+    <div class="tg-arrow">→</div>
+    <div class="tg-pill">🚀 全套装备就绪</div>
+  </div>
+
+  <!-- center node -->
+  <div class="center-wrap">
+    <div class="center-node">
+      <div class="cn-title">⚒ Claude<span>&nbsp;Forge</span></div>
+      <div class="cn-sub">v3.1.0 · MIT · github.com/sangrokjung/claude-forge</div>
+    </div>
+  </div>
+
+  <!-- connector -->
+  <div class="connector-row">
+    <div class="connector-line"></div>
+  </div>
+
+  <!-- 6 cards -->
+  <div class="cards-grid">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🤖</div>
+        <div>
+          <div class="card-count">11</div>
+          <div class="card-name">智能体 (Agents)</div>
+        </div>
+      </div>
+      <div class="card-desc">11 位各领域专家助手 — 规划、TDD 指导、安全审查、架构评审等,各自自主处理所负责的领域。</div>
+      <div class="card-tag">自动路由</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">⌨️</div>
+        <div>
+          <div class="card-count">34</div>
+          <div class="card-name">命令 (Commands)</div>
+        </div>
+      </div>
+      <div class="card-desc">34 个常用操作快捷按钮 — <strong>/plan</strong>, <strong>/tdd</strong>, <strong>/code-review</strong>, <strong>/commit-push-pr</strong> 等,一个斜杠命令即可执行。</div>
+      <div class="card-tag">斜杠命令</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🧩</div>
+        <div>
+          <div class="card-count">25</div>
+          <div class="card-name">技能 (Skills)</div>
+        </div>
+      </div>
+      <div class="card-desc">AI 掌握的 25 套操作流程 — 把重复的工作流每次都以同样方式、稳定地执行。</div>
+      <div class="card-tag">可复用</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🛡️</div>
+        <div>
+          <div class="card-count">15</div>
+          <div class="card-name">钩子 (Hooks)</div>
+        </div>
+      </div>
+      <div class="card-desc">15 项自动安全检查 — 在执行前悄悄拦截危险命令。无需人工留意即自动运作,覆盖 21 个生命周期事件。</div>
+      <div class="card-tag">+9 个可选示例</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📜</div>
+        <div>
+          <div class="card-count">9</div>
+          <div class="card-name">规则 (Rules)</div>
+        </div>
+      </div>
+      <div class="card-desc">AI 遵循的 9 条行为准则 — 即使会话切换,也始终以安全、可预测的方式运作。</div>
+      <div class="card-tag">始终启用</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🔌</div>
+        <div>
+          <div class="card-count">4</div>
+          <div class="card-name">MCP 服务器</div>
+        </div>
+      </div>
+      <div class="card-desc">连接 4 个外部工具 — 直接使用 Playwright(浏览器)、Context7(文档检索)、Jina Reader(网页抓取)、Chrome DevTools。</div>
+      <div class="card-tag">开箱即用</div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
