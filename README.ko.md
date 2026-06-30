@@ -40,7 +40,7 @@
 
 ## Claude Forge란?
 
-Claude Forge는 **Claude Code**를 기본 CLI에서 **완전한 개발 환경**으로 변환합니다. 설치 한 번으로 **11개 전문 에이전트**(Opus 6 + Sonnet 5, frontmatter v2), **33개 슬래시 커맨드**, **24개 스킬 워크플로우**(16 native + 8 commands에서 이전), **15개 자동화 훅 + 9개 opt-in 예제**(21 lifecycle 이벤트 커버), **9개 규칙 파일**, **4개 MCP 서버**(minimal · chrome-devtools 포함, 7개 이상 optional)가 모두 연결되어 즉시 사용 가능합니다.
+Claude Forge는 **Claude Code**를 기본 CLI에서 **완전한 개발 환경**으로 변환합니다. 설치 한 번으로 **11개 전문 에이전트**(Opus 6 + Sonnet 5, frontmatter v2), **34개 슬래시 커맨드**, **25개 스킬 워크플로우**(16 native + 8 commands에서 이전 + 1 vendored: loop-forge), **15개 자동화 훅 + 9개 opt-in 예제**(21 lifecycle 이벤트 커버), **9개 규칙 파일**, **4개 MCP 서버**(minimal · chrome-devtools 포함, 7개 이상 optional)가 모두 연결되어 즉시 사용 가능합니다.
 
 > oh-my-zsh가 터미널을 강화하듯, Claude Forge는 AI 코딩 어시스턴트를 **파워 유저 도구**로 업그레이드합니다.
 
@@ -89,8 +89,8 @@ CC CHIPS 서브모듈은 옵션이며, 비어 있으면 설치기가 한 줄 안
 
 | 리소스 | 옵션 1 (`/plugin install`) | 옵션 2 (`./install.sh`) |
 |--------|:--------------------------:|:------------------------:|
-| Commands (33)          | ✅ | ✅ |
-| Skills (24)            | ⚠️ 일부¹                 | ✅ |
+| Commands (34)          | ✅ | ✅ |
+| Skills (25)            | ⚠️ 일부¹                 | ✅ |
 | Agents (11)            | ❌ | ✅ |
 | Hooks (15 + 예제 9)    | ❌² | ✅ |
 | Rules (9)              | ❌ | ✅ |
@@ -266,8 +266,8 @@ graph LR
 | 카테고리 | 수량 | 주요 항목 |
 |:--------:|:----:|:----------|
 | **에이전트** | 11 | `planner` `architect` `code-reviewer` `security-reviewer` `tdd-guide` `database-reviewer` (Opus) / `build-error-resolver` `e2e-runner` `refactor-cleaner` `doc-updater` `verify-agent` (Sonnet) — frontmatter v2 지원 |
-| **커맨드** | 33 | `/commit-push-pr` `/handoff-verify` `/explore` `/tdd` `/plan` `/orchestrate` `/security-review` ... (하이브리드 정책) |
-| **스킬** | 24 | `build-system` `security-pipeline` `eval-harness` `team-orchestrator` `session-wrap` ... (16 native + 커맨드에서 이전 8개) |
+| **커맨드** | 34 | `/commit-push-pr` `/handoff-verify` `/explore` `/tdd` `/plan` `/orchestrate` `/security-review` ... (하이브리드 정책) |
+| **스킬** | 25 | `loop-forge` `build-system` `security-pipeline` `eval-harness` `team-orchestrator` `session-wrap` ... (16 native + 커맨드에서 이전 8개 + 1 vendored: loop-forge) |
 | **훅** | 15 + 9 예제 | 보안 방어 6개 + 유틸리티 9개(built-in) + 21 lifecycle 이벤트 샘플 9개(opt-in) |
 | **규칙** | 9 | `coding-style` `security` `git-workflow` `golden-principles` `agents-v2` `verification` ... |
 | **MCP 서버** | 4 (minimal) | `playwright` `context7` `jina-reader` `chrome-devtools@0.23.0` — 7개 이상은 [`mcp-servers.optional.json`](mcp-servers.optional.json) |
@@ -371,8 +371,8 @@ vim ~/.claude/settings.local.json
 graph TB
     subgraph REPO["claude-forge (git 리포)"]
         A["agents/ (11)"]
-        C["commands/ (33)"]
-        S["skills/ (24)"]
+        C["commands/ (34)"]
+        S["skills/ (25)"]
         H["hooks/ (15)"]
         R["rules/ (9)"]
         SC["scripts/"]
@@ -419,7 +419,7 @@ claude-forge/
   ├── agents/                    에이전트 정의 (11 .md, frontmatter v2)
   ├── cc-chips/                  상태바 서브모듈
   ├── cc-chips-custom/           커스텀 상태바 오버레이
-  ├── commands/                  슬래시 커맨드 (33 .md, 8개는 skills/로 이동)
+  ├── commands/                  슬래시 커맨드 (34 .md, 8개는 skills/로 이동)
   ├── docs/                      스크린샷, 다이어그램, 정책 문서 (v3.0 가이드)
   ├── hooks/                     이벤트 기반 스크립트 (15)
   │   └── examples/              21 lifecycle 이벤트 샘플 opt-in (9)
@@ -428,7 +428,7 @@ claude-forge/
   ├── rules/                     자동 로드 규칙 파일 (9)
   ├── scripts/                   유틸리티 스크립트
   ├── setup/                     설치 가이드 + CLAUDE.md 템플릿
-  ├── skills/                    다단계 스킬 워크플로우 (24, 하이브리드 정책)
+  ├── skills/                    다단계 스킬 워크플로우 (25, 하이브리드 정책)
   ├── install.sh                 macOS/Linux 설치 (--upgrade 지원)
   ├── install.ps1                Windows 설치 (--upgrade 지원)
   ├── mcp-servers.json           MCP 기본 설정 (4 minimal)
@@ -525,7 +525,7 @@ claude-forge/
 ---
 
 <details>
-<summary><strong>📋 전체 커맨드 목록 (33개)</strong></summary>
+<summary><strong>📋 전체 커맨드 목록 (34개)</strong></summary>
 
 | 커맨드 | 설명 |
 |:-------|:-----|
@@ -543,6 +543,7 @@ claude-forge/
 | `/handoff-verify` | 빌드/테스트/린트 한 번에 자동 검증 |
 | `/init-project` | 프로젝트 초기 설정 |
 | `/learn` | 학습 및 지식 축적 |
+| `/loop-forge` | 반복 작업을 재사용 가능한 자가검증 슬래시 명령으로 박제 |
 | `/next-task` | 다음 작업 할당 |
 | `/orchestrate` | Agent Teams 멀티 에이전트 구성 |
 | `/plan` | AI가 구현 계획을 세워줍니다 |
@@ -566,7 +567,7 @@ claude-forge/
 </details>
 
 <details>
-<summary><strong>🎯 전체 스킬 목록 (24개)</strong></summary>
+<summary><strong>🎯 전체 스킬 목록 (25개)</strong></summary>
 
 | 스킬 | 설명 |
 |:-----|:-----|
@@ -581,6 +582,7 @@ claude-forge/
 | `evaluating-llms-harness` | LLM 하네스 평가 |
 | `extract-errors` | 오류 추출 및 분석 |
 | `frontend-code-review` | 프론트엔드 코드 리뷰 |
+| `loop-forge` | 반복 작업 한 줄을 재사용 가능한 자가검증 슬래시 명령으로 박제 (5개 루프 원형 + verifier·하드스톱 자동) |
 | `manage-skills` | 스킬 관리 도구 |
 | `prompts-chat` | 프롬프트 채팅 |
 | `security-compliance` | 보안 컴플라이언스 검증 |
