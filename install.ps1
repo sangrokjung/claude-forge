@@ -73,7 +73,7 @@ function Write-UpgradeSummary {
     Write-Host "  Target        : $ClaudeDir"
     Write-Host ""
     Write-Host "  Expected counts:"
-    Write-Host "    - 11 agents, 24 skills (16 native + 8 moved from commands), 33 commands, 9+ rules, 15 hooks + 9 opt-in examples"
+    Write-Host "    - 11 agents, 25 skills (16 native + 8 moved from commands + 1 vendored: loop-forge), 34 commands, 9+ rules, 15 hooks + 9 opt-in examples"
     Write-Host ""
     Write-Host "  Next steps:"
     Write-Host "    1. Review docs/MIGRATION.md for detailed changes"
