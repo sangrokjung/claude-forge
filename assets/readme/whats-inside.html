@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>What's Inside — Claude Forge</title>
+<style>
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Regular.woff') format('woff'); font-weight:400; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Medium.woff') format('woff'); font-weight:500; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-SemiBold.woff') format('woff'); font-weight:600; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Bold.woff') format('woff'); font-weight:700; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Black.woff') format('woff'); font-weight:900; font-style:normal; }
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#ffffff; font-family:'Pretendard', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+
+.canvas {
+  width:1200px;
+  height:820px;
+  padding:44px 48px 44px 48px;
+  background:#ffffff;
+  overflow:hidden;
+}
+
+/* ── top tagline ── */
+.tagline {
+  display:flex; align-items:center; justify-content:center; gap:14px;
+  margin-bottom:32px;
+}
+.tg-pill {
+  display:flex; align-items:center; gap:8px;
+  background:#f8fafc; border:1.5px solid #e2e8f0;
+  border-radius:50px; padding:9px 22px;
+  font-size:15px; font-weight:500; color:#64748b;
+  white-space:nowrap;
+}
+.tg-pill.accent {
+  background:#fff7ed; border-color:#f97316; color:#c2410c; font-weight:700;
+}
+.tg-arrow { font-size:22px; color:#cbd5e1; }
+
+/* ── center node ── */
+.center-wrap {
+  display:flex; justify-content:center; margin-bottom:32px;
+}
+.center-node {
+  background:linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  border-radius:18px;
+  padding:22px 48px;
+  box-shadow:0 10px 40px rgba(15,23,42,0.22), 0 0 0 1px rgba(249,115,22,0.25);
+  text-align:center;
+}
+.cn-title {
+  font-size:30px; font-weight:900; color:#ffffff; letter-spacing:-0.5px;
+}
+.cn-title span { color:#f97316; }
+.cn-sub {
+  font-size:13px; font-weight:500; color:#94a3b8; margin-top:5px; letter-spacing:0.3px;
+}
+
+/* ── connector lines ── */
+.connector-row {
+  display:flex; justify-content:center; margin-bottom:16px;
+}
+.connector-line {
+  width:2px; height:24px; background:linear-gradient(to bottom, #f97316, #e2e8f0);
+}
+
+/* ── cards grid ── */
+.cards-grid {
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:18px;
+}
+.card {
+  background:#f8fafc;
+  border:1.5px solid #e2e8f0;
+  border-top:3px solid #f97316;
+  border-radius:12px;
+  padding:22px 24px;
+  position:relative;
+}
+.card-header {
+  display:flex; align-items:center; gap:12px; margin-bottom:10px;
+}
+.card-icon { font-size:28px; line-height:1; }
+.card-count-name { }
+.card-count {
+  font-size:28px; font-weight:900; color:#0f172a; line-height:1;
+}
+.card-name {
+  font-size:14px; font-weight:700; color:#374151; margin-top:1px;
+  text-transform:uppercase; letter-spacing:0.5px;
+}
+.card-desc {
+  font-size:13px; font-weight:400; color:#64748b; line-height:1.6;
+}
+.card-tag {
+  display:inline-block; margin-top:10px;
+  background:#fff7ed; color:#c2410c; font-size:11px; font-weight:600;
+  border-radius:6px; padding:2px 8px; letter-spacing:0.3px;
+}
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- tagline -->
+  <div class="tagline">
+    <div class="tg-pill">🖥️ Bare Claude Code</div>
+    <div class="tg-arrow">→</div>
+    <div class="tg-pill accent">⚡ install claude-forge</div>
+    <div class="tg-arrow">→</div>
+    <div class="tg-pill">🚀 Full-Equipped Claude Code</div>
+  </div>
+
+  <!-- center node -->
+  <div class="center-wrap">
+    <div class="center-node">
+      <div class="cn-title">⚒ Claude<span>&nbsp;Forge</span></div>
+      <div class="cn-sub">v3.0.2 · MIT · github.com/sangrokjung/claude-forge</div>
+    </div>
+  </div>
+
+  <!-- connector -->
+  <div class="connector-row">
+    <div class="connector-line"></div>
+  </div>
+
+  <!-- 6 cards -->
+  <div class="cards-grid">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🤖</div>
+        <div class="card-count-name">
+          <div class="card-count">11</div>
+          <div class="card-name">Agents</div>
+        </div>
+      </div>
+      <div class="card-desc">Specialist sub-AIs — planner, TDD guide, security reviewer, architect — each handling their domain independently.</div>
+      <div class="card-tag">auto-routed</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">⌨️</div>
+        <div class="card-count-name">
+          <div class="card-count">34</div>
+          <div class="card-name">Commands</div>
+        </div>
+      </div>
+      <div class="card-desc">Slash shortcuts for common tasks: <strong>/plan</strong>, <strong>/tdd</strong>, <strong>/code-review</strong>, <strong>/commit-push-pr</strong>, and 30 more.</div>
+      <div class="card-tag">slash commands</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🧩</div>
+        <div class="card-count-name">
+          <div class="card-count">25</div>
+          <div class="card-name">Skills</div>
+        </div>
+      </div>
+      <div class="card-desc">Step-by-step playbooks the AI follows for repeatable, consistent workflows across every session.</div>
+      <div class="card-tag">reusable</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🛡️</div>
+        <div class="card-count-name">
+          <div class="card-count">15</div>
+          <div class="card-name">Hooks</div>
+        </div>
+      </div>
+      <div class="card-desc">6-layer auto safety checks that fire silently — blocking risky commands before they execute. 21 lifecycle events covered.</div>
+      <div class="card-tag">+9 opt-in examples</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📜</div>
+        <div class="card-count-name">
+          <div class="card-count">9</div>
+          <div class="card-name">Rules</div>
+        </div>
+      </div>
+      <div class="card-desc">Behavioral guardrails that keep the AI consistent, safe, and predictable — every session, no drift.</div>
+      <div class="card-tag">always active</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🔌</div>
+        <div class="card-count-name">
+          <div class="card-count">4</div>
+          <div class="card-name">MCP Servers</div>
+        </div>
+      </div>
+      <div class="card-desc">Playwright (browser), Context7 (docs), Jina Reader (web fetch), Chrome DevTools — pre-wired out of the box.</div>
+      <div class="card-tag">pre-connected</div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

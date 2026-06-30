@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>개발 파이프라인 — Claude Forge</title>
+<style>
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Regular.woff') format('woff'); font-weight:400; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Medium.woff') format('woff'); font-weight:500; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-SemiBold.woff') format('woff'); font-weight:600; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Bold.woff') format('woff'); font-weight:700; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Black.woff') format('woff'); font-weight:900; font-style:normal; }
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#ffffff; font-family:'Pretendard', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+
+.canvas {
+  width:1200px;
+  height:440px;
+  padding:44px 48px;
+  background:#ffffff;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+/* header */
+.header { text-align:center; margin-bottom:32px; }
+.header-label {
+  display:inline-block;
+  background:#fff7ed; color:#c2410c; border:1.5px solid #fed7aa;
+  border-radius:50px; padding:5px 18px;
+  font-size:12px; font-weight:700; letter-spacing:0.3px; margin-bottom:10px;
+  word-break:keep-all;
+}
+.header-title {
+  font-size:24px; font-weight:900; color:#0f172a; letter-spacing:-0.3px; word-break:keep-all;
+}
+.header-sub {
+  font-size:13.5px; font-weight:400; color:#64748b; margin-top:6px; word-break:keep-all; overflow-wrap:anywhere;
+}
+.header-sub strong { color:#f97316; font-weight:700; }
+
+/* pipeline row */
+.pipeline {
+  display:flex;
+  align-items:stretch;
+  flex:1;
+  gap:0;
+}
+
+/* arrow */
+.pipe-arrow {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  width:44px; flex-shrink:0; padding-top:8px;
+}
+.pipe-arrow .auto-label {
+  font-size:9px; font-weight:700; color:#f97316;
+  letter-spacing:0.4px; margin-top:4px; white-space:nowrap;
+}
+
+/* step card */
+.step-card {
+  flex:1;
+  background:#f8fafc;
+  border:1.5px solid #e2e8f0;
+  border-radius:14px;
+  padding:20px 18px;
+  display:flex; flex-direction:column;
+  position:relative; overflow:hidden;
+}
+.step-card::after {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+}
+.step-card:nth-child(1)::after { background:#6366f1; }
+.step-card:nth-child(3)::after { background:#0ea5e9; }
+.step-card:nth-child(5)::after { background:#8b5cf6; }
+.step-card:nth-child(7)::after { background:#f97316; }
+.step-card:nth-child(9)::after { background:#10b981; }
+
+/* step number */
+.step-n {
+  position:absolute; top:16px; right:16px;
+  width:26px; height:26px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:900; color:#ffffff;
+}
+.n1 { background:#6366f1; }
+.n2 { background:#0ea5e9; }
+.n3 { background:#8b5cf6; }
+.n4 { background:#f97316; }
+.n5 { background:#10b981; }
+
+.step-icon { font-size:30px; margin-bottom:10px; }
+.step-cmd {
+  font-family:'SF Mono', 'Fira Code', monospace;
+  font-size:14px; font-weight:700; color:#0f172a; margin-bottom:5px;
+}
+.step-label {
+  font-size:13px; font-weight:800; color:#374151; margin-bottom:8px; word-break:keep-all;
+}
+.step-desc {
+  font-size:12px; color:#64748b; line-height:1.6; flex:1; word-break:keep-all; overflow-wrap:anywhere;
+}
+.step-pill {
+  display:inline-block; margin-top:10px;
+  border-radius:50px; padding:3px 10px;
+  font-size:11px; font-weight:600; word-break:keep-all;
+}
+.pill-indigo { background:#eef2ff; color:#4f46e5; }
+.pill-sky    { background:#e0f2fe; color:#0369a1; }
+.pill-violet { background:#f5f3ff; color:#7c3aed; }
+.pill-orange { background:#fff7ed; color:#c2410c; }
+.pill-green  { background:#f0fdf4; color:#15803d; }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <div class="header">
+    <div class="header-label">🔗 자동 연결 파이프라인</div>
+    <div class="header-title">대표 개발 흐름 — 5단계, 자동으로 이어집니다</div>
+    <div class="header-sub">각 커맨드가 <strong>다음 단계로 자동 넘어갑니다.</strong> 수동으로 연결할 것이 없어요.</div>
+  </div>
+
+  <div class="pipeline">
+
+    <!-- Step 1: /plan -->
+    <div class="step-card">
+      <div class="step-n n1">1</div>
+      <div class="step-icon">📋</div>
+      <div class="step-cmd">/plan</div>
+      <div class="step-label">계획 세우기</div>
+      <div class="step-desc">AI가 요구사항을 정리해 <code>plan.md</code>를 만듭니다. 사람이 승인한 뒤에야 코드 작성이 시작돼요.</div>
+      <div class="step-pill pill-indigo">승인 게이트</div>
+    </div>
+
+    <div class="pipe-arrow">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M4 13h18M16 7l6 6-6 6" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="auto-label">자동</div>
+    </div>
+
+    <!-- Step 2: /tdd -->
+    <div class="step-card">
+      <div class="step-n n2">2</div>
+      <div class="step-icon">🧪</div>
+      <div class="step-cmd">/tdd</div>
+      <div class="step-label">테스트 먼저</div>
+      <div class="step-desc">실패 테스트 먼저 작성 → 통과하도록 구현 → 리팩터. TDD 에이전트가 RED→GREEN 사이클을 스스로 돌려요.</div>
+      <div class="step-pill pill-sky">RED → GREEN</div>
+    </div>
+
+    <div class="pipe-arrow">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M4 13h18M16 7l6 6-6 6" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="auto-label">자동</div>
+    </div>
+
+    <!-- Step 3: /code-review -->
+    <div class="step-card">
+      <div class="step-n n3">3</div>
+      <div class="step-icon">🔍</div>
+      <div class="step-cmd">/code-review</div>
+      <div class="step-label">코드 검토</div>
+      <div class="step-desc">Codex·Gemini·보안 전문가·아키텍트 4명이 병렬로 리뷰. 혼자 보면 놓칠 문제를 잡아냅니다.</div>
+      <div class="step-pill pill-violet">리뷰어 4명 병렬</div>
+    </div>
+
+    <div class="pipe-arrow">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M4 13h18M16 7l6 6-6 6" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="auto-label">자동</div>
+    </div>
+
+    <!-- Step 4: /handoff-verify -->
+    <div class="step-card">
+      <div class="step-n n4">4</div>
+      <div class="step-icon">✅</div>
+      <div class="step-cmd">/handoff-verify</div>
+      <div class="step-label">한 번에 검증</div>
+      <div class="step-desc">계획 대비 구현 일치 확인, 테스트 실행, 보안 훅 점검까지 한 번에. 빠진 것 없이 올그린일 때만 통과.</div>
+      <div class="step-pill pill-orange">올그린 게이트</div>
+    </div>
+
+    <div class="pipe-arrow">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M4 13h18M16 7l6 6-6 6" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="auto-label">자동</div>
+    </div>
+
+    <!-- Step 5: /commit-push-pr -->
+    <div class="step-card">
+      <div class="step-n n5">5</div>
+      <div class="step-icon">🚢</div>
+      <div class="step-cmd">/commit-push-pr</div>
+      <div class="step-label">커밋·PR 올리기</div>
+      <div class="step-desc">커밋하고, 푸시하고, 계획과 리뷰 내용이 담긴 PR 설명을 자동 작성해서 올립니다.</div>
+      <div class="step-pill pill-green">PR 자동 오픈</div>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>설치 방법 — Claude Forge</title>
+<style>
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Regular.woff') format('woff'); font-weight:400; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Medium.woff') format('woff'); font-weight:500; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-SemiBold.woff') format('woff'); font-weight:600; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Bold.woff') format('woff'); font-weight:700; font-style:normal; }
+@font-face { font-family:'Pretendard'; src:url('file:///Users/sangrok/.claude/assets/fonts/Pretendard-Black.woff') format('woff'); font-weight:900; font-style:normal; }
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#ffffff; font-family:'Pretendard', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+
+.canvas {
+  width:1200px;
+  height:480px;
+  padding:48px;
+  background:#ffffff;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+/* header */
+.header { text-align:center; margin-bottom:36px; }
+.header-label {
+  display:inline-block;
+  background:#fff7ed; color:#c2410c; border:1.5px solid #fed7aa;
+  border-radius:50px; padding:5px 18px;
+  font-size:13px; font-weight:700; letter-spacing:0.3px; margin-bottom:12px;
+  word-break:keep-all;
+}
+.header-title {
+  font-size:26px; font-weight:900; color:#0f172a; letter-spacing:-0.3px; word-break:keep-all;
+}
+.header-sub {
+  font-size:14px; font-weight:400; color:#64748b; margin-top:6px; word-break:keep-all; overflow-wrap:anywhere;
+}
+
+/* steps row */
+.steps-row {
+  display:flex;
+  align-items:stretch;
+  gap:0;
+  flex:1;
+}
+
+/* arrow between steps */
+.step-arrow {
+  display:flex; align-items:center; justify-content:center;
+  width:52px; flex-shrink:0;
+}
+
+/* individual step */
+.step {
+  flex:1;
+  background:#f8fafc;
+  border:1.5px solid #e2e8f0;
+  border-radius:16px;
+  padding:28px 24px 24px 24px;
+  display:flex; flex-direction:column;
+  position:relative;
+  overflow:hidden;
+}
+.step::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, #f97316, #fb923c);
+}
+
+.step-num {
+  width:40px; height:40px;
+  background:linear-gradient(135deg, #f97316, #fb923c);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:18px; font-weight:900; color:#ffffff;
+  margin-bottom:16px; flex-shrink:0;
+}
+.step-icon { font-size:28px; margin-bottom:10px; }
+.step-title { font-size:18px; font-weight:800; color:#0f172a; margin-bottom:8px; word-break:keep-all; }
+.step-desc { font-size:13px; font-weight:400; color:#64748b; line-height:1.65; flex:1; word-break:keep-all; overflow-wrap:anywhere; }
+
+/* code block */
+.code-block {
+  background:#0f172a; border-radius:10px;
+  padding:12px 16px; margin-top:14px;
+  font-family:'SF Mono', 'Fira Code', 'Courier New', monospace;
+  font-size:11.5px; color:#e2e8f0; line-height:1.5;
+  word-break:break-all;
+}
+.code-block .prompt { color:#f97316; }
+.code-block .cmd { color:#86efac; }
+
+/* badge */
+.step-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;
+  border-radius:50px; padding:4px 12px; margin-top:12px;
+  font-size:12px; font-weight:600; word-break:keep-all;
+}
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <div class="header">
+    <div class="header-label">⚡ 전체 설치 (권장)</div>
+    <div class="header-title">3단계로 끝나는 설치 — 명령어 하나, 30초</div>
+    <div class="header-sub">스크립트 한 줄이 모든 구성요소를 <code>~/.claude</code>에 자동으로 연결합니다. 손으로 설정할 것이 없어요.</div>
+  </div>
+
+  <div class="steps-row">
+
+    <!-- Step 1 -->
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-icon">📋</div>
+      <div class="step-title">명령어 한 줄 복붙</div>
+      <div class="step-desc">터미널을 열고 아래 한 줄을 붙여넣기하면 끝입니다. 여기서 직접 입력하는 건 이게 전부예요.</div>
+      <div class="code-block">
+        <span class="prompt">$&nbsp;</span><span class="cmd">curl -fsSL https://raw.githubusercontent.com/</span><br>
+        <span class="cmd">&nbsp;&nbsp;sangrokjung/claude-forge/main/install.sh | bash</span>
+      </div>
+    </div>
+
+    <div class="step-arrow">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M6 14h16M16 8l6 6-6 6" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-icon">⚙️</div>
+      <div class="step-title">자동 설치 진행</div>
+      <div class="step-desc">설치 스크립트가 에이전트 11개, 커맨드 34개, 스킬 25개, 훅 15개, 규칙 9개, MCP 4개를 <code>~/.claude</code>에 자동 연결합니다. 수동 설정 없음.</div>
+      <div class="step-badge">✅ 에이전트 · 커맨드 · 스킬 · 훅 · 규칙 · MCP</div>
+    </div>
+
+    <div class="step-arrow">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M6 14h16M16 8l6 6-6 6" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-icon">🚀</div>
+      <div class="step-title">Claude Code 실행, 끝!</div>
+      <div class="step-desc">프로젝트 폴더에서 Claude Code를 실행하면 모든 장비가 바로 사용 가능합니다. <strong>/plan</strong>을 입력해 첫 워크플로를 시작하세요.</div>
+      <div class="code-block">
+        <span class="prompt">$&nbsp;</span><span class="cmd">cd my-project</span><br>
+        <span class="prompt">$&nbsp;</span><span class="cmd">claude</span><br>
+        <span style="color:#94a3b8"># → /plan, /tdd, /code-review 바로 사용 가능</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>
