@@ -1,0 +1,23 @@
+{
+  "name": "thumbnail-copy-refine",
+  "archetype": "refine",
+  "label": "Refine",
+  "situation": "I want to polish a YouTube thumbnail copy draft to make it better",
+  "scope": "project",
+  "slots": {
+    "target": "a YouTube thumbnail copy draft",
+    "eval_criteria": ["clarity", "curiosity", "length"],
+    "satisfy_threshold": 85,
+    "max_iterations": 4
+  },
+  "skeleton": "1) Generate a draft of the YouTube thumbnail copy (if one already exists, treat it as round 1).\n2) [evaluate] Score each of clarity · curiosity · length (per-criterion score + total). No subjective \"looks good\" verdicts — write a rationale and a score per criterion.\n3) [fix] Fix only the shortfall on the low-scoring criteria, pinpointed.\n4) [re-evaluate] Score again with clarity · curiosity · length.\n5) Stop on any one of these: · total ≥ 85 (satisfied), or · iterations ≥ 4 (cap reached), or · the score stagnates twice in a row (gain < the delta threshold) → early stop. (No infinite polishing.)\n6) [verifier] The evaluation that assigns the final score runs in a SEPARATE pass from the flow that did the last fix (maker ≠ checker).",
+  "external_action": false,
+  "registry": {
+    "trigger": "manual /thumbnail-copy-refine run",
+    "gate": "an eval-criteria definition exists (if eval_criteria is empty, block entry and re-ask)",
+    "verifier": "evaluator separate from generator (maker ≠ checker) + explicit scored criteria for clarity · curiosity · length (no subjective 'looks good')",
+    "hardstop": "at most 4 iterations · early stop on 2 consecutive stagnant scores (gain < the delta threshold) — no infinite polishing",
+    "accepted_signal": "total ≥ 85 or an explicit 'can't lift it further' + the final copy exists",
+    "external_gate": "none"
+  }
+}

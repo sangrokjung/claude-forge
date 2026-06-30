@@ -8,7 +8,7 @@
 curl -fsSL https://raw.githubusercontent.com/sangrokjung/claude-forge/main/install.sh | bash
 ```
 
-Wires up: 11 agents · 33 commands · 24 skills · 15 hooks · 9 rules · 4 MCP servers · statusLine · `~/.claude/settings.json` env. Symlink-based, so `git pull` updates instantly.
+Wires up: 11 agents · 34 commands · 25 skills · 15 hooks · 9 rules · 4 MCP servers · statusLine · `~/.claude/settings.json` env. Symlink-based, so `git pull` updates instantly.
 
 After install, restart Claude Code (`claude` in your terminal) for the new resources to load.
 

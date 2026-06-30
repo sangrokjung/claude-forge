@@ -39,11 +39,11 @@ Claude: ... This does not bode well.
 The list emphasizes "high quality skills, agents, hooks, status lines, orchestrators, developer tooling". An entry covering all of those at once should likely land under **Distributions** / **Frameworks** / **Plugins** / **Orchestrators** depending on the new taxonomy. Use this single-line bullet:
 
 ```markdown
-- [Claude Forge](https://github.com/sangrokjung/claude-forge) — "oh-my-zsh for Claude Code": one install for 11 agents, 33 commands, 24 skills, 15 hooks (covering 21 lifecycle events) + 9 opt-in examples, 9 rules, statusLine, and a minimal 4-server MCP set (playwright · context7 · jina-reader · chrome-devtools@0.23.0). Ships TDD workflow, security review, code review, architecture analysis, build error resolution, and Chrome DevTools Lighthouse / Core Web Vitals audits. MIT.
+- [Claude Forge](https://github.com/sangrokjung/claude-forge) — "oh-my-zsh for Claude Code": one install for 11 agents, 34 commands, 25 skills, 15 hooks (covering 21 lifecycle events) + 9 opt-in examples, 9 rules, statusLine, and a minimal 4-server MCP set (playwright · context7 · jina-reader · chrome-devtools@0.23.0). Ships TDD workflow, security review, code review, architecture analysis, build error resolution, and Chrome DevTools Lighthouse / Core Web Vitals audits. MIT.
 ```
 
 ## PR title
-Add Claude Forge — production-grade Claude Code distribution (11 agents · 33 commands · 24 skills · 15 hooks)
+Add Claude Forge — production-grade Claude Code distribution (11 agents · 34 commands · 25 skills · 15 hooks)
 
 ## PR body
 
@@ -56,8 +56,8 @@ Claude Forge is an opinionated, production-grade Claude Code distribution that b
 
 **At a glance:**
 - 11 specialized subagents (planner, tdd-guide, code-reviewer, security-reviewer, architect, database-reviewer, build-error-resolver, doc-updater, refactor-cleaner, e2e-runner, verify-agent)
-- 33 slash commands
-- 24 production-grade skills
+- 34 slash commands
+- 25 production-grade skills
 - 15 hooks (covering 21 lifecycle events) + 9 opt-in examples
 - 9 rules, statusLine, 4 MCP servers
 - License: MIT
@@ -93,7 +93,7 @@ gh pr create \
   --repo hesreallyhim/awesome-claude-code \
   --base main \
   --head sangrokjung:add-claude-forge \
-  --title "Add Claude Forge — production-grade Claude Code distribution (11 agents · 33 commands · 24 skills · 15 hooks)" \
+  --title "Add Claude Forge — production-grade Claude Code distribution (11 agents · 34 commands · 25 skills · 15 hooks)" \
   --body-file /Users/sangrok/claude-forge/docs/distribution/awesome-prs/hesreallyhim.md
 ```
 

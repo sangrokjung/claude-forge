@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "loop-spec-v1",
+  "title": "Loop Spec — the neutral loop spec (loop-forge)",
+  "description": "The single type the classifier, interviewer, assembler, and renderers hand around. Platform-neutral JSON. The loop-registry's 5 cells are first-class under `registry`, plus the language-independent `external_gate` enum. 8 scalar fields + the registry object = all 9 fields required; additionalProperties:false guards against typos.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "archetype",
+    "label",
+    "situation",
+    "scope",
+    "slots",
+    "skeleton",
+    "external_action",
+    "registry"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,30}$",
+      "description": "The slash-command name (slug). Starts lowercase, then lowercase/digits/hyphens, 2-31 chars total. e.g. review-summary"
+    },
+    "archetype": {
+      "type": "string",
+      "enum": ["batch", "pipeline", "refine", "watch", "explore"],
+      "description": "One of the 5 loop shapes. Never invent a 6th shape (YAGNI)."
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The shape's canonical English label. Values: Batch / Pipeline / Refine / Watch / Explore (rendered in the user's language at stamp time)."
+    },
+    "situation": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The user's original one-line situation, verbatim and in any language (e.g. I want to summarize 100 shop reviews into 3 lines each)."
+    },
+    "scope": {
+      "type": "string",
+      "enum": ["project", "global"],
+      "description": "Where the stamp is saved. project=the current project's .claude/commands, global=~/.claude/commands. Chosen by the user in Stage 6."
+    },
+    "slots": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "Per-shape slot key=value. Keys are defined by that archetype.md catalog (e.g. batch=input_source/per_item_task/output_format/max_items). Values follow the slot definition (string, number, array of strings, etc.)."
+    },
+    "skeleton": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The procedure body with slot variables substituted. The assembler fills the shape skeleton's {slot} placeholders with the user's answers."
+    },
+    "external_action": {
+      "type": "boolean",
+      "description": "Whether it sends/posts outbound. true raises the outbound-gate bar (dry-run/human approval first). Watch defaults to true."
+    },
+    "registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trigger", "gate", "verifier", "hardstop", "accepted_signal", "external_gate"],
+      "description": "The loop-registry's 5 cells + the language-independent external_gate enum. Every cell is a non-empty string (minLength>=1). The assembler auto-injects the shape defaults.",
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "minLength": 1,
+          "description": "How the loop fires. Default = manual /command run (Watch = condition/interval)."
+        },
+        "gate": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The entry/stage-pass condition (e.g. batch = N <= max_items)."
+        },
+        "verifier": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The inspector (maker != checker). The assembler auto-injects the shape's default verifier text. For watch/external_action, the verifier prose describes the outbound gate (dry-run / human approval)."
+        },
+        "hardstop": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The stop switch (budget/count/cooldown). The assembler auto-injects the shape's default hardstop text."
+        },
+        "accepted_signal": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The observation that counts as done (e.g. N rows present in the output + a failure-log count)."
+        },
+        "external_gate": {
+          "type": "string",
+          "enum": ["dry_run", "human_approval", "none"],
+          "description": "The language-independent outbound gate. If archetype==watch or external_action==true, must be dry_run or human_approval (never none). check_safety.py enforces on this enum, not on prose."
+        }
+      }
+    }
+  }
+}

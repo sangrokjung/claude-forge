@@ -65,7 +65,7 @@ In each new agent's `.md` file frontmatter / footer, include an attribution bloc
 source: https://github.com/sangrokjung/claude-forge
 license: MIT
 maintainer: "@sangrokjung"
-part_of: "Claude Forge — production-grade Claude Code distribution (11 agents · 33 commands · 24 skills · 15 hooks)"
+part_of: "Claude Forge — production-grade Claude Code distribution (11 agents · 34 commands · 25 skills · 15 hooks)"
 ---
 ```
 
@@ -93,7 +93,7 @@ Hi VoltAgent team! Adding two agents from the [Claude Forge](https://github.com/
 - ✅ `categories/06-developer-experience/.claude-plugin/plugin.json` version bumped
 - ✅ `.claude-plugin/marketplace.json` synced
 
-**Source attribution:** Both agents originated in [Claude Forge](https://github.com/sangrokjung/claude-forge), an MIT-licensed Claude Code distribution. Frontmatter in each `.md` file links back so users can find the full set (11 agents · 33 commands · 24 skills · 15 hooks).
+**Source attribution:** Both agents originated in [Claude Forge](https://github.com/sangrokjung/claude-forge), an MIT-licensed Claude Code distribution. Frontmatter in each `.md` file links back so users can find the full set (11 agents · 34 commands · 25 skills · 15 hooks).
 
 Happy to split this into two PRs if you prefer one agent per PR. Also happy to adjust naming, descriptions, or relocation — your call.
 

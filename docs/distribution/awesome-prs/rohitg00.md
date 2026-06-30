@@ -47,11 +47,11 @@ Featured row (separate `### Featured` table) includes a Stars column. We'd targe
 Insert into `### All Plugins` table, in the `c*` cluster (the table is loosely alphabetical, sorted within `claude-*` entries):
 
 ```markdown
-| [claude-forge](https://github.com/sangrokjung/claude-forge) | "oh-my-zsh for Claude Code". Complete toolkit: 11 agents, 33 commands, 24 skills, 15 hooks (covering 21 lifecycle events) + 9 opt-in examples, 9 rules, 4 MCP servers (playwright, context7, jina-reader, chrome-devtools@0.23.0), statusLine. One install via `curl ... install.sh` or `/plugin marketplace add sangrokjung/claude-forge`. Includes TDD workflow, multi-reviewer pipeline (codex/gemini/security/architect), Chrome DevTools Lighthouse audits, 4-way independent skeptical review. Submitted to anthropics/claude-plugins-official. MIT. |
+| [claude-forge](https://github.com/sangrokjung/claude-forge) | "oh-my-zsh for Claude Code". Complete toolkit: 11 agents, 34 commands, 25 skills, 15 hooks (covering 21 lifecycle events) + 9 opt-in examples, 9 rules, 4 MCP servers (playwright, context7, jina-reader, chrome-devtools@0.23.0), statusLine. One install via `curl ... install.sh` or `/plugin marketplace add sangrokjung/claude-forge`. Includes TDD workflow, multi-reviewer pipeline (codex/gemini/security/architect), Chrome DevTools Lighthouse audits, 4-way independent skeptical review. Submitted to anthropics/claude-plugins-official. MIT. |
 ```
 
 ## PR title
-Add claude-forge: complete Claude Code toolkit (11 agents · 33 commands · 24 skills · 15 hooks · 4 MCP)
+Add claude-forge: complete Claude Code toolkit (11 agents · 34 commands · 25 skills · 15 hooks · 4 MCP)
 
 ## PR body
 
@@ -61,8 +61,8 @@ Hi Rohit! Adding [claude-forge](https://github.com/sangrokjung/claude-forge) to 
 **What it is:** A complete Claude Code toolkit, distributed as one install. Inventory:
 
 - **11 agents** — planner, tdd-guide, code-reviewer, security-reviewer, architect, database-reviewer, build-error-resolver, doc-updater, refactor-cleaner, e2e-runner, verify-agent
-- **33 slash commands** — covering TDD, review pipeline, deployment, content workflow, daily-report
-- **24 skills** — auto-ship, frontend-design, security-review, ci-bi, blog-publish, daily-report, ...
+- **34 slash commands** — covering TDD, review pipeline, deployment, content workflow, daily-report
+- **25 skills** — auto-ship, frontend-design, security-review, ci-bi, blog-publish, daily-report, ...
 - **15 hooks** (covering 21 lifecycle events) + 9 opt-in examples
 - **9 rules** — coding-style, golden-principles, dev-team, etc.
 - **4 MCP servers** — playwright, context7, jina-reader, chrome-devtools@0.23.0
@@ -105,13 +105,13 @@ grep -c 'sangrokjung/claude-forge' README.md  # expect: 1
 
 # Step 5 — commit (follow project's "Add new-skill: description" format)
 git add README.md
-git commit -m "Add claude-forge: complete Claude Code toolkit (11 agents · 33 commands · 24 skills · 15 hooks · 4 MCP)"
+git commit -m "Add claude-forge: complete Claude Code toolkit (11 agents · 34 commands · 25 skills · 15 hooks · 4 MCP)"
 git push -u origin feature/add-claude-forge
 gh pr create \
   --repo rohitg00/awesome-claude-code-toolkit \
   --base main \
   --head sangrokjung:feature/add-claude-forge \
-  --title "Add claude-forge: complete Claude Code toolkit (11 agents · 33 commands · 24 skills · 15 hooks · 4 MCP)" \
+  --title "Add claude-forge: complete Claude Code toolkit (11 agents · 34 commands · 25 skills · 15 hooks · 4 MCP)" \
   --body-file /Users/sangrok/claude-forge/docs/distribution/awesome-prs/rohitg00.md
 ```
 

@@ -1,0 +1,26 @@
+{
+  "name": "research-draft-edit",
+  "archetype": "pipeline",
+  "label": "Pipeline",
+  "situation": "I want to research a topic, draft from it, then proofread it into one finished article",
+  "scope": "project",
+  "slots": {
+    "stages": ["research", "draft", "proofread"],
+    "stage_io": {
+      "research": "source list",
+      "draft": "article",
+      "proofread": "final copy"
+    },
+    "final_artifact": "the proofread article final.md"
+  },
+  "skeleton": "1) Run the research stage → produce a source list.\n2) [exit gate 1] Check that the source list qualifies as input for the next stage (draft) — if it is empty or malformed, do not pass it on; report at the current stage.\n3) Run the draft stage (input = source list) → produce an article.\n4) [exit gate 2] Check that the article qualifies as input for the next stage (proofread).\n5) Run the proofread stage (input = article) → produce the proofread article final.md.\n6) [verifier] Review final.md in a SEPARATE pass — not right after making it (maker ≠ checker). At the same time, confirm that every stage's exit-gate pass was logged.\n7) [hardstop] If a single stage fails twice, halt the pipeline and report which stage got stuck and why (do not proceed to the next stage).",
+  "external_action": false,
+  "registry": {
+    "trigger": "manual /research-draft-edit run",
+    "gate": "each stage's exit gate — proceed only when the next-stage input qualification passes",
+    "verifier": "an exit gate at every stage (next-stage input qualification) + review of the final artifact final.md in a pass separate from its creator (maker ≠ checker)",
+    "hardstop": "2 retries per stage · overall time/cost cap · halt the pipeline and report at the current stage if one stage fails twice",
+    "accepted_signal": "final.md exists + a pass log for all three stages' exit gates (research · draft · proofread)",
+    "external_gate": "none"
+  }
+}

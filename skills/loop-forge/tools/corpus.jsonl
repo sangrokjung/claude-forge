@@ -1,0 +1,58 @@
+{"text": "Summarize all of them — 100 shop reviews, three lines each.", "expected": "batch", "ambiguous": false}
+{"text": "Classify all of them, the whole list of support emails.", "expected": "batch", "ambiguous": false}
+{"text": "Go through them one by one and check every contact in the sheet.", "expected": "batch", "ambiguous": false}
+{"text": "Resize the images in bulk, all at once.", "expected": "batch", "ambiguous": false}
+{"text": "Organize the entire set of survey responses into a table.", "expected": "batch", "ambiguous": false}
+{"text": "Process this list of 100 support tickets.", "expected": "batch", "ambiguous": false}
+{"text": "Save a contact for every item on the business-card list.", "expected": "batch", "ambiguous": false}
+{"text": "Translate the blog posts to English, every single one.", "expected": "batch", "ambiguous": false}
+{"text": "Remove the background from each one of the product photos.", "expected": "batch", "ambiguous": false}
+{"text": "Convert the member records all at once into the standard format.", "expected": "batch", "ambiguous": false}
+{"text": "Research the topic, then write a draft.", "expected": "pipeline", "ambiguous": false}
+{"text": "Gather the material and turn it into a report, in order.", "expected": "pipeline", "ambiguous": false}
+{"text": "Translate it, then proofread, step by step.", "expected": "pipeline", "ambiguous": false}
+{"text": "Transcribe the recording, then produce a summary.", "expected": "pipeline", "ambiguous": false}
+{"text": "Run it through a data-collection stage and on to an analysis report.", "expected": "pipeline", "ambiguous": false}
+{"text": "Finish planning, after that move on to design.", "expected": "pipeline", "ambiguous": false}
+{"text": "Organize the interview, then publish it as an article.", "expected": "pipeline", "ambiguous": false}
+{"text": "After the shoot, pass it through editing and on to upload.", "expected": "pipeline", "ambiguous": false}
+{"text": "Extract keywords, then build the content in order.", "expected": "pipeline", "ambiguous": false}
+{"text": "Prep the ingredients, after that cook.", "expected": "pipeline", "ambiguous": false}
+{"text": "Polish this copy and make it better.", "expected": "refine", "ambiguous": false}
+{"text": "Raise the quality of the thumbnail.", "expected": "refine", "ambiguous": false}
+{"text": "Refine it and lift the overall finish.", "expected": "refine", "ambiguous": false}
+{"text": "Smooth out the sentences to make it nicer.", "expected": "refine", "ambiguous": false}
+{"text": "Touch it up and make the design more polished.", "expected": "refine", "ambiguous": false}
+{"text": "Draft and fix it repeatedly until it reads well.", "expected": "refine", "ambiguous": false}
+{"text": "Revise the logo and make it better.", "expected": "refine", "ambiguous": false}
+{"text": "Iterate on it to push the slide deck further.", "expected": "refine", "ambiguous": false}
+{"text": "Refine it more and improve the proposal.", "expected": "refine", "ambiguous": false}
+{"text": "Fix it up and make the video edit better.", "expected": "refine", "ambiguous": false}
+{"text": "Email me every time one arrives with the keyword.", "expected": "watch", "ambiguous": false}
+{"text": "When stock runs low, send me an alert.", "expected": "watch", "ambiguous": false}
+{"text": "Whenever a new one comes in, ping Slack.", "expected": "watch", "ambiguous": false}
+{"text": "When the competitor's price changes, check and let me know.", "expected": "watch", "ambiguous": false}
+{"text": "When a one-star review lands, send me an alert right away.", "expected": "watch", "ambiguous": false}
+{"text": "When the document updates, auto-notify me.", "expected": "watch", "ambiguous": false}
+{"text": "When a Twitter mention appears, check and let me know.", "expected": "watch", "ambiguous": false}
+{"text": "Monitor the server and send me an alert when an error happens.", "expected": "watch", "ambiguous": false}
+{"text": "When a grant notice is posted, check and let me know.", "expected": "watch", "ambiguous": false}
+{"text": "Watch the price and send me an alert on a discount.", "expected": "watch", "ambiguous": false}
+{"text": "Generate eight YouTube title candidates and pick the best.", "expected": "explore", "ambiguous": false}
+{"text": "Make a few thumbnail mockups and choose the strongest.", "expected": "explore", "ambiguous": false}
+{"text": "Compare several ad-copy ideas.", "expected": "explore", "ambiguous": false}
+{"text": "Generate naming candidates and pick one.", "expected": "explore", "ambiguous": false}
+{"text": "Compare options for the design and select the best.", "expected": "explore", "ambiguous": false}
+{"text": "Recommend the best among several slogan versions.", "expected": "explore", "ambiguous": false}
+{"text": "Draw up logo candidates and compare them.", "expected": "explore", "ambiguous": false}
+{"text": "Brainstorm event ideas and go with the strongest.", "expected": "explore", "ambiguous": false}
+{"text": "Make several options and pick the best.", "expected": "explore", "ambiguous": false}
+{"text": "Among five copy choices, pick the top choice.", "expected": "explore", "ambiguous": false}
+{"text": "Summarize all of them every time one arrives.", "expected": "batch", "ambiguous": true}
+{"text": "Sort all of them whenever a new one comes in.", "expected": "watch", "ambiguous": true}
+{"text": "Take the draft, then make it better.", "expected": "pipeline", "ambiguous": true}
+{"text": "Process the material in order and raise the quality.", "expected": "refine", "ambiguous": true}
+{"text": "Make every single one of the candidates.", "expected": "explore", "ambiguous": true}
+{"text": "Process several items, each one.", "expected": "batch", "ambiguous": true}
+{"text": "Proceed step by step and make it nicer.", "expected": "pipeline", "ambiguous": true}
+{"text": "Auto-notify me and file all of them.", "expected": "watch", "ambiguous": true}

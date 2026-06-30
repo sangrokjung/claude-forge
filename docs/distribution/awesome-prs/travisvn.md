@@ -11,7 +11,7 @@
 ## PR template requirements (from CONTRIBUTING.md)
 
 Quality standards (must satisfy ALL):
-- ✅ **Related to Claude Skills** — claude-forge ships 24 production-grade skills, qualifies
+- ✅ **Related to Claude Skills** — claude-forge ships 25 production-grade skills, qualifies
 - ✅ **Provides clear value** — "oh-my-zsh for Claude Code", multi-skill bundle
 - ✅ **Non-promotional** — "No SaaS Wrappers", no paid funnel, all open-source MIT
 - ✅ **Accurate, up-to-date** — v3.0.1 latest release, weekly updates
@@ -36,7 +36,7 @@ Bullet format for `Collections & Libraries`:
 Insert into `## 🌟 Community Skills` → `### Collections & Libraries`, after the `obra/superpowers-lab` block:
 
 ```markdown
-- **[Claude Forge](https://github.com/sangrokjung/claude-forge)** — Production-grade Claude Code distribution including **24 skills** (auto-ship, frontend-design, security-review, ci-bi, blog-publish, daily-report, content-creator, generate-image, etc.) plus the agent harness needed to make them work end-to-end (11 agents, 33 commands, 15 hooks, 4 MCP servers, statusLine).
+- **[Claude Forge](https://github.com/sangrokjung/claude-forge)** — Production-grade Claude Code distribution including **25 skills** (auto-ship, frontend-design, security-review, ci-bi, blog-publish, daily-report, content-creator, generate-image, etc.) plus the agent harness needed to make them work end-to-end (11 agents, 34 commands, 15 hooks, 4 MCP servers, statusLine).
   - Skills follow the Anthropic 2026 Skills/Commands hybrid policy with documented boundary in [`docs/SKILLS-VS-COMMANDS.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/SKILLS-VS-COMMANDS.md)
   - Submitted to [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) (in review)
   - Inspired by oh-my-zsh's role for zsh
@@ -52,7 +52,7 @@ Add Claude Forge — 24-skill production-grade distribution (Collections & Libra
 ```markdown
 Hi Travis! Adding [Claude Forge](https://github.com/sangrokjung/claude-forge) to the **Collections & Libraries** section.
 
-**What it is:** A production-grade Claude Code distribution that bundles 24 skills together with the supporting harness (11 agents, 33 commands, 15 hooks, 4 MCP servers, statusLine) so the skills work end-to-end. Inspired by oh-my-zsh's role for zsh.
+**What it is:** A production-grade Claude Code distribution that bundles 25 skills together with the supporting harness (11 agents, 34 commands, 15 hooks, 4 MCP servers, statusLine) so the skills work end-to-end. Inspired by oh-my-zsh's role for zsh.
 
 **Why Collections & Libraries (not Individual Skills):** Like `obra/superpowers`, claude-forge is a curated multi-skill set rather than a single `SKILL.md`. Examples of bundled skills:
 

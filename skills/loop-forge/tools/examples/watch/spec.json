@@ -1,0 +1,23 @@
+{
+  "name": "urgent-mail-alert",
+  "archetype": "watch",
+  "label": "Watch",
+  "situation": "I want to send a summary to the owner by email whenever an email with the keyword 'urgent' arrives in the inbox",
+  "scope": "project",
+  "slots": {
+    "watch_target": "the inbox (Gmail)",
+    "trigger_condition": "subject/body contains the keyword 'urgent'",
+    "trigger_action": "make a summary and send it to the owner by email (outbound send)",
+    "period_limit": "check every 5 min · cap 20/day"
+  },
+  "skeleton": "1) Poll the inbox (Gmail) every 5 min, or receive its events.\n2) [condition check] Does the subject/body contain the keyword 'urgent'? · If not, take no action and go back to waiting.\n3) [pre-action gate / verifier] Even when it looks like a match, do NOT act yet: · (false-positive guard) Re-confirm independently that the 'urgent' condition really matches, once more. · (outbound) Sending the summary to the owner by email is an outbound send, so ★ get human approval first (or show a dry-run preview), then execute. ★ (Never send anything outward before the approval/preview passes.)\n4) Make the summary and send it to the owner by email.\n5) [record] Write an idempotency key (a dedup marker) for \"this one is handled\" → so the same trigger arriving again does not act twice.\n6) [hardstop] If the daily action count hits the cap (20/day), or the gap since the last action is shorter than the cooldown, hold the action → go back to waiting.",
+  "external_action": true,
+  "registry": {
+    "trigger": "condition/interval — fires when the 'urgent' keyword is met (or on the 5-min polling interval). (A person runs the /command; the condition/interval triggers inside it — unattended scheduling is a non-goal.)",
+    "gate": "the pre-action gate — independent re-confirmation of the condition + because the action is outbound, human approval (or a dry-run preview) first",
+    "verifier": "pre-action gate (false-positive independent re-confirmation) + the outbound action (send/post) executes only after human approval or a dry-run preview passes",
+    "hardstop": "20/day cap · cooldown (minimum gap between consecutive triggers) · dedup of repeat triggers (idempotency key)",
+    "accepted_signal": "a trigger log (when, what fired) + action results (sent / held / skipped) + a tallied false-positive rate",
+    "external_gate": "human_approval"
+  }
+}

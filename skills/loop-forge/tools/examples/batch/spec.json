@@ -1,0 +1,23 @@
+{
+  "name": "review-summary",
+  "archetype": "batch",
+  "label": "Batch",
+  "situation": "I want to summarize 100 shop reviews into 3 lines each",
+  "scope": "project",
+  "slots": {
+    "input_source": "a reviews CSV (reviews.csv)",
+    "per_item_task": "summarize one review into 3 lines",
+    "output_format": "a summary.md table (rows = reviews, columns = excerpt · 3-line summary)",
+    "max_items": 100
+  },
+  "skeleton": "1) Load the list from the reviews CSV (reviews.csv) and count the total N. If N > 100, do not process — stop and report.\n2) For each review: summarize one review into 3 lines → accumulate the result.\n3) Save as a summary.md table (rows = reviews, columns = excerpt · 3-line summary).\n4) [verifier] Count-match input N against output N (flag missing/duplicate), then re-check a random K = min(5, N) in a SEPARATE pass, not right after generation (maker ≠ checker).\n5) [hardstop] 3 failures on one item → skip + log; if the cumulative failure rate passes 20%, abort.",
+  "external_action": false,
+  "registry": {
+    "trigger": "manual /review-summary run",
+    "gate": "N ≤ 100 (max_items)",
+    "verifier": "count-match input N vs output N (flag missing/duplicate) + re-check a random K in a separate pass, not by the generator (maker ≠ checker)",
+    "hardstop": "max_items 100 budget cap · 3 failures per item → skip + log (not a full stop) · abort when cumulative failure rate > 20%",
+    "accepted_signal": "N rows present in summary.md + a count of the failure log (skip list)",
+    "external_gate": "none"
+  }
+}

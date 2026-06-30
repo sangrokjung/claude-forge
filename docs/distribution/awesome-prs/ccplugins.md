@@ -50,7 +50,7 @@ plugins/claude-forge/
 The plugin.json should declare:
 - `name`: `claude-forge`
 - `version`: `3.0.1`
-- `description`: `oh-my-zsh for Claude Code — 11 agents · 33 commands · 24 skills · 15 hooks · 9 rules · 4 MCP servers in one install`
+- `description`: `oh-my-zsh for Claude Code — 11 agents · 34 commands · 25 skills · 15 hooks · 9 rules · 4 MCP servers in one install`
 - `repository`: `https://github.com/sangrokjung/claude-forge`
 - `license`: `MIT`
 - `commands`: paths under upstream repo
@@ -70,7 +70,7 @@ Add claude-forge to Workflow Orchestration
 ```markdown
 Hi! Adding [claude-forge](https://github.com/sangrokjung/claude-forge) under **Workflow Orchestration**.
 
-**Why Workflow Orchestration:** claude-forge is a multi-resource distribution that orchestrates 11 agents, 33 commands, 24 skills, 15 hooks, 9 rules, and 4 MCP servers as one installable plugin — closer in shape to `ultrathink` and `studio-coach` than to the single-domain entries in other categories. Happy to relocate to **Development Engineering** if you prefer single-domain placement.
+**Why Workflow Orchestration:** claude-forge is a multi-resource distribution that orchestrates 11 agents, 34 commands, 25 skills, 15 hooks, 9 rules, and 4 MCP servers as one installable plugin — closer in shape to `ultrathink` and `studio-coach` than to the single-domain entries in other categories. Happy to relocate to **Development Engineering** if you prefer single-domain placement.
 
 **What's added:**
 - README line: `- [claude-forge](./plugins/claude-forge)` in Workflow Orchestration
@@ -114,7 +114,7 @@ cp /Users/sangrok/claude-forge/.claude-plugin/marketplace.json plugins/claude-fo
 cat > plugins/claude-forge/README.md <<'EOF'
 # claude-forge
 
-Production-grade Claude Code distribution — 11 agents · 33 commands · 24 skills · 15 hooks · 9 rules · 4 MCP servers.
+Production-grade Claude Code distribution — 11 agents · 34 commands · 25 skills · 15 hooks · 9 rules · 4 MCP servers.
 
 **Source of truth:** https://github.com/sangrokjung/claude-forge
 

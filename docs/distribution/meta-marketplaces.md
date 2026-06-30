@@ -24,7 +24,7 @@ within hours-to-days.
 | Install command | `/plugin marketplace add sangrokjung/claude-forge` |
 | Category | development |
 | Tags | agents, skills, hooks, tdd, code-review, security, automation, mcp-minimal, mcp-chrome-devtools, lighthouse, performance |
-| Short description (≤140 chars) | oh-my-zsh for Claude Code — 11 agents · 33 commands · 24 skills · 15 hooks · 9 rules · 4 MCP servers in one install |
+| Short description (≤140 chars) | oh-my-zsh for Claude Code — 11 agents · 34 commands · 25 skills · 15 hooks · 9 rules · 4 MCP servers in one install |
 | License | MIT |
 | Maintainer | Sangrok Jung (@sangrokjung) |
 
@@ -42,7 +42,7 @@ within hours-to-days.
 | Author | Sangrok Jung (@sangrokjung) |
 | GitHub URL | `https://github.com/sangrokjung/claude-forge` |
 | Install instructions (verbatim) | Inside Claude Code: `/plugin marketplace add sangrokjung/claude-forge` then `/plugin install claude-forge`. For the full distribution (agents/hooks/rules/MCP), use `curl -fsSL https://raw.githubusercontent.com/sangrokjung/claude-forge/main/install.sh \| bash`. |
-| Description (long form) | claude-forge is an "oh-my-zsh for Claude Code" — a cohesive, production-grade distribution of 11 specialized agents, 33 slash commands, 24 skills, 15 automation hooks (covering 21 lifecycle events), 9 rule files, and a minimal 4-server MCP set (playwright, context7, jina-reader, chrome-devtools@0.23.0). One install, full set. |
+| Description (long form) | claude-forge is an "oh-my-zsh for Claude Code" — a cohesive, production-grade distribution of 11 specialized agents, 34 slash commands, 25 skills, 15 automation hooks (covering 21 lifecycle events), 9 rule files, and a minimal 4-server MCP set (playwright, context7, jina-reader, chrome-devtools@0.23.0). One install, full set. |
 | Category | Development tools / Plugin distribution |
 | License | MIT |
 | Tags / keywords | claude-code, agents, skills, hooks, tdd, code-review, security, automation, mcp |
@@ -64,7 +64,7 @@ within hours-to-days.
 | GitHub URL | `https://github.com/sangrokjung/claude-forge` |
 | Install command | `/plugin marketplace add sangrokjung/claude-forge` |
 | Category | development |
-| Short description (≤140 chars) | oh-my-zsh for Claude Code — 11 agents · 33 commands · 24 skills · 15 hooks · 9 rules · 4 MCP servers in one install |
+| Short description (≤140 chars) | oh-my-zsh for Claude Code — 11 agents · 34 commands · 25 skills · 15 hooks · 9 rules · 4 MCP servers in one install |
 | License | MIT |
 | Maintainer | Sangrok Jung (@sangrokjung) |
 | Contact | open an issue on the GitHub repo |

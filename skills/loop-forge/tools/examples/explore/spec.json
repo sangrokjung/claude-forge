@@ -1,0 +1,23 @@
+{
+  "name": "title-explore",
+  "archetype": "explore",
+  "label": "Explore",
+  "situation": "I want to generate several YouTube video title candidates and pick the best one",
+  "scope": "project",
+  "slots": {
+    "generate_target": "YouTube video titles",
+    "candidate_count": 8,
+    "selection_criteria": ["CTR potential", "clarity", "length"],
+    "final_count": 3
+  },
+  "skeleton": "1) Diverge YouTube video titles into 8 options. Make them genuinely different (force diversity) — don't stamp out near-identical variants. If 8 > cap, do NOT diverge — stop and report. (gate)\n2) [score] Score every candidate on each of CTR potential · clarity · length (per-criterion score + total). No subjective \"this grabs me\" verdicts — write a rationale and a score per criterion.\n3) [converge] Keep only the top 3 by total.\n4) [rationale] Alongside the selected 3, log and present the reason each rejected candidate lost (which criterion it fell short on).\n5) [verifier] Scoring runs in a pass SEPARATE from the flow that made the candidates (maker ≠ picker). Plus a diversity check — confirm the 8 candidates really differ, with no dupes/near-dupes mixed in, and penalize near-duplicate candidates.\n6) [hardstop] Diverging ends in ONE round (no infinite diverging). \"I don't like them, do N more\" re-diverging happens only on explicit user request.",
+  "external_action": false,
+  "registry": {
+    "trigger": "manual /title-explore run",
+    "gate": "candidate_count ≤ cap (block entry past the diverge ceiling and report)",
+    "verifier": "scorer separate from generator (maker ≠ picker) + a diversity check (are the 8 really different — penalize dupes/near-dupes)",
+    "hardstop": "candidate-count 8 cap · one round (no infinite diverging) · re-diverge only on explicit user request",
+    "accepted_signal": "3 final titles selected + a rejection-rationale log for the 5 rejected (the criterion each fell short on)",
+    "external_gate": "none"
+  }
+}

@@ -26,7 +26,7 @@
 ## 2. One-paragraph pitch
 
 claude-forge is an "oh-my-zsh for Claude Code" — a cohesive distribution of 11 specialized
-agents, 33 slash commands, 24 skills, 15 automation hooks (plus 9 opt-in examples covering
+agents, 34 slash commands, 25 skills, 15 automation hooks (plus 9 opt-in examples covering
 21 lifecycle events), 9 rule files, and a minimal 4-server MCP set (playwright, context7,
 jina-reader, chrome-devtools pinned at `@0.23.0`). It targets individual developers and
 small teams who want a production-grade, security-reviewed baseline without hand-assembling
@@ -39,8 +39,8 @@ v2.1 users in place with backup + diff preview.
 - **11 agents** with frontmatter v2 (planner, tdd-guide, code-reviewer, security-reviewer,
   architect, database-reviewer, build-error-resolver, doc-updater, refactor-cleaner,
   e2e-runner, verify-agent)
-- **33 commands** (`/auto-ship`, `/plan`, `/review`, `/e2e`, `/worktree-start`, ...)
-- **24 skills** under `skills/<name>/SKILL.md`
+- **34 commands** (`/auto-ship`, `/plan`, `/review`, `/e2e`, `/worktree-start`, ...)
+- **25 skills** under `skills/<name>/SKILL.md`
 - **15 hooks + 9 opt-in examples** covering 21 of the 27 official hook events
 - **9 rules** (Golden Principles, interaction, coding-style, verification, security,
   testing, git-workflow, date-calculation, agents-v2)
@@ -180,7 +180,7 @@ claude-forge
 **플러그인 설명 (Plugin description)** *
 ```
 claude-forge is an "oh-my-zsh for Claude Code" — a cohesive, production-grade
-distribution of 11 specialized agents, 33 slash commands, 24 skills, 15 hooks
+distribution of 11 specialized agents, 34 slash commands, 25 skills, 15 hooks
 (+ 9 opt-in examples covering 21 lifecycle events), 9 rule files, and a minimal
 4-server MCP set (playwright, context7, jina-reader, chrome-devtools pinned at
 0.23.0). It targets individual developers and small teams who want a security-
@@ -276,7 +276,7 @@ Installable today via (two-step, partial coverage):
  see docs/PLUGIN-VS-INSTALL-SH.md for the complete matrix.)
 
 Short description:
-  oh-my-zsh for Claude Code — 11 agents, 33 commands, 24 skills, 15 hooks +
+  oh-my-zsh for Claude Code — 11 agents, 34 commands, 25 skills, 15 hooks +
   9 opt-in examples (21 events), 9 rules, 4 MCP in one install.
 
 Security & quality:

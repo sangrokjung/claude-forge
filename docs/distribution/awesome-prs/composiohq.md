@@ -31,11 +31,11 @@ If the maintainer pushes back, fall back to Strategy A (mirror plugin folder per
 Insert into `### Developer Productivity`, alphabetically after `CCHub`:
 
 ```markdown
-- [claude-forge](https://github.com/sangrokjung/claude-forge) - A complete plugin extending Claude Code with 11 custom agents, 33 commands, 24 skills, 15 hooks (covering 21 lifecycle events), 9 rules, and 4 MCP servers (playwright, context7, jina-reader, chrome-devtools@0.23.0). Plugin manifest follows the official Claude Code plugin spec exactly. Install via `/plugin marketplace add sangrokjung/claude-forge` then `/plugin install claude-forge`. MIT.
+- [claude-forge](https://github.com/sangrokjung/claude-forge) - A complete plugin extending Claude Code with 11 custom agents, 34 commands, 25 skills, 15 hooks (covering 21 lifecycle events), 9 rules, and 4 MCP servers (playwright, context7, jina-reader, chrome-devtools@0.23.0). Plugin manifest follows the official Claude Code plugin spec exactly. Install via `/plugin marketplace add sangrokjung/claude-forge` then `/plugin install claude-forge`. MIT.
 ```
 
 ## PR title
-Add claude-forge to Developer Productivity (11 agents · 33 commands · 24 skills · 15 hooks · 4 MCP)
+Add claude-forge to Developer Productivity (11 agents · 34 commands · 25 skills · 15 hooks · 4 MCP)
 
 ## PR body
 
@@ -48,7 +48,7 @@ Hi ComposioHQ team! Adding [claude-forge](https://github.com/sangrokjung/claude-
 - ✅ `.claude-plugin/plugin.json` — [manifest](https://github.com/sangrokjung/claude-forge/blob/main/.claude-plugin/plugin.json)
 - ✅ `.claude-plugin/marketplace.json` — [marketplace metadata](https://github.com/sangrokjung/claude-forge/blob/main/.claude-plugin/marketplace.json)
 - ✅ `skills/` — 24 SKILL.md files
-- ✅ `commands/` — 33 slash commands
+- ✅ `commands/` — 34 slash commands
 - ✅ `agents/` — 11 agent definitions
 - ✅ `hooks/` — 15 lifecycle hooks (21 events covered)
 
@@ -95,7 +95,7 @@ gh pr create \
   --repo ComposioHQ/awesome-claude-plugins \
   --base master \
   --head sangrokjung:add-claude-forge \
-  --title "Add claude-forge to Developer Productivity (11 agents · 33 commands · 24 skills · 15 hooks · 4 MCP)" \
+  --title "Add claude-forge to Developer Productivity (11 agents · 34 commands · 25 skills · 15 hooks · 4 MCP)" \
   --body-file /Users/sangrok/claude-forge/docs/distribution/awesome-prs/composiohq.md
 ```
 
