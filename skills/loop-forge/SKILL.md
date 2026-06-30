@@ -105,6 +105,15 @@ question.
 
 Follow the flow exactly; each stage calls a specific asset (lazy-loaded).
 
+> **Helper-script paths (install-portable)**: the `tools/` and `references/` paths
+> below are relative to *this skill's own directory*. If a relative call can't find a
+> file, resolve it under the skill root — `$HOME/.claude/skills/loop-forge/…` for
+> `install.sh` installs, or `${CLAUDE_PLUGIN_ROOT}/skills/loop-forge/…` for marketplace
+> (`/plugin install`) installs. Every helper is **optional**: if it's still
+> unavailable (or `python3` is missing), perform the step yourself from the referenced
+> doc — `classify_signals.py` is only a hint and `check_safety.py` only re-checks what
+> Stage 4 already injected, so the flow degrades gracefully without them.
+
 ### Stage 1 — Entry
 - Receive the one-line situation via `$ARGUMENTS`.
 - If it's empty, ask first (in the user's language): **"What task do you keep doing
