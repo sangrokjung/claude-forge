@@ -28,7 +28,7 @@
   <a href="README.ko.md">한국어</a>
 </p>
 
-> **v3.0.2 released (May 2026)** — LLM-readable install paths and multi-channel distribution on top of v3.0.1, which brought Anthropic 2026 standard alignment: Hooks 21+ events, Subagent frontmatter v2, Skills/Commands hybrid policy, and a 4-server MCP minimum (playwright · context7 · jina-reader · chrome-devtools@0.23.0). See [MIGRATION.md](MIGRATION.md), [Release v3.0.2](https://github.com/sangrokjung/claude-forge/releases/tag/v3.0.2).
+> **v3.1.0 released (June 2026)** — Adds **loop-forge** (turn a repetitive task into a reusable, self-guarding slash command) and a full beginner-friendly rewrite of this README with diagrams. Built on v3.0.2 (LLM-readable install) and v3.0.1 (Anthropic 2026 standard alignment: Hooks 21+ events, Subagent frontmatter v2, Skills/Commands hybrid policy, 4-server MCP minimum). See [MIGRATION.md](MIGRATION.md).
 
 ---
 
@@ -418,8 +418,8 @@ claude-forge/
   ├── install.ps1                Windows installer (--upgrade supported)
   ├── mcp-servers.json           MCP server defaults (4 minimal)
   ├── mcp-servers.optional.json  Optional MCP servers (memory/exa/github/fetch/time/...)
-  ├── .claude-plugin/plugin.json Plugin manifest (3.0.2)
-  ├── .claude-plugin/marketplace.json  Marketplace entry (3.0.2)
+  ├── .claude-plugin/plugin.json Plugin manifest (3.1.0)
+  ├── .claude-plugin/marketplace.json  Marketplace entry (3.1.0)
   ├── settings.json              Claude Code settings (2026 fields)
   ├── MIGRATION.md               v2.1 → v3.0 migration guide (EN)
   ├── MIGRATION.ko.md            v2.1 → v3.0 migration guide (KO)
@@ -435,7 +435,12 @@ claude-forge/
 ## 🔧 What's New in v3.0
 
 <details>
-<summary><strong>v3.0 / v3.0.1 / v3.0.2 changes (click to expand)</strong></summary>
+<summary><strong>v3.0 → v3.1.0 changes (click to expand)</strong></summary>
+
+### v3.1.0 (feature, June 2026)
+
+- **loop-forge** skill + command — turn a one-line repetitive task into a reusable, self-guarding slash command (5 loop shapes + auto verifier & hardstop). Skills 24 → 25, commands 33 → 34.
+- **Beginner-friendly README** — full rewrite for non-developers (plain-language analogies, terms explained in parentheses) + 3 diagrams (what's inside / install in 3 steps / development workflow), in English & Korean.
 
 ### v3.0.2 (docs patch, May 2026)
 

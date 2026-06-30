@@ -26,7 +26,7 @@
   <a href="README.md">English</a>
 </p>
 
-> 🎉 **v3.0.2 공개 (2026년 5월)** — Anthropic 2026 표준 완전 정렬 (훅(자동 안전점검) 21+ 이벤트 · 서브에이전트 v2 · 스킬/커맨드 하이브리드 정책) + 외부 도구 연결 최소 구성(4개: playwright · context7 · jina-reader · chrome-devtools). 상세: [MIGRATION.ko.md](MIGRATION.ko.md)
+> 🎉 **v3.1.0 공개 (2026년 6월)** — **loop-forge**(반복 작업을 재사용 가능한 자가검증 슬래시 명령으로 박제) 추가 + 이 README를 비개발자 눈높이로 전면 재작성(도표 3종 포함). v3.0.2(쉬운 설치 경로)·v3.0.1(Anthropic 2026 표준: 훅 21+ 이벤트 · 서브에이전트 v2 · 스킬/커맨드 하이브리드 · MCP 4개) 기반. 상세: [MIGRATION.ko.md](MIGRATION.ko.md)
 
 > 🚀 **한 줄 설치** (전체 설치, 권장):
 > ```bash
@@ -379,6 +379,18 @@ graph LR
 또는 `/auto 로그인 페이지 만들기`를 입력하면 계획부터 PR까지 알아서 진행해요.
 
 ---
+
+## v3.1.0 업데이트
+
+<details>
+<summary><strong>v3.1.0 주요 변경사항 펼치기</strong></summary>
+
+| 변경 | 설명 |
+|:-----|:-----|
+| **loop-forge 추가** | 반복 작업 한 줄을 재사용 가능한 자가검증 슬래시 명령(`/loop-forge`)으로 박제하는 스킬+커맨드. 5개 루프 원형 + verifier·하드스톱 자동. 스킬 24 → 25개, 커맨드 33 → 34개 |
+| **비개발자 친화 README** | 이 README를 비개발자 눈높이로 전면 재작성 — 쉬운 비유, 전문용어 괄호 풀이, 도표 3종(구성 / 설치 / 개발 흐름) |
+
+</details>
 
 ## v3.0 업데이트
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "claude-forge",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "description": "oh-my-zsh for Claude Code — 11 agents, 34 commands, 25 skills, 15 hooks + 9 opt-in examples (21 events), 9 rules, 4 MCP in one install",
   "owner": {
     "name": "Sangrok Jung",
@@ -11,7 +11,7 @@
     {
       "name": "claude-forge",
       "description": "Production-grade development environment for Claude Code with 11 specialized agents, 34 slash commands, 25 skills, 15 hooks + 9 opt-in examples (21 events), 9 rules, and 4 MCP servers (playwright, context7, jina-reader, chrome-devtools pinned at 0.23.0). Includes TDD workflow, security review, code review, architecture analysis, build error resolution, and Chrome DevTools Lighthouse / Core Web Vitals audits.",
-      "version": "3.0.2",
+      "version": "3.1.0",
       "author": {
         "name": "Sangrok Jung",
         "url": "https://github.com/sangrokjung"

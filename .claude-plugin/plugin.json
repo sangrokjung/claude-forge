@@ -1,6 +1,6 @@
 {
   "name": "claude-forge",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "description": "oh-my-zsh for Claude Code — 11 agents, 34 commands, 25 skills, 15 hooks + 9 examples (21 events), 9 rules, 4 MCP (minimal: playwright, context7, jina-reader, chrome-devtools@0.23.0). One-line install: curl -fsSL https://raw.githubusercontent.com/sangrokjung/claude-forge/main/install.sh | bash",
   "author": {
     "name": "Sangrok Jung",
