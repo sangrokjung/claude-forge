@@ -490,7 +490,7 @@ LLM-readable install paths (root `INSTALL.md` + above-the-fold one-liner) and mu
 | **playwright** | Controls a real browser for end-to-end tests | None — auto-installed |
 | **context7** | Fetches live library documentation while coding | None — auto-installed |
 | **jina-reader** | Reads web pages and converts them to clean text | None — auto-installed |
-| **chrome-devtools** | Runs Lighthouse audits and Core Web Vitals checks | None — auto-installed |
+| **chrome-devtools** | Runs Lighthouse audits and Core Web Vitals checks | Needs a system Chrome — unlike `playwright`, no browser is bundled. Without one, pass `--executablePath /path/to/chrome`. |
 
 Additional servers (memory, exa search, GitHub, fetch) are available opt-in via [`mcp-servers.optional.json`](mcp-servers.optional.json). Full recipes: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md).
 

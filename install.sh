@@ -396,101 +396,100 @@ install_mcp_servers() {
         return 0
     fi
 
-    read -p "Install recommended MCP servers? (y/n) " -n 1 -r
+    local mcp_json="$REPO_DIR/mcp-servers.json"
+    if [ ! -f "$mcp_json" ]; then
+        echo -e "${YELLOW}mcp-servers.json not found. Skipping MCP server installation.${NC}"
+        return 0
+    fi
+    if ! command -v jq >/dev/null; then
+        echo -e "${YELLOW}jq not found. Skipping MCP server installation.${NC}"
+        echo "Install jq, then re-run this script."
+        return 0
+    fi
+
+    local names
+    names=$(jq -r '.servers | keys[]' "$mcp_json")
+    if [ -z "$names" ]; then
+        echo -e "${YELLOW}No entries under .servers in mcp-servers.json. Nothing to install.${NC}"
+        return 0
+    fi
+
+    echo "  Default set: $(echo "$names" | tr '\n' ' ')"
+    read -p "Install these MCP servers? (y/n) " -n 1 -r
     echo ""
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         echo "Skipping MCP server installation."
         return 0
     fi
 
-    # Read install commands from mcp-servers.json if available
-    local mcp_json="$REPO_DIR/mcp-servers.json"
-    if [ -f "$mcp_json" ] && command -v jq >/dev/null; then
-        echo "  Installing from mcp-servers.json..."
+    local server
+    while IFS= read -r server; do
+        [ -z "$server" ] && continue
 
-        # Core servers (no API key required)
-        local core_servers=("context7" "sequential-thinking" "memory" "youtube-transcript" "remotion" "playwright" "desktop-commander")
-        for server in "${core_servers[@]}"; do
-            local cmd
-            cmd=$(jq -r ".install_commands.\"$server\" // empty" "$mcp_json")
-            if [ -n "$cmd" ]; then
-                echo "  Installing $server..."
-                eval "$cmd" 2>/dev/null && \
-                    echo -e "  ${GREEN}✓${NC} $server" || \
-                    echo -e "  ${YELLOW}!${NC} $server (already installed or failed)"
+        local type
+        type=$(jq -r --arg s "$server" '.servers[$s].type // "stdio"' "$mcp_json")
+
+        # Build the `claude mcp add` argv for this server
+        local add_cmd=(claude mcp add "$server" --scope user)
+
+        if [ "$type" = "stdio" ]; then
+            local env_pair
+            while IFS= read -r env_pair; do
+                [ -z "$env_pair" ] && continue
+                add_cmd+=(-e "$env_pair")
+            done < <(jq -r --arg s "$server" '.servers[$s].env // {} | to_entries[] | "\(.key)=\(.value)"' "$mcp_json")
+
+            local command
+            command=$(jq -r --arg s "$server" '.servers[$s].command // empty' "$mcp_json")
+            if [ -z "$command" ]; then
+                echo -e "  ${YELLOW}!${NC} $server (no .command — skipped)"
+                continue
             fi
-        done
+            add_cmd+=(-- "$command")
 
-        # Optional servers
-        echo ""
-        echo -e "${YELLOW}Optional servers (may require authentication):${NC}"
-
-        local optional_servers=("exa" "gmail" "google-calendar" "n8n-mcp" "hyperbrowser" "stitch" "sentry" "supabase" "github")
-        for server in "${optional_servers[@]}"; do
-            local cmd
-            cmd=$(jq -r ".install_commands.\"$server\" // empty" "$mcp_json")
-            if [ -n "$cmd" ]; then
-                read -p "  Install $server? (y/n) " -n 1 -r
-                echo ""
-                if [[ $REPLY =~ ^[Yy]$ ]]; then
-                    eval "$cmd" 2>/dev/null && \
-                        echo -e "  ${GREEN}✓${NC} $server" || \
-                        echo -e "  ${YELLOW}!${NC} $server (already installed or failed)"
-                fi
+            local arg
+            while IFS= read -r arg; do
+                [ -z "$arg" ] && continue
+                add_cmd+=("$arg")
+            done < <(jq -r --arg s "$server" '.servers[$s].args // [] | .[]' "$mcp_json")
+        else
+            # http / sse transports carry a url instead of a command
+            local url
+            url=$(jq -r --arg s "$server" '.servers[$s].url // empty' "$mcp_json")
+            if [ -z "$url" ]; then
+                echo -e "  ${YELLOW}!${NC} $server (type=$type but no .url — skipped)"
+                continue
             fi
-        done
-
-        # Korean public data servers
-        echo ""
-        read -p "  Install Korean public data servers (NTS, NPS, PPS, FSC, MSDS)? (y/n) " -n 1 -r
-        echo ""
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            for server in "data-go-nts" "data-go-nps" "data-go-pps" "data-go-fsc" "data-go-msds"; do
-                local cmd
-                cmd=$(jq -r ".install_commands.\"$server\" // empty" "$mcp_json")
-                if [ -n "$cmd" ]; then
-                    eval "$cmd" 2>/dev/null && \
-                        echo -e "  ${GREEN}✓${NC} $server" || \
-                        echo -e "  ${YELLOW}!${NC} $server (already installed or failed)"
-                fi
-            done
+            add_cmd+=(--transport "$type" "$url")
         fi
 
-        # Financial data servers
-        echo ""
-        read -p "  Install financial data servers (CoinGecko, Alpha Vantage, FRED, Korea Stock)? (y/n) " -n 1 -r
-        echo ""
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            for server in "coingecko" "alpha-vantage" "fred" "korea-stock"; do
-                local cmd
-                cmd=$(jq -r ".install_commands.\"$server\" // empty" "$mcp_json")
-                if [ -n "$cmd" ]; then
-                    eval "$cmd" 2>/dev/null && \
-                        echo -e "  ${GREEN}✓${NC} $server" || \
-                        echo -e "  ${YELLOW}!${NC} $server (already installed or failed)"
-                fi
-            done
+        if [ "$DRY_RUN" -eq 1 ]; then
+            echo "  [DRY-RUN] ${add_cmd[*]}"
+            continue
         fi
-    else
-        # Fallback: minimal install without mcp-servers.json
-        echo "  Installing core MCP servers..."
 
-        claude mcp add context7 -- npx -y @upstash/context7-mcp 2>/dev/null && \
-            echo -e "  ${GREEN}✓${NC} context7" || echo -e "  ${YELLOW}!${NC} context7"
+        if "${add_cmd[@]}" >/dev/null 2>&1; then
+            echo -e "  ${GREEN}✓${NC} $server"
+        else
+            echo -e "  ${YELLOW}!${NC} $server (already installed or failed)"
+        fi
+    done <<< "$names"
 
-        claude mcp add playwright -- npx @playwright/mcp@latest 2>/dev/null && \
-            echo -e "  ${GREEN}✓${NC} playwright" || echo -e "  ${YELLOW}!${NC} playwright"
-
-        claude mcp add memory -- npx -y @modelcontextprotocol/server-memory 2>/dev/null && \
-            echo -e "  ${GREEN}✓${NC} memory" || echo -e "  ${YELLOW}!${NC} memory"
-
-        claude mcp add sequential-thinking -- npx -y @modelcontextprotocol/server-sequential-thinking 2>/dev/null && \
-            echo -e "  ${GREEN}✓${NC} sequential-thinking" || echo -e "  ${YELLOW}!${NC} sequential-thinking"
+    # chrome-devtools drives a real Chrome; it is not bundled like playwright's chromium.
+    if echo "$names" | grep -qx "chrome-devtools" && \
+       ! command -v google-chrome >/dev/null && \
+       ! command -v google-chrome-stable >/dev/null; then
+        echo ""
+        echo -e "${YELLOW}Note:${NC} chrome-devtools needs a system Chrome, which was not found."
+        echo "  Install Chrome, or point the server at an existing binary:"
+        echo "    claude mcp add chrome-devtools --scope user -- npx -y chrome-devtools-mcp@1.5.0 \\"
+        echo "      --headless --isolated --executablePath /path/to/chrome"
     fi
 
     echo ""
     echo -e "${GREEN}MCP server installation complete!${NC}"
     echo "Run 'claude mcp list' to verify installed servers."
+    echo "More servers: mcp-servers.optional.json (copy entries into mcp-servers.json, then ./install.sh --upgrade)"
 }
 
 # 7. Install external skills (npx skills)

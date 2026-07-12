@@ -250,7 +250,7 @@ cd claude-forge && ./install.sh
 | **playwright** | 브라우저(웹 창)를 코드로 자동 조작·테스트 |
 | **context7** | 라이브러리·프레임워크 최신 문서를 실시간 조회 |
 | **jina-reader** | URL(웹 주소)을 읽기 좋은 마크다운 텍스트로 변환 |
-| **chrome-devtools** | Lighthouse 성능 측정, Core Web Vitals, 메모리 분석 (`@0.23.0`) |
+| **chrome-devtools** | Lighthouse 성능 측정, Core Web Vitals, 메모리 분석 (`@1.5.0`). playwright와 달리 브라우저를 동봉하지 않아 **시스템 Chrome이 필요** |
 
 <details>
 <summary>선택 추가 가능한 도구들 (opt-in)</summary>
