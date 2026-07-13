@@ -1,7 +1,7 @@
 ---
 allowed-tools: Bash(npm:*), Bash(npx:*), Bash(python:*), Bash(go:*), Bash(cargo:*), Bash(make:*), Bash(git:*), Bash(rm:*), Read, Edit, Grep, Glob
 description: 자동 재검증 루프 (최대 3회 재시도, 실패 시 자동 수정)
-argument-hint: [의도 설명 - handoff.md 없으면 필수] [--max-retries N] [--only build|test|lint]
+argument-hint: "[의도 설명 - handoff.md 없으면 필수] [--max-retries N] [--only build|test|lint]"
 ---
 
 ## Task

@@ -1,7 +1,7 @@
 ---
 allowed-tools: Bash(git:*), Read, Grep
 description: 병렬 개발용 Git Worktree 생성 + 도메인 템플릿 (v6)
-argument-hint: [브랜치명] [--type feature|bugfix|refactor]
+argument-hint: "[브랜치명] [--type feature|bugfix|refactor]"
 ---
 
 ## Task

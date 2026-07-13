@@ -1,7 +1,7 @@
 ---
 allowed-tools: Read, Grep, Glob
 description: 다음 작업 추천 (v6)
-argument-hint: [--from-plan]
+argument-hint: "[--from-plan]"
 ---
 
 # /next-task - 다음 Task 시작 준비 (v6)

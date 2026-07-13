@@ -1,7 +1,7 @@
 ---
 allowed-tools: Bash(git:*), Bash(mkdir:*), Read, Write, Glob
 description: 프로젝트 초기 설정 (v6)
-argument-hint: [프로젝트명] [--type next|vite|go|python|rust]
+argument-hint: "[프로젝트명] [--type next|vite|go|python|rust]"
 ---
 
 # /init-project - 프로젝트 초기화 (v6)

@@ -1,7 +1,7 @@
 ---
 allowed-tools: Read, Grep, Glob, Bash(git:*)
 description: 반복 패턴 분석하여 자동화 기회 제안 (주기적 실행 권장)
-argument-hint: [분석할 커밋 수, 기본 50]
+argument-hint: "[분석할 커밋 수, 기본 50]"
 ---
 
 ## Task
@@ -114,7 +114,7 @@ Read 도구로 다음 디렉토리 확인:
 ---
 allowed-tools: [필요한 도구]
 description: [자동 생성된 설명]
-argument-hint: [인자 힌트]
+argument-hint: "[인자 힌트]"
 ---
 
 ## Task

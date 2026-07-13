@@ -1,7 +1,7 @@
 ---
 allowed-tools: Bash(git:*), Read, Write, Glob, Grep, Task, TeamCreate, TaskCreate, TaskUpdate, TaskList, SendMessage
 description: Agent Teams 기반 병렬 오케스트레이션 (v6)
-argument-hint: [--type feature|bugfix|refactor|review] [--parallel N] [--dry-run]
+argument-hint: "[--type feature|bugfix|refactor|review] [--parallel N] [--dry-run]"
 ---
 
 # /orchestrate - Agent Teams 기반 병렬 오케스트레이션 (v6)

@@ -1,7 +1,7 @@
 ---
 allowed-tools: Read, Write, Grep, Glob, Bash(git:*)
 description: 머지 후 웹 테스트 체크리스트 + 완료 추적 (v6)
-argument-hint: [--auto-from-handoff] [--detailed] [--save] [--status] [--complete ID]
+argument-hint: "[--auto-from-handoff] [--detailed] [--save] [--status] [--complete ID]"
 ---
 
 ## Task
