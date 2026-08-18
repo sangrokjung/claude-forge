@@ -251,7 +251,10 @@ function Copy-ConfigFiles {
         New-Item -ItemType Directory -Path $ClaudeDir -Force | Out-Null
     }
 
-    $directories = @("agents", "rules", "commands", "skills", "hooks", "cc-chips")
+    # Keep this list in parity with install.sh. Omitting "scripts" or
+    # "cc-chips-custom" leaves statusLine (~/.claude/cc-chips-custom/engine.sh)
+    # and the md-to-docx / pdf-enhance helpers missing on Windows (#50).
+    $directories = @("agents", "rules", "commands", "scripts", "skills", "hooks", "cc-chips", "cc-chips-custom")
     foreach ($dir in $directories) {
         $source = Join-Path $RepoDir $dir
         if (Test-Path $source) {
@@ -269,7 +272,9 @@ function Copy-ConfigFiles {
         }
     }
 
-    $files = @("hooks.json", "settings.json")
+    # settings.json only. There is no repo-root hooks.json: hook wiring lives in
+    # the settings.json "hooks" block (see hooks/README.md).
+    $files = @("settings.json")
     foreach ($file in $files) {
         $source = Join-Path $RepoDir $file
         if (Test-Path $source) {
@@ -333,7 +338,7 @@ function Test-Installation {
     Write-Host "설치 확인 중... (Verifying installation)" -ForegroundColor White
     $errors = 0
 
-    $items = @("agents", "rules", "commands", "skills", "cc-chips", "hooks.json", "settings.json")
+    $items = @("agents", "rules", "commands", "scripts", "skills", "hooks", "cc-chips", "cc-chips-custom", "settings.json")
     foreach ($item in $items) {
         $path = Join-Path $ClaudeDir $item
         if (Test-Path $path) {

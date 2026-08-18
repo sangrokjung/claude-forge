@@ -30,6 +30,8 @@
   <a href="README.md">English</a>
 </p>
 
+> 🔧 **v3.1.1 핫픽스 (2026년 8월)** — 플러그인 설치 시 아무것도 안 뜨던 문제를 고쳤어요(`Hook load failed: expected record, received undefined`). `/plugin install claude-forge` 후 `✘ failed to load`가 뜨고 스킬·에이전트·커맨드가 하나도 안 보였다면 3.1.1로 올리시면 됩니다. 윈도우 `install.ps1`이 statusLine과 `scripts/`를 복사하지 않던 문제도 함께 해결했어요. 관련: [#52](https://github.com/sangrokjung/claude-forge/issues/52) · [#57](https://github.com/sangrokjung/claude-forge/issues/57) · [#50](https://github.com/sangrokjung/claude-forge/issues/50)
+
 > 🎉 **v3.1.0 공개 (2026년 6월)** — **loop-forge**(반복 작업을 재사용 가능한 자가검증 슬래시 명령으로 박제) 추가 + 이 README를 비개발자 눈높이로 전면 재작성(도표 3종 포함). v3.0.2(쉬운 설치 경로)·v3.0.1(Anthropic 2026 표준: 훅 21+ 이벤트 · 서브에이전트 v2 · 스킬/커맨드 하이브리드 · MCP 4개) 기반. 상세: [MIGRATION.ko.md](MIGRATION.ko.md)
 
 > 🚀 **한 줄 설치** (전체 설치, 권장):

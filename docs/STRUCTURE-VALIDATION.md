@@ -82,16 +82,16 @@ skills/
 
 ---
 
-## 3. Hooks — WARNING
+## 3. Hooks — PASS
 
 | Check | Status | Details |
 |-------|--------|---------|
-| `hooks/hooks.json` exists | PASS | File present |
-| Claude Code native support | WARNING | `hooks.json` is a **reference document only** (see `_comment` field). Claude Code does NOT load a separate `hooks.json` — hooks must be in `settings.json` |
-| `settings.json` hooks | PASS | `settings.json` contains full `hooks` object matching `hooks.json` content |
+| `hooks/hooks.json` absent | PASS | Removed in v3.1.1. Claude Code reads that exact path as a *plugin hooks manifest*; a non-conforming file there makes the whole plugin fail to load (#52, #57) |
+| Hook wiring location | PASS | Single source of truth is the repo-root `settings.json` `hooks` block |
+| `timeout` units | PASS | Seconds (`5`, `10`). The deleted `hooks.json` had drifted to milliseconds (`5000`, `10000`) |
 | Shell scripts present | PASS | 15 `.sh` hook scripts in `hooks/` directory |
 
-**Note**: The `hooks.json` file explicitly states via `_comment`: "Reference document only. Claude Code does not support a separate hooks.json. Actual hook settings must be in settings.json." The `settings.json` correctly duplicates all hook definitions.
+**Note**: `settings.json` is the only place hooks are registered. See [`hooks/README.md`](../hooks/README.md) for why a second copy is not kept.
 
 ### Hook Scripts (15):
 
@@ -253,7 +253,7 @@ These are not auto-loaded by Claude Code's plugin system but are used by the ins
 | `.claude-plugin/plugin.json` | PASS | 1 | Extra fields are harmless |
 | Skills (`SKILL.md`) | PASS | 15 | All correctly structured |
 | Hooks (shell scripts) | PASS | 15 | Loaded via `settings.json` |
-| `hooks.json` | WARNING | 1 | Reference only, not auto-loaded |
+| `hooks.json` | PASS | 0 | Removed in v3.1.1; wiring lives in `settings.json` |
 | Agents | PASS | 11 | Standard frontmatter format |
 | Commands | PASS | 40 | 3 without frontmatter |
 | MCP config | WARNING | 1 | Uses `mcp-servers.json` instead of `.mcp.json` |

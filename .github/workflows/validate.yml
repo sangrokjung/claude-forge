@@ -219,6 +219,53 @@ jobs:
       - name: Bash syntax
         run: bash -n install.sh
 
+      # install.ps1 had no CI coverage at all, which is how #50 (statusLine
+      # broken on Windows because cc-chips-custom/scripts were never copied)
+      # survived a full release cycle. Both hosted runners ship pwsh.
+      - name: PowerShell syntax (install.ps1)
+        shell: pwsh
+        run: |
+          $errs = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path ./install.ps1).Path, [ref]$null, [ref]$errs) | Out-Null
+          if ($errs.Count -gt 0) {
+            $errs | ForEach-Object { Write-Host "::error file=install.ps1,line=$($_.Extent.StartLineNumber)::$($_.Message)" }
+            exit 1
+          }
+          Write-Host "OK: install.ps1 parses cleanly"
+
+      - name: Installer parity (install.ps1 must ship every install.sh directory)
+        run: |
+          missing=0
+          for d in agents rules commands scripts skills hooks cc-chips cc-chips-custom; do
+            if grep -q "\"$d\"" install.ps1; then
+              echo "OK: install.ps1 handles $d/"
+            else
+              echo "::error file=install.ps1::does not install '$d/' but install.sh does (see #50)"
+              missing=$((missing+1))
+            fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
+
+      - name: "No plugin hooks manifest (regression guard for #52 / #57)"
+        run: |
+          # Claude Code parses hooks/hooks.json as a plugin hooks manifest and
+          # requires a top-level "hooks" wrapper. A non-conforming file there
+          # makes the entire plugin fail to load. Hook wiring belongs in
+          # settings.json — see hooks/README.md.
+          if [ -e hooks/hooks.json ]; then
+            if ! jq -e '.hooks | type == "object"' hooks/hooks.json > /dev/null 2>&1; then
+              echo "::error file=hooks/hooks.json::present but missing top-level \"hooks\" object — this breaks plugin load (#52, #57). Put hook wiring in settings.json instead."
+              exit 1
+            fi
+            echo "OK: hooks/hooks.json has a valid top-level hooks wrapper"
+          else
+            echo "OK: no hooks/hooks.json (wiring lives in settings.json)"
+          fi
+          jq -e '.hooks | type == "object"' settings.json > /dev/null \
+            || { echo "::error file=settings.json::missing hooks object"; exit 1; }
+          echo "OK: settings.json carries the hooks block"
+
       - name: Dry-run help
         run: ./install.sh --help || true
 

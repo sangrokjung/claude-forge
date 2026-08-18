@@ -30,6 +30,8 @@
   <a href="#-常见问题">常见问题</a>
 </p>
 
+> **v3.1.1 热修复（2026 年 8 月）** — 修复插件安装后完全无法加载的问题（`Hook load failed: expected record, received undefined`）。如果执行 `/plugin install claude-forge` 后显示 `✘ failed to load`、技能/智能体/命令一个都没出现，请升级到 3.1.1。同时修复 Windows `install.ps1` 未复制 statusLine 与 `scripts/` 的问题。相关：[#52](https://github.com/sangrokjung/claude-forge/issues/52)、[#57](https://github.com/sangrokjung/claude-forge/issues/57)、[#50](https://github.com/sangrokjung/claude-forge/issues/50)。
+
 > **v3.1.0 已发布（2026 年 6 月）** — 新增 **loop-forge**：把一个重复性任务一键封装成可复用、带自动校验的斜杠命令（5 种循环原型 + 自动校验器与硬停机制）。同步推出配图版新手友好 README（中/英/韩三语）。基于 v3.0 构建（钩子(自动安全检查程序) 21 事件、子智能体前置参数 v2、技能/命令混合策略、4 个 MCP 服务器基础配置）。详见 [MIGRATION.md](MIGRATION.md)。
 
 ---
@@ -538,8 +540,8 @@ claude-forge/
   ├── install.ps1                Windows 安装程序（支持 --upgrade）
   ├── mcp-servers.json           MCP 服务器默认配置（4 个最小集）
   ├── mcp-servers.optional.json  可选 MCP 服务器（memory/exa/github/fetch/time/...）
-  ├── .claude-plugin/plugin.json 插件清单（3.1.0）
-  ├── .claude-plugin/marketplace.json  市场条目（3.1.0）
+  ├── .claude-plugin/plugin.json 插件清单（3.1.1）
+  ├── .claude-plugin/marketplace.json  市场条目（3.1.1）
   ├── settings.json              Claude Code 设置（2026 字段）
   ├── MIGRATION.md               v2.1 → v3.0 迁移指南（英文）
   ├── MIGRATION.ko.md            v2.1 → v3.0 迁移指南（韩文）
