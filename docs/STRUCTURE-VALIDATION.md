@@ -53,30 +53,41 @@ Official `plugin.json` uses minimal fields (`name`, `description`, `author`). Cl
 
 ## 2. Skills Directory — PASS
 
-All 15 skills have correctly structured `SKILL.md` files:
+All 26 skills have correctly structured `SKILL.md` files:
 
 ```
 skills/
+├── blind-spot-pass/SKILL.md
 ├── build-system/SKILL.md
 ├── cache-components/SKILL.md
 ├── cc-dev-agent/SKILL.md
 ├── continuous-learning-v2/SKILL.md
+├── debugging-strategies/SKILL.md
+├── dependency-upgrade/SKILL.md
 ├── eval-harness/SKILL.md
+├── evaluating-code-models/SKILL.md
+├── evaluating-llms-harness/SKILL.md
+├── extract-errors/SKILL.md
 ├── frontend-code-review/SKILL.md
+├── loop-forge/SKILL.md
 ├── manage-skills/SKILL.md
 ├── prompts-chat/SKILL.md
+├── security-compliance/SKILL.md
 ├── security-pipeline/SKILL.md
 ├── session-wrap/SKILL.md
 ├── skill-factory/SKILL.md
 ├── strategic-compact/SKILL.md
+├── stride-analysis-patterns/SKILL.md
+├── summarize/SKILL.md
 ├── team-orchestrator/SKILL.md
+├── using-superpowers/SKILL.md
 ├── verification-engine/SKILL.md
 └── verify-implementation/SKILL.md
 ```
 
 | Check | Status | Details |
 |-------|--------|---------|
-| `skills/*/SKILL.md` pattern | PASS | All 15 skills follow `skills/{name}/SKILL.md` |
+| `skills/*/SKILL.md` pattern | PASS | All 26 skills follow `skills/{name}/SKILL.md` |
 | Frontmatter present | PASS | Checked `build-system` and `session-wrap` — both have `---` frontmatter with `name`, `description` |
 | Matches official pattern | PASS | Official example: `skills/example-skill/SKILL.md` |
 
@@ -147,13 +158,13 @@ agents/
 
 ## 5. Commands — PASS
 
-40 command files in `commands/`:
+34 command files in `commands/`:
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Files present | PASS | 40 `.md` command files |
-| Frontmatter | PASS | Most commands have `---` YAML frontmatter with `description` and `allowed-tools` |
-| Some without frontmatter | WARNING | `build-fix.md`, `refactor-clean.md`, `eval.md` start with `#` heading instead of `---`. These may not register as slash commands properly |
+| Files present | PASS | 34 `.md` command files |
+| Frontmatter | PASS | 31 commands have `---` YAML frontmatter; all parse as valid YAML and any `argument-hint` is a string (enforced by CI since v3.1.1) |
+| Some without frontmatter | WARNING | `test-coverage.md`, `update-codemaps.md`, `update-docs.md` start with a `#` heading instead of `---`. These may not register as slash commands properly |
 
 ---
 
@@ -209,7 +220,7 @@ agents/
 
 ## 8. Rules — PASS
 
-9 rule files in `rules/`:
+10 rule files in `rules/`:
 
 ```
 rules/
@@ -221,12 +232,13 @@ rules/
 ├── interaction.md
 ├── security.md
 ├── testing.md
+├── unknowns-lens.md
 └── verification.md
 ```
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Files present | PASS | 9 `.md` rule files |
+| Files present | PASS | 10 `.md` rule files |
 | Claude Code support | PASS | Rules in plugin `rules/` directory are auto-loaded by Claude Code |
 
 ---
