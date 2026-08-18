@@ -1,6 +1,6 @@
 ---
 description: Summarize 100 shop reviews into 3 lines each (Batch loop)
-argument-hint: [input file path — blank for reviews.csv]
+argument-hint: "[input file path — blank for reviews.csv]"
 ---
 
 # /review-summary — bulk 3-line review summary (Batch)

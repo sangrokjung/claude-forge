@@ -1,6 +1,6 @@
 ---
 description: Turn a one-line repetitive task into a reusable, self-guarding slash command (loop-forge)
-argument-hint: [one-line description of the task you keep doing by hand]
+argument-hint: "[one-line description of the task you keep doing by hand]"
 ---
 
 # /loop-forge

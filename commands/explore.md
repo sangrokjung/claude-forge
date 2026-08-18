@@ -1,7 +1,7 @@
 ---
 allowed-tools: Read, Grep, Glob, Bash(git:*)
 description: 코드베이스를 탐색하여 구조를 파악합니다.
-argument-hint: [경로] [--deps]
+argument-hint: "[경로] [--deps]"
 ---
 
 # /explore - 반복 정제 코드베이스 탐색 (v6)

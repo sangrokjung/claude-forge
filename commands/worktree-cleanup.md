@@ -1,7 +1,7 @@
 ---
 allowed-tools: Bash(git:*), Read, Grep
 description: PR 완료 후 Git Worktree 정리 (v6)
-argument-hint: [브랜치명 - 생략시 현재 워크트리]
+argument-hint: "[브랜치명 - 생략시 현재 워크트리]"
 ---
 
 ## Task

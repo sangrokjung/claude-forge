@@ -1,7 +1,7 @@
 ---
 allowed-tools: Read, Glob, Bash(git:*), Bash(jq:*), Bash(readlink:*), Bash(cp:*), Bash(ln:*), Bash(rm:*), Bash(mv:*), Bash(ls:*), Bash(chmod:*), Bash(date:*), Bash(cat:*), Bash(mkdir:*), Bash(diff:*), Bash(wc:*), Bash(grep:*)
 description: Claude Forge 프레임워크를 원격에서 최신 버전으로 업데이트
-argument-hint: [--check-only] [--force]
+argument-hint: "[--check-only] [--force]"
 ---
 
 # /forge-update - Claude Forge 자체 업데이트

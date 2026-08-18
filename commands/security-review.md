@@ -1,7 +1,7 @@
 ---
 allowed-tools: Bash(npm:*), Bash(npx:*), Bash(pip:*), Bash(cargo:*), Bash(grep:*), Bash(git:*), Read, Glob, Grep
 description: CWE 기반 보안 검토 + STRIDE 위협 모델링 (v6 - effort:max 강제)
-argument-hint: [파일/디렉토리] [--auto] [--quick] [--cwe] [--stride] [--deps] [--report markdown|json]
+argument-hint: "[파일/디렉토리] [--auto] [--quick] [--cwe] [--stride] [--deps] [--report markdown|json]"
 ---
 
 ## Task
