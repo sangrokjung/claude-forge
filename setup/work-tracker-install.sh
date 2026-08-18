@@ -161,7 +161,7 @@ verify_install() {
             echo -e "  ${GREEN}✓${NC} hooks/$hook"
         else
             echo -e "  ${RED}✗${NC} hooks/$hook (없거나 실행권한 없음)"
-            ((errors++))
+            errors=$((errors + 1))
         fi
     done
 
@@ -172,7 +172,7 @@ verify_install() {
         echo -e "  ${YELLOW}!${NC} scripts/work-tracker-sync.sh (선택 — 원격 동기화 미사용)"
     else
         echo -e "  ${RED}✗${NC} scripts/work-tracker-sync.sh"
-        ((errors++))
+        errors=$((errors + 1))
     fi
 
     # work-log 디렉토리
@@ -180,7 +180,7 @@ verify_install() {
         echo -e "  ${GREEN}✓${NC} work-log/"
     else
         echo -e "  ${RED}✗${NC} work-log/"
-        ((errors++))
+        errors=$((errors + 1))
     fi
 
     # settings.json에 hooks 이벤트 확인
@@ -196,7 +196,7 @@ print('ok' if all(e in hooks for e in events) else 'missing')
             echo -e "  ${GREEN}✓${NC} settings.json hooks (3개 이벤트)"
         else
             echo -e "  ${RED}✗${NC} settings.json hooks (UserPromptSubmit/PostToolUse/Stop 누락)"
-            ((errors++))
+            errors=$((errors + 1))
         fi
     fi
 

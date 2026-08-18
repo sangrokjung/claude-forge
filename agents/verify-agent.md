@@ -50,7 +50,7 @@ skills: ["superpowers:verification-before-completion", "superpowers:finishing-a-
     4. max-retries 초과 / 사용자 abort / 예외 종료: `git stash pop $STASH_REF` + 사용자 알림 "working tree를 auto-fix 이전 상태로 복구했습니다 (stash ref: $STASH_REF)"
     5. 복구 실패 시: stash ref를 사용자에게 명시하여 수동 복구 안내
 
-    Code review effort: low=changed files only | medium=+direct deps | high=+dependency graph | max=full project + security-reviewer subagent
+    Code review effort: low=changed files only | medium=+direct deps | high=+dependency graph | max=full project + security review (performed directly, per Role; no subagent dispatch)
 
     Sprint Contract DoD 검증 (프롬프트에 DoD 섹션이 전달된 경우):
     - 파이프라인 완료 후, 각 DoD 항목을 순회하며 PASS/FAIL 판정
