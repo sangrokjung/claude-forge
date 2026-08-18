@@ -32,6 +32,8 @@
   <a href="README.ko.md">한국어</a>
 </p>
 
+> **v3.1.1 (hotfix, August 2026)** — Fixes plugin install failing to load entirely (`Hook load failed: expected record, received undefined`). If `/plugin install claude-forge` showed `✘ failed to load` and none of the skills, agents or commands appeared, upgrade to 3.1.1. Also restores Windows `install.ps1` parity (statusLine and `scripts/` were never copied). See [#52](https://github.com/sangrokjung/claude-forge/issues/52), [#57](https://github.com/sangrokjung/claude-forge/issues/57), [#50](https://github.com/sangrokjung/claude-forge/issues/50).
+
 > **v3.1.0 released (June 2026)** — Adds **loop-forge** (turn a repetitive task into a reusable, self-guarding slash command) and a full beginner-friendly rewrite of this README with diagrams. Built on v3.0.2 (LLM-readable install) and v3.0.1 (Anthropic 2026 standard alignment: Hooks 21+ events, Subagent frontmatter v2, Skills/Commands hybrid policy, 4-server MCP minimum). See [MIGRATION.md](MIGRATION.md).
 
 ---
@@ -423,8 +425,8 @@ claude-forge/
   ├── install.ps1                Windows installer (--upgrade supported)
   ├── mcp-servers.json           MCP server defaults (4 minimal)
   ├── mcp-servers.optional.json  Optional MCP servers (memory/exa/github/fetch/time/...)
-  ├── .claude-plugin/plugin.json Plugin manifest (3.1.0)
-  ├── .claude-plugin/marketplace.json  Marketplace entry (3.1.0)
+  ├── .claude-plugin/plugin.json Plugin manifest (3.1.1)
+  ├── .claude-plugin/marketplace.json  Marketplace entry (3.1.1)
   ├── settings.json              Claude Code settings (2026 fields)
   ├── MIGRATION.md               v2.1 → v3.0 migration guide (EN)
   ├── MIGRATION.ko.md            v2.1 → v3.0 migration guide (KO)

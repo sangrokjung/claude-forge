@@ -3,6 +3,24 @@
 > Claude Code harness hooks — opt-in handlers for 21 lifecycle events.
 > Hooks fire inside the Claude Code runtime, read JSON from stdin, and gate behavior via exit codes.
 
+## Where hook wiring lives (single source of truth)
+
+**Hook registrations live in the repo-root [`settings.json`](../settings.json) `hooks` block — nowhere else.**
+
+There is deliberately **no `hooks/hooks.json`** in this repo. Claude Code treats that exact
+path as a *plugin hooks manifest* and requires a top-level `"hooks"` wrapper; a file there that
+does not match the schema makes the **entire plugin fail to load** — agents, skills and
+commands included (#52, #57). We previously shipped one as a "reference document", which both
+broke plugin installs and drifted out of sync with `settings.json` (its `timeout` values were
+written in milliseconds, while Claude Code reads **seconds**).
+
+Consequences to keep in mind when editing hooks:
+
+- Add or change a hook → edit `settings.json` only. Do not re-create `hooks/hooks.json`.
+- `timeout` is in **seconds** (`5`, `10`, `180`), not milliseconds.
+- Hooks are installed by `install.sh` / `install.ps1` (Method A), not by plugin install —
+  see [`docs/PLUGIN-VS-INSTALL-SH.md`](../docs/PLUGIN-VS-INSTALL-SH.md).
+
 ## Event Catalog
 
 Claude Code exposes **27 hookable events** across 7 categories (official catalog as of 2026-04-23). claude-forge ships examples for the 21 most common; the remaining 6 are listed below without examples — implement per project need. Install only what you need.

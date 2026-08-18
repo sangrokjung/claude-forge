@@ -1,6 +1,13 @@
 #!/bin/bash
+# Legacy opt-out flag for hook-guard.sh. Current builds of that helper ignore it,
+# so it is inert either way; kept so older installs keep behaving as before.
+# shellcheck disable=SC2034  # set for the sourced helper, never read by this script
 HOOK_GUARD_SKIP_STDIN=1
-source "$HOME/.claude/libs/hook-guard.sh"
+# hook-guard.sh is an optional helper (not shipped with claude-forge). Source it
+# when present, but never hard-fail without it — the only thing this hook needs
+# from it is $PYTHON3, which falls back to the system interpreter below.
+[ -r "$HOME/.claude/libs/hook-guard.sh" ] && . "$HOME/.claude/libs/hook-guard.sh"
+: "${PYTHON3:=$(command -v python3 || echo python3)}"
 # context-sync-suggest.sh - SessionStart Hook
 # 마지막 세션 종료 후 일정 시간이 경과했으면 /context-sync 안내
 # OMC session-start.mjs, project-memory-session.mjs와 독립 공존
