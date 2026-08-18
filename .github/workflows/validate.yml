@@ -257,8 +257,12 @@ jobs:
             $n -is [System.Management.Automation.Language.AssignmentStatementAst] -and
             $n.Left.Extent.Text -eq '$directories'
           }, $true))
-          if ($assign.Count -lt 1) {
-            Write-Host '::error file=install.ps1::no $directories array assignment found'
+          # Require exactly one assignment, mirroring the install.sh loop check.
+          # With two assignments in the same scope PowerShell uses the last one at
+          # runtime, so checking the first would report green while the installer
+          # actually skips a directory — the same silent-omission shape as #50.
+          if ($assign.Count -ne 1) {
+            Write-Host ('::error file=install.ps1::expected exactly one $directories assignment, found ' + $assign.Count)
             exit 1
           }
           $psDirs = $assign[0].Right.FindAll({
