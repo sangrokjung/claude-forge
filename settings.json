@@ -171,6 +171,10 @@
           {
             "type": "command",
             "command": "~/.claude/skills/continuous-learning-v2/hooks/observe.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/loop-detection.sh"
           }
         ]
       },
@@ -198,6 +202,10 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/security-auto-trigger.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/auto-verify-fix.sh"
           }
         ]
       }
