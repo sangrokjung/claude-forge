@@ -650,12 +650,15 @@ write_meta() {
     echo -e "  ${GREEN}✓${NC} .forge-meta.json"
 }
 
-# 11. Install work tracker (Supabase sync)
+# 11. Install work tracker (local usage log; remote sync is opt-in)
 install_work_tracker() {
     local wt_script="$REPO_DIR/setup/work-tracker-install.sh"
     if [ -f "$wt_script" ]; then
         echo ""
-        read -p "Install Work Tracker (Claude Code usage tracking → Supabase)? (y/n) " -n 1 -r
+        # Remote sync needs scripts/work-tracker-sync.sh, which is not shipped: the
+        # backend differs per user. Without it the hooks still log locally to
+        # ~/.claude/work-log/buffer.jsonl, so do not promise a sync we cannot install.
+        read -p "Install Work Tracker (logs Claude Code usage to ~/.claude/work-log)? (y/n) " -n 1 -r
         echo ""
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             REPO_DIR="$REPO_DIR" bash "$wt_script"
