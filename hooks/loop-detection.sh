@@ -41,11 +41,21 @@ fi
 echo "{\"file\":\"$FILE_PATH\",\"ts\":\"$(date -u +%FT%TZ)\",\"tool\":\"$TOOL_NAME\"}" >> "$TRACK_FILE"
 COUNT=$((COUNT + 1))
 
-# Threshold check
+# Threshold check — build the warning text
+MSG=""
 if [[ $COUNT -ge 10 ]]; then
-    echo "[Loop Detection] '$BASENAME' has been edited ${COUNT} times this session — possible doom loop. Suggested: (1) check git diff for what actually changed (2) look for the root cause in a different file (3) reconsider the approach entirely."
+    MSG="[Loop Detection] '$BASENAME' has been edited ${COUNT} times this session — possible doom loop. Suggested: (1) check git diff for what actually changed (2) look for the root cause in a different file (3) reconsider the approach entirely."
 elif [[ $COUNT -ge 5 ]]; then
-    echo "[Loop Detection] '$BASENAME' has been edited ${COUNT} times. You're repeatedly editing the same file — consider a different approach."
+    MSG="[Loop Detection] '$BASENAME' has been edited ${COUNT} times. You're repeatedly editing the same file — consider a different approach."
+fi
+
+# PostToolUse: plain stdout text is NOT delivered to Claude's context (transcript-only).
+# Must use hookSpecificOutput.additionalContext (JSON on stdout) — same shape as auto-verify-fix.sh.
+if [[ -n "$MSG" ]]; then
+    MSG="$MSG" python3 -c "
+import json, os
+print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PostToolUse', 'additionalContext': os.environ['MSG']}}, ensure_ascii=False))
+"
 fi
 
 exit 0
