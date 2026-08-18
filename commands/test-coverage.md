@@ -1,3 +1,8 @@
+---
+description: Analyze test coverage and generate missing tests to reach 80%+ coverage
+allowed-tools: Bash, Read, Write, Glob, Grep
+---
+
 # Test Coverage
 
 Analyze test coverage and generate missing tests:
