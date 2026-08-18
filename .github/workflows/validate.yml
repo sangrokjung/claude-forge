@@ -235,17 +235,45 @@ jobs:
           Write-Host "OK: install.ps1 parses cleanly"
 
       - name: Installer parity (install.ps1 must ship every install.sh directory)
+        shell: pwsh
         run: |
-          missing=0
-          for d in agents rules commands scripts skills hooks cc-chips cc-chips-custom; do
-            if grep -q "\"$d\"" install.ps1; then
-              echo "OK: install.ps1 handles $d/"
-            else
-              echo "::error file=install.ps1::does not install '$d/' but install.sh does (see #50)"
-              missing=$((missing+1))
-            fi
-          done
-          [ "$missing" -eq 0 ] || exit 1
+          $ErrorActionPreference = 'Stop'
+
+          # install.sh is the source of truth: read its directory loop.
+          $shLine = @(Select-String -Path ./install.sh -Pattern '^\s*for dir in (.+); do\s*$')
+          if ($shLine.Count -ne 1) {
+            Write-Host "::error file=install.sh::expected exactly one 'for dir in ...; do' loop, found $($shLine.Count)"
+            exit 1
+          }
+          $shDirs = $shLine[0].Matches[0].Groups[1].Value.Trim() -split '\s+' | Sort-Object -Unique
+
+          # Pull $directories out of install.ps1 through the AST rather than grepping
+          # the file. A plain grep passes as long as the word appears anywhere, so a
+          # comment mentioning "scripts" would mask its removal from the array.
+          $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path ./install.ps1).Path, [ref]$null, [ref]$null)
+          $assign = @($ast.FindAll({
+            param($n)
+            $n -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+            $n.Left.Extent.Text -eq '$directories'
+          }, $true))
+          if ($assign.Count -lt 1) {
+            Write-Host '::error file=install.ps1::no $directories array assignment found'
+            exit 1
+          }
+          $psDirs = $assign[0].Right.FindAll({
+            param($n) $n -is [System.Management.Automation.Language.StringConstantExpressionAst]
+          }, $true) | ForEach-Object { $_.Value } | Sort-Object -Unique
+
+          Write-Host "install.sh  : $($shDirs -join ', ')"
+          Write-Host "install.ps1 : $($psDirs -join ', ')"
+
+          $missing = @($shDirs | Where-Object { $psDirs -notcontains $_ })
+          if ($missing.Count -gt 0) {
+            Write-Host "::error file=install.ps1::does not install $($missing -join ', ') but install.sh does (see #50)"
+            exit 1
+          }
+          Write-Host "OK: install.ps1 covers all $($shDirs.Count) install.sh directories"
 
       - name: "No plugin hooks manifest (regression guard for #52 / #57)"
         run: |

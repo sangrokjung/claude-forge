@@ -1,5 +1,7 @@
 #!/bin/bash
-# shellcheck disable=SC2034  # consumed by hook-guard.sh when it is present
+# Legacy opt-out flag for hook-guard.sh. Current builds of that helper ignore it,
+# so it is inert either way; kept so older installs keep behaving as before.
+# shellcheck disable=SC2034  # set for the sourced helper, never read by this script
 HOOK_GUARD_SKIP_STDIN=1
 # hook-guard.sh is an optional helper (not shipped with claude-forge). Source it
 # when present, but never hard-fail without it — the only thing this hook needs
