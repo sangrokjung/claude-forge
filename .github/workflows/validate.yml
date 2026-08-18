@@ -204,6 +204,82 @@ jobs:
               sys.exit(1)
           EOF
 
+      # commands/*.md had no frontmatter validation at all, which is why 10 of
+      # 34 commands shipped with frontmatter that no YAML parser can read
+      # (a bare `argument-hint: [a] [b]` is not valid YAML). See #55.
+      - name: Validate commands/*.md frontmatter
+        run: |
+          python3 <<'EOF'
+          import re, sys, yaml
+          from pathlib import Path
+
+          errors = 0
+          checked = 0
+          for md in sorted(Path("commands").glob("*.md")):
+              text = md.read_text()
+              fm = re.match(r'^---\n(.*?)\n---\n', text, re.DOTALL)
+              if not fm:
+                  # Not every command carries frontmatter; that is allowed.
+                  print(f"::warning file={md}::no YAML frontmatter (skipped)")
+                  continue
+              checked += 1
+              try:
+                  data = yaml.safe_load(fm.group(1))
+              except yaml.YAMLError as e:
+                  detail = str(e).replace("\n", " ")[:200]
+                  print(f"::error file={md}::frontmatter is not valid YAML: {detail}")
+                  errors += 1
+                  continue
+              if not isinstance(data, dict):
+                  print(f"::error file={md}::frontmatter is not a mapping")
+                  errors += 1
+                  continue
+              # `argument-hint: [a] [b]` parses as a list (or fails outright).
+              # Every loader documents it as a string; Copilot CLI >= 1.0.65
+              # silently drops the command when it is not one.
+              hint = data.get("argument-hint")
+              if hint is not None and not isinstance(hint, str):
+                  print(f"::error file={md}::argument-hint must be a string, got "
+                        f"{type(hint).__name__} — wrap the value in quotes")
+                  errors += 1
+                  continue
+              print(f"OK: {md}")
+
+          print(f"checked {checked} command(s) with frontmatter")
+          if errors:
+              sys.exit(1)
+          EOF
+
+      - name: Validate argument-hint is a string in skills
+        run: |
+          python3 <<'EOF'
+          import re, sys, yaml
+          from pathlib import Path
+
+          errors = 0
+          for md in sorted(Path("skills").rglob("*.md")):
+              fm = re.match(r'^---\n(.*?)\n---\n', md.read_text(), re.DOTALL)
+              if not fm:
+                  continue
+              try:
+                  data = yaml.safe_load(fm.group(1))
+              except yaml.YAMLError as e:
+                  detail = str(e).replace("\n", " ")[:200]
+                  print(f"::error file={md}::frontmatter is not valid YAML: {detail}")
+                  errors += 1
+                  continue
+              if not isinstance(data, dict):
+                  continue
+              hint = data.get("argument-hint")
+              if hint is not None and not isinstance(hint, str):
+                  print(f"::error file={md}::argument-hint must be a string, got "
+                        f"{type(hint).__name__} — wrap the value in quotes")
+                  errors += 1
+          if errors:
+              sys.exit(1)
+          print("OK: every skill argument-hint is a string")
+          EOF
+
   installer:
     name: Installer Dry-Run
     strategy:

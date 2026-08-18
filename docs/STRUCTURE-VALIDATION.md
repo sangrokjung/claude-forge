@@ -251,13 +251,13 @@ These are not auto-loaded by Claude Code's plugin system but are used by the ins
 | Component | Status | Count | Notes |
 |-----------|--------|-------|-------|
 | `.claude-plugin/plugin.json` | PASS | 1 | Extra fields are harmless |
-| Skills (`SKILL.md`) | PASS | 15 | All correctly structured |
+| Skills (`SKILL.md`) | PASS | 26 | All correctly structured |
 | Hooks (shell scripts) | PASS | 15 | Loaded via `settings.json` |
 | `hooks.json` | PASS | 0 | Removed in v3.1.1; wiring lives in `settings.json` |
 | Agents | PASS | 11 | Standard frontmatter format |
-| Commands | PASS | 40 | 3 without frontmatter |
+| Commands | PASS | 34 | 31 with frontmatter (all valid YAML, CI-enforced), 3 without |
 | MCP config | WARNING | 1 | Uses `mcp-servers.json` instead of `.mcp.json` |
-| Rules | PASS | 9 | Auto-loaded by plugin system |
+| Rules | PASS | 10 | Auto-loaded by plugin system |
 | `settings.json` | PASS | 1 | Requires install script merge |
 
 ### Action Items for Official Marketplace Submission
