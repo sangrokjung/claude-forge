@@ -2,7 +2,7 @@
 name: verify-agent
 description: |
   구현 완료 후 fresh-context 검증 전용. typecheck → lint → build → test 파이프라인 독립 실행. 단순 에러(import·타입) 자동 수정, 비수정 가능 에러 분류 보고. Use proactively — 비단순 코드 변경 완료 직후 사람 호출("검증해줘"·"빌드 확인")을 기다리지 말고 자율 spawn한다. 완료 주장 전 필수(verification.md 자율 검증 §11). 사람 발화에 의존하지 않는다. /handoff-verify 스킬에서도 자동 스폰. 구현 자체는 tdd-guide나 impl-worker 사용.
-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "Task"]
 model: haiku
 memory: project
 maxTurns: 10
