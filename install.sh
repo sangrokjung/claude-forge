@@ -279,7 +279,7 @@ link_files() {
     # create a broken symlink that statusLine would then dereference. Skip
     # with a one-line hint in that case so the rest of the install still
     # succeeds.
-    for dir in agents rules commands scripts skills hooks cc-chips cc-chips-custom; do
+    for dir in agents rules commands scripts skills hooks libs cc-chips cc-chips-custom; do
         if [ -d "$REPO_DIR/$dir" ]; then
             if [ "$dir" = "cc-chips" ] && [ -z "$(ls -A "$REPO_DIR/$dir" 2>/dev/null)" ]; then
                 echo -e "  ${YELLOW}!${NC} Skipping cc-chips/: submodule not initialized."
@@ -572,7 +572,7 @@ verify() {
 
     local errors=0
 
-    for item in agents rules commands scripts skills cc-chips cc-chips-custom hooks settings.json; do
+    for item in agents rules commands scripts skills cc-chips cc-chips-custom hooks libs settings.json; do
         if [ -L "$CLAUDE_DIR/$item" ] && [ ! -e "$CLAUDE_DIR/$item" ]; then
             echo -e "  ${RED}✗${NC} $item (broken symlink)"
             errors=$((errors + 1))

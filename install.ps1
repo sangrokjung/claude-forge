@@ -254,7 +254,7 @@ function Copy-ConfigFiles {
     # Keep this list in parity with install.sh. Omitting "scripts" or
     # "cc-chips-custom" leaves statusLine (~/.claude/cc-chips-custom/engine.sh)
     # and the md-to-docx / pdf-enhance helpers missing on Windows (#50).
-    $directories = @("agents", "rules", "commands", "scripts", "skills", "hooks", "cc-chips", "cc-chips-custom")
+    $directories = @("agents", "rules", "commands", "scripts", "skills", "hooks", "libs", "cc-chips", "cc-chips-custom")
     foreach ($dir in $directories) {
         $source = Join-Path $RepoDir $dir
         if (Test-Path $source) {
@@ -338,7 +338,7 @@ function Test-Installation {
     Write-Host "설치 확인 중... (Verifying installation)" -ForegroundColor White
     $errors = 0
 
-    $items = @("agents", "rules", "commands", "scripts", "skills", "hooks", "cc-chips", "cc-chips-custom", "settings.json")
+    $items = @("agents", "rules", "commands", "scripts", "skills", "hooks", "libs", "cc-chips", "cc-chips-custom", "settings.json")
     foreach ($item in $items) {
         $path = Join-Path $ClaudeDir $item
         if (Test-Path $path) {
