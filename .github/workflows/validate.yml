@@ -406,6 +406,9 @@ jobs:
             echo "No secrets detected (whitelisted: AWS/Anthropic doc examples)."
           fi
 
+      - name: Secret-guard regression suite
+        run: bash scripts/tests/test_precommit_guard.sh
+
       - name: ShellCheck hooks
         uses: ludeeus/action-shellcheck@master
         with:

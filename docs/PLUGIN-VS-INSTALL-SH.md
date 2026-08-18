@@ -36,6 +36,7 @@ claude-forge distributes.
 | **statusLine** (CC CHIPS submodule) | ✅ (submodule opt-in) | ❌ Not loaded | Requires `git clone --recurse-submodules`, which is optional. `install.sh` detects missing submodules and skips statusLine wiring with a one-line hint. |
 | **`settings.json` env / permissions** | ✅ Full | ❌ Not merged | Plugin install never touches the user's `settings.json`. |
 | **Shell aliases** (`cc`, `ccr`) | ✅ | ❌ | Installed by `install.sh` via shell profile edits. |
+| **Pre-commit secret guard** ([`scripts/install-precommit.sh`](../scripts/install-precommit.sh)) | ✅ Manual | ❌ Not loaded | Not part of `install.sh` either — it is a separate, opt-in `.git/hooks/pre-commit` installer you run yourself. The plugin loader has no mechanism to write into a consumer repo's `.git/hooks/`. |
 
 > Legend: ✅ fully supported · ⚠️ partial or conditional · ❌ not delivered via this path.
 
