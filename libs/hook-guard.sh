@@ -19,7 +19,7 @@
 #                                      within <seconds>, else touches state and
 #                                      returns 0.
 #   hook_token_valid <token>        — returns 1 if <token> is empty or a known
-#                                      placeholder ("YOUR_MOSHI_TOKEN" etc.),
+#                                      placeholder ("YOUR_WEBHOOK_TOKEN" etc.),
 #                                      else returns 0.
 #   $PYTHON3                        — resolved python3 interpreter path, so hooks
 #                                      that source this file don't need to
@@ -59,11 +59,11 @@ hook_cooldown() {
 }
 
 # External webhook token validation — rejects placeholder/unconfigured patterns.
-# Usage: hook_token_valid "$MOSHI_TOKEN" || exit 0
+# Usage: hook_token_valid "$WEBHOOK_TOKEN" || exit 0
 hook_token_valid() {
   local tok="${1:-}"
   case "$tok" in
-    ""|"YOUR_MOSHI_TOKEN"|"NOT_CONFIGURED"|"REPLACE_ME"|"PLACEHOLDER"|"TODO")
+    ""|"YOUR_WEBHOOK_TOKEN"|"NOT_CONFIGURED"|"REPLACE_ME"|"PLACEHOLDER"|"TODO")
       return 1
       ;;
   esac
