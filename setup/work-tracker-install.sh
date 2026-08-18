@@ -19,17 +19,25 @@ echo ""
 echo "Work Tracker 설치"
 echo "================="
 
+# work-tracker-sync.sh는 **선택 구성요소**다. 동기화 대상(백엔드)이 사용자마다 달라
+# claude-forge는 이 스크립트를 배포하지 않는다. 없어도 훅 3종이
+# ~/.claude/work-log/buffer.jsonl에 로컬 기록을 계속하므로 추적 자체는 동작한다.
+# (#6: 예전에는 이 파일이 없으면 `set -e` + `return 1`로 설치 전체가 중단됐다.)
+SYNC_SRC="$REPO_DIR/scripts/work-tracker-sync.sh"
+HAS_SYNC=0
+[ -f "$SYNC_SRC" ] && HAS_SYNC=1
+
 # 0. 이미 설치 완료 확인 (빠른 스킵)
 quick_check() {
     [ -d "$CLAUDE_DIR/work-log" ] && \
-    [ -f "$CLAUDE_DIR/scripts/work-tracker-sync.sh" ] && \
     [ -f "$CLAUDE_DIR/hooks/work-tracker-prompt.sh" ] && \
-    { [[ "$OSTYPE" != "darwin"* ]] || launchctl list 2>/dev/null | grep -q "work-tracker"; }
+    { [ "$HAS_SYNC" -eq 0 ] || [ -f "$CLAUDE_DIR/scripts/work-tracker-sync.sh" ]; } && \
+    { [ "$HAS_SYNC" -eq 0 ] || [[ "$OSTYPE" != "darwin"* ]] || launchctl list 2>/dev/null | grep -q "work-tracker"; }
 }
 
 if quick_check; then
     # sync 스크립트 버전 비교 (업데이트 필요 시에만 재설치)
-    if diff -q "$REPO_DIR/scripts/work-tracker-sync.sh" "$CLAUDE_DIR/scripts/work-tracker-sync.sh" >/dev/null 2>&1; then
+    if [ "$HAS_SYNC" -eq 0 ] || diff -q "$SYNC_SRC" "$CLAUDE_DIR/scripts/work-tracker-sync.sh" >/dev/null 2>&1; then
         echo -e "  ${GREEN}✓${NC} Work Tracker 이미 설치됨 (최신)"
         return 0 2>/dev/null || exit 0
     else
@@ -49,12 +57,13 @@ setup_worklog_dir() {
 # 2. sync 스크립트 복사
 install_sync_script() {
     echo "  sync 스크립트 설치..."
-    local src="$REPO_DIR/scripts/work-tracker-sync.sh"
+    local src="$SYNC_SRC"
     local dst="$CLAUDE_DIR/scripts/work-tracker-sync.sh"
 
-    if [ ! -f "$src" ]; then
-        echo -e "  ${RED}✗${NC} work-tracker-sync.sh 소스 없음"
-        return 1
+    if [ "$HAS_SYNC" -eq 0 ]; then
+        echo -e "  ${YELLOW}!${NC} 원격 동기화 생략 (선택 구성요소, 로컬 기록은 정상 동작)"
+        echo "    필요하면 scripts/work-tracker-sync.sh를 직접 두고 다시 실행하세요."
+        return 0
     fi
 
     mkdir -p "$CLAUDE_DIR/scripts"
@@ -65,6 +74,13 @@ install_sync_script() {
 
 # 3. LaunchAgent 설치 (macOS only)
 install_launchagent() {
+    # sync 스크립트가 없으면 타이머를 걸지 않는다. 걸어두면 1분마다 없는 파일을 실행하려다
+    # 실패하는 LaunchAgent가 남아, 설치가 "성공"한 것처럼 보이면서 로그만 더럽힌다.
+    if [ "$HAS_SYNC" -eq 0 ]; then
+        echo -e "  ${YELLOW}!${NC} LaunchAgent 건너뜀 (동기화할 sync 스크립트 없음)"
+        return 0
+    fi
+
     if [[ "$OSTYPE" != "darwin"* ]]; then
         echo -e "  ${YELLOW}!${NC} macOS가 아님 — LaunchAgent 건너뜀 (cron 수동 설정 필요)"
         return 0
@@ -149,9 +165,11 @@ verify_install() {
         fi
     done
 
-    # sync 스크립트
+    # sync 스크립트 (선택 구성요소 — 미배포 상태는 실패가 아니다)
     if [ -f "$CLAUDE_DIR/scripts/work-tracker-sync.sh" ] && [ -x "$CLAUDE_DIR/scripts/work-tracker-sync.sh" ]; then
         echo -e "  ${GREEN}✓${NC} scripts/work-tracker-sync.sh"
+    elif [ "$HAS_SYNC" -eq 0 ]; then
+        echo -e "  ${YELLOW}!${NC} scripts/work-tracker-sync.sh (선택 — 원격 동기화 미사용)"
     else
         echo -e "  ${RED}✗${NC} scripts/work-tracker-sync.sh"
         ((errors++))
@@ -182,8 +200,9 @@ print('ok' if all(e in hooks for e in events) else 'missing')
         fi
     fi
 
-    # LaunchAgent (macOS)
-    if [[ "$OSTYPE" == "darwin"* ]]; then
+    # LaunchAgent (macOS). sync를 설치하지 않았으면 이 설치와 무관하므로 보고하지 않는다
+    # (남아 있는 다른 work-tracker 항목을 "이번 설치 결과"로 오인하게 만든다).
+    if [[ "$OSTYPE" == "darwin"* ]] && [ "$HAS_SYNC" -eq 1 ]; then
         if launchctl list 2>/dev/null | grep -q "work-tracker"; then
             echo -e "  ${GREEN}✓${NC} LaunchAgent 실행 중"
         else
