@@ -140,6 +140,12 @@ color: red
     ```
     fix(escalation): [concise description of the fix]
     ```
+
+    ### Handoff
+    - On fix complete, dispatch `adversarial-reviewer` per `skills/review-loop/SKILL.md`.
+      You are allowed architectural-level changes, which is exactly the blast radius that
+      needs an independent APPROVE before the work counts as done. A green pipeline is
+      your self-check, not that lane.
   </Output_Format>
 
   <Failure_Modes_To_Avoid>

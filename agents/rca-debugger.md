@@ -114,6 +114,7 @@ color: red
 
   <Handoff_Contract>
     - Analysis complete: create `.claude/artifacts/rca-{slug}.md` → the main session decides on the fix.
+    - Whoever applies the fix you propose dispatches `adversarial-reviewer` per `skills/review-loop/SKILL.md` before calling it done. The chain that ends in a code change ends in an independent APPROVE, and a root-cause narrative is not evidence that the fix works.
     - Short-term proposal: call tdd-guide (delegate failing test + fix).
     - Long-term proposal: call planner (delegate structural refactor plan). If the plan needs broad architectural authority, hand off to escalation-fixer instead.
     - Environment issues (CI config): ask the user to fix the CI config directly (this agent does not touch CI itself).

@@ -39,6 +39,22 @@ category error: decide which of the three it is.
 | `REQUEST_CHANGES` | At least one CRITICAL or HIGH finding, reproduced | The maker fixes exactly those findings, re-runs the evidence, and dispatches a **fresh** checker. Not the same one |
 | `UNVERIFIED` | No judgement was reached: the checker never ran, returned empty or malformed output, timed out, was rate-limited, or reviewed a revision that has since moved | Retry with a different checker, runtime or strategy. Never convert it to a pass |
 
+### Audit statuses are not verdicts
+
+`skeptical-auditor` returns `PASS`, `FAIL` or `UNCERTAIN`. Those are audit statuses about a claim
+another agent already made, not loop verdicts, and the two vocabularies must not be mixed in the
+same sentence. When an audit feeds a completion decision, map it:
+
+| Audit status | Loop verdict | Why |
+|---|---|---|
+| `PASS` | `APPROVE` | The claimed steps were re-run and actually pass |
+| `FAIL` | `REQUEST_CHANGES` | A blockable finding was reproduced |
+| `UNCERTAIN` | `UNVERIFIED` | No judgement was reached: turn budget exhausted, the revision moved, or the evidence could not be re-run |
+
+`UNCERTAIN` maps to `UNVERIFIED` and never to `REQUEST_CHANGES`. "I could not judge this" is a
+different statement from "this is broken", and collapsing the two sends the maker off to fix a
+defect nobody has demonstrated.
+
 ## Reviewer death is not approval
 
 A checker that crashes, times out, hits a rate limit, or returns nothing has told you nothing. The

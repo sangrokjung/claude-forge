@@ -167,7 +167,7 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | Agent | What it does |
 |:------|:-------------|
 | **adversarial-reviewer** | Independent, read-only checker for the verification loop. Never wrote the change, never sees the maker's reasoning — tries to break the claim rather than confirm it. Returns `APPROVE`, `REQUEST_CHANGES`, or `UNVERIFIED`. |
-| **skeptical-auditor** | A second, cheaper independent pass — mechanical re-execution plus fixed checks, used when a lighter second opinion is enough. |
+| **skeptical-auditor** | Re-audits a pass another agent already claimed: re-runs each step that was reported green and compares the real exit codes against the claim. Runs *after* verification, not instead of it — an independent verdict on the change itself is adversarial-reviewer's job. |
 | **systematic-debugger** | Reproduce → bisect → hypothesize → verify. Never guesses at a fix without a failing test that proves the hypothesis. |
 | **rca-debugger** | Escalation from systematic-debugger for multi-system failures — 5-why + fishbone analysis when bisection alone is inconclusive. |
 | **escalation-fixer** | Last resort when build-error-resolver can't close a build error — allowed architectural-level changes, reads the escalation log to avoid repeating failed approaches. |

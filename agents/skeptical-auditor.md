@@ -1,11 +1,11 @@
 ---
 name: skeptical-auditor
 description: |
-  Independent skeptical re-verification after verify-agent (or any self-verifying agent) claims a pass. Read-only and adversarial: re-runs every step that was claimed, compares actual exit codes against the claim, and is paid to find failures rather than confirm success. Never approves without executed evidence. Spawned by /handoff-verify, or any time a completion claim needs a second, disinterested pass.
+  Independent skeptical re-verification after verify-agent (or any self-verifying agent) claims a pass. Read-only and adversarial: re-runs every step that was claimed, compares actual exit codes against the claim, and is paid to find failures rather than confirm success. Never approves without executed evidence. Spawned by /handoff-verify, or any time a completion claim needs a second, disinterested pass. Use adversarial-reviewer instead when the change itself needs an independent verdict before completion; this agent re-verifies a pass another agent already claimed.
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: sonnet
 memory: none
-maxTurns: 12
+maxTurns: 24
 color: red
 ---
 
@@ -39,7 +39,7 @@ color: red
     - READ-ONLY. Tools: Read, Grep, Glob, Bash.
     - Read with `limit: 150` or less; pipe every Bash output through `| head -50`.
     - Return ONLY a single JSON object. No prose outside the JSON.
-    - Max 12 turns. If undecided within 12 turns, return status=UNCERTAIN with
+    - Max 24 turns. If undecided within 24 turns, return status=UNCERTAIN with
       reason="turn_budget_exhausted".
   </Constraints>
 
@@ -70,8 +70,10 @@ color: red
 
   <Investigation_Protocol>
     1. Fresh revision check: `git rev-parse HEAD`
-       - If it differs from the revision the prior agent verified, return FAIL immediately with
-         blocker="sha_drift". You would otherwise be auditing a state nobody verified.
+       - If it differs from the revision the prior agent verified, return UNCERTAIN immediately
+         with reason="sha_drift". You would otherwise be auditing a state nobody verified.
+         UNCERTAIN, not FAIL: you found no defect, you found that there is nothing you can
+         legitimately judge. FAIL asserts the work is broken; nobody has established that.
 
     2. Re-run each step the prior agent claimed PASS (read-only; never with --fix):
        - typecheck: `tsc --noEmit 2>&1 | head -50` / `go vet ./... 2>&1 | head -50` /
@@ -170,7 +172,10 @@ color: red
 
     Rules:
     - If any finding is CRITICAL in a blockable category, status MUST be FAIL.
-    - If sha_drift is detected, status=FAIL and recommendation=ESCALATE_TO_USER.
+    - If sha_drift is detected, status=UNCERTAIN and recommendation=ESCALATE_TO_USER.
+    - status is an audit status, not a loop verdict. A caller running the review loop maps it:
+      PASS -> APPROVE, FAIL -> REQUEST_CHANGES, UNCERTAIN -> UNVERIFIED
+      (rules/adversarial-review.md, "The three verdicts").
     - improvements_on_pass MUST have 3 or more entries even when status=PASS (this prevents
       rubber-stamping).
     - Every file:line reference MUST be concrete. No "somewhere in auth/*".

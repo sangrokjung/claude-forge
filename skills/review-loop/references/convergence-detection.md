@@ -25,6 +25,12 @@ repeating one approach, so you can change the approach instead of the wording.
 Switching strategy does not reset the maker set or the total round count. Only the consecutive-round
 counter inside the new strategy starts again at zero.
 
+**Precedence.** When more than one row matches, the human-escalation row wins: the same finding
+returning `REQUEST_CHANGES` twice in a row stops the loop even if a strategy switch is also
+available, and switching strategy is not a way to keep going past it. Two rounds on one finding
+means the loop has stopped learning about that finding, and a third attempt without a human is a
+guess with a fresh coat of paint. Resume only once the human has ruled on it.
+
 ## What does not count as convergence
 
 - Rewording the goal so the same implementation now "satisfies" it.

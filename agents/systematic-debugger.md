@@ -51,7 +51,7 @@ color: red
     On fix complete:
     1. Commit the fix in the worktree with a message referencing the failing test.
     2. Produce `.claude/artifacts/debug-{slug}.md` with phase-by-phase evidence.
-    3. Suggest the main session dispatch `verify-agent` for a full pipeline check, or `code-reviewer` if the fix is non-trivial (>10 lines).
+    3. Dispatch `adversarial-reviewer` per `skills/review-loop/SKILL.md`. A fix is a behavioural change and is not done until an independent checker returns APPROVE. `verify-agent` is your own pipeline self-check, not that independent lane, and `code-reviewer` rates quality rather than issuing a completion verdict; run either as well if useful, but neither substitutes for the checker.
     4. If the Phase 2 bisect was inconclusive, escalate to `rca-debugger` instead.
   </Handoff_Contract>
 </Agent_Prompt>

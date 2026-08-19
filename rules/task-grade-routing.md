@@ -19,7 +19,7 @@ description: Per-grade documentation and verification obligations for /workflow-
 
 | Grade | Documentation | Verification |
 |---|---|---|
-| S | No persistent docs. Keep goal, constraints and done-when inline for the session | Targeted check |
+| S | No persistent docs. Keep goal, constraints and done-when inline for the session | Targeted check, plus 1 independent review lane on any behavioural change |
 | M | Micro-spec, 4 items: Goal / Non-goals / Acceptance / Test | Targeted check, plus 1 independent review lane on any behavioural change |
 | L | Permanent spec and plan, written and approved before code | 1 adversarial lane (`rules/adversarial-review.md`) |
 | XL | Full spec, decision record, rollout/rollback, and an approval gate before implementation | 2+ independent lanes: correctness plus the risk-specific angle |

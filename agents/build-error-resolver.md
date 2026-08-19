@@ -73,6 +73,11 @@ color: cyan
     ### Verification
     - Build command: [command] -> exit code 0
     - No new errors introduced: [confirmed]
+
+    ### Handoff
+    - On fix complete, dispatch `adversarial-reviewer` per `skills/review-loop/SKILL.md`.
+      A green build proves the code compiles, not that the fix is correct; the change is
+      done when an independent checker returns APPROVE.
   </Output_Format>
 
   <Project_Specific_Patterns>
