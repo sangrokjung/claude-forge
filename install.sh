@@ -163,13 +163,13 @@ print_upgrade_summary() {
     echo "=========================================="
     echo "  Upgrade Summary"
     echo "=========================================="
-    echo "  Version       : v3.0.0"
+    echo "  Version       : v4.0.0"
     echo "  Mode          : $([ "$DRY_RUN" -eq 1 ] && echo 'dry-run' || echo 'applied')"
     echo "  Repo          : $REPO_DIR"
     echo "  Target        : $CLAUDE_DIR"
     echo ""
     echo "  Expected counts:"
-    echo "    - 11 agents, 25 skills (16 native + 8 moved from commands + 1 vendored: loop-forge), 34 commands, 9+ rules, 15 hooks + 9 opt-in examples"
+    echo "    - 16 agents, 32 skills (23 native + 8 moved from commands + 1 vendored: loop-forge), 35 commands, 14 rules, 21 hooks + 9 opt-in examples"
     echo ""
     echo "  Next steps:"
     echo "    1. Review docs/MIGRATION.md for detailed changes"
@@ -279,7 +279,7 @@ link_files() {
     # create a broken symlink that statusLine would then dereference. Skip
     # with a one-line hint in that case so the rest of the install still
     # succeeds.
-    for dir in agents rules commands scripts skills hooks libs cc-chips cc-chips-custom; do
+    for dir in agents rules commands scripts skills hooks libs reference cc-chips cc-chips-custom; do
         if [ -d "$REPO_DIR/$dir" ]; then
             if [ "$dir" = "cc-chips" ] && [ -z "$(ls -A "$REPO_DIR/$dir" 2>/dev/null)" ]; then
                 echo -e "  ${YELLOW}!${NC} Skipping cc-chips/: submodule not initialized."
@@ -572,7 +572,7 @@ verify() {
 
     local errors=0
 
-    for item in agents rules commands scripts skills cc-chips cc-chips-custom hooks libs settings.json; do
+    for item in agents rules commands scripts skills cc-chips cc-chips-custom hooks libs reference settings.json; do
         if [ -L "$CLAUDE_DIR/$item" ] && [ ! -e "$CLAUDE_DIR/$item" ]; then
             echo -e "  ${RED}✗${NC} $item (broken symlink)"
             errors=$((errors + 1))
@@ -726,7 +726,7 @@ main() {
   ${GREEN}╔══════════════════════════════════════════════════════╗
   ║           Claude Forge 설치 완료!                    ║
   ╠══════════════════════════════════════════════════════╣
-  ║  11 agents · 36+ commands · 6-layer security        ║
+  ║  16 agents · 35 commands · 6-layer security          ║
   ╚══════════════════════════════════════════════════════╝${NC}
 
   처음이신가요? 이것만 하세요:

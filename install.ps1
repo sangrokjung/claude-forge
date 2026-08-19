@@ -66,14 +66,14 @@ function Write-UpgradeSummary {
     Write-Host "=========================================="
     Write-Host "  Upgrade Summary"
     Write-Host "=========================================="
-    Write-Host "  Version       : v3.0.0"
+    Write-Host "  Version       : v4.0.0"
     $modeLabel = if ($DryRun) { 'dry-run' } else { 'applied' }
     Write-Host "  Mode          : $modeLabel"
     Write-Host "  Repo          : $RepoDir"
     Write-Host "  Target        : $ClaudeDir"
     Write-Host ""
     Write-Host "  Expected counts:"
-    Write-Host "    - 11 agents, 25 skills (16 native + 8 moved from commands + 1 vendored: loop-forge), 34 commands, 9+ rules, 15 hooks + 9 opt-in examples"
+    Write-Host "    - 16 agents, 32 skills (23 native + 8 moved from commands + 1 vendored: loop-forge), 35 commands, 14 rules, 21 hooks + 9 opt-in examples"
     Write-Host ""
     Write-Host "  Next steps:"
     Write-Host "    1. Review docs/MIGRATION.md for detailed changes"
@@ -254,7 +254,7 @@ function Copy-ConfigFiles {
     # Keep this list in parity with install.sh. Omitting "scripts" or
     # "cc-chips-custom" leaves statusLine (~/.claude/cc-chips-custom/engine.sh)
     # and the md-to-docx / pdf-enhance helpers missing on Windows (#50).
-    $directories = @("agents", "rules", "commands", "scripts", "skills", "hooks", "libs", "cc-chips", "cc-chips-custom")
+    $directories = @("agents", "rules", "commands", "scripts", "skills", "hooks", "libs", "reference", "cc-chips", "cc-chips-custom")
     foreach ($dir in $directories) {
         $source = Join-Path $RepoDir $dir
         if (Test-Path $source) {
@@ -338,7 +338,7 @@ function Test-Installation {
     Write-Host "설치 확인 중... (Verifying installation)" -ForegroundColor White
     $errors = 0
 
-    $items = @("agents", "rules", "commands", "scripts", "skills", "hooks", "libs", "cc-chips", "cc-chips-custom", "settings.json")
+    $items = @("agents", "rules", "commands", "scripts", "skills", "hooks", "libs", "reference", "cc-chips", "cc-chips-custom", "settings.json")
     foreach ($item in $items) {
         $path = Join-Path $ClaudeDir $item
         if (Test-Path $path) {
@@ -383,7 +383,7 @@ function Main {
         Write-Host "  ╔══════════════════════════════════════════════════════╗" -ForegroundColor Green
         Write-Host "  ║           Claude Forge installed!                    ║" -ForegroundColor Green
         Write-Host "  ╠══════════════════════════════════════════════════════╣" -ForegroundColor Green
-        Write-Host "  ║  11 agents · 36 commands · 6-layer security         ║" -ForegroundColor Green
+        Write-Host "  ║  16 agents · 35 commands · 6-layer security          ║" -ForegroundColor Green
         Write-Host "  ╚══════════════════════════════════════════════════════╝" -ForegroundColor Green
         Write-Host ""
         Write-Host "  Next steps:" -ForegroundColor Cyan

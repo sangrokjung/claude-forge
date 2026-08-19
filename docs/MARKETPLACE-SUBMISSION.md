@@ -17,7 +17,7 @@
 | Public repository | <https://github.com/sangrokjung/claude-forge> |
 | Homepage | <https://github.com/sangrokjung/claude-forge> |
 | License | MIT |
-| Current version | `3.1.1` |
+| Current version | `4.0.0` |
 | Manifest file | `.claude-plugin/plugin.json` |
 | Marketplace manifest | `.claude-plugin/marketplace.json` |
 | Category | development |
@@ -25,25 +25,31 @@
 
 ## 2. One-paragraph pitch
 
-claude-forge is an "oh-my-zsh for Claude Code" — a cohesive distribution of 11 specialized
-agents, 34 slash commands, 25 skills, 15 automation hooks (plus 9 opt-in examples covering
-21 lifecycle events), 9 rule files, and a minimal 4-server MCP set (playwright, context7,
-jina-reader, chrome-devtools pinned at `@0.23.0`). It targets individual developers and
-small teams who want a production-grade, security-reviewed baseline without hand-assembling
-the 2026 Anthropic Claude Code standard (Skills/Commands split, 21 hook events, subagent
-frontmatter v2). One install gives the complete set, and `install.sh --upgrade` migrates
-v2.1 users in place with backup + diff preview.
+claude-forge is an "oh-my-zsh for Claude Code" — a cohesive distribution of 16 specialized
+agents, 35 slash commands, 32 skills, 21 automation hooks (plus 9 opt-in examples covering
+21 lifecycle events), 14 rule files, and a minimal 4-server MCP set (playwright, context7,
+jina-reader, chrome-devtools pinned at `@0.23.0`). v4.0 adds an adversarial verification
+loop (maker≠checker, dispatched until an independent reviewer issues APPROVE), unattended
+API-error auto-resume, session relay across context compaction, and Korean prose quality
+guardrails. It targets individual developers and small teams who want a production-grade,
+security-reviewed baseline without hand-assembling the 2026 Anthropic Claude Code standard
+(Skills/Commands split, 21 hook events, subagent frontmatter v2). One install gives the
+complete set, and `install.sh --upgrade` migrates prior users in place with backup + diff
+preview.
 
 ## 3. What users get (inventory)
 
-- **11 agents** with frontmatter v2 (planner, tdd-guide, code-reviewer, security-reviewer,
+- **16 agents** with frontmatter v2 (planner, tdd-guide, code-reviewer, security-reviewer,
   architect, database-reviewer, build-error-resolver, doc-updater, refactor-cleaner,
-  e2e-runner, verify-agent)
-- **34 commands** (`/auto-ship`, `/plan`, `/review`, `/e2e`, `/worktree-start`, ...)
-- **25 skills** under `skills/<name>/SKILL.md`
-- **15 hooks + 9 opt-in examples** covering 21 of the 27 official hook events
-- **9 rules** (Golden Principles, interaction, coding-style, verification, security,
-  testing, git-workflow, date-calculation, agents-v2)
+  e2e-runner, verify-agent, adversarial-reviewer, skeptical-auditor, systematic-debugger,
+  rca-debugger, escalation-fixer)
+- **35 commands** (`/auto-ship`, `/plan`, `/review`, `/e2e`, `/worktree-start`,
+  `/workflow-classify`, ...)
+- **32 skills** under `skills/<name>/SKILL.md`
+- **21 hooks + 9 opt-in examples** covering 21 of the 27 official hook events
+- **14 rules** (Golden Principles, interaction, coding-style, verification, security,
+  testing, git-workflow, date-calculation, agents-v2, adversarial-review,
+  api-error-recovery, korean-writing-quality, task-grade-routing, unknowns-lens)
 - **4 MCP servers** (default) + 7 optional in `mcp-servers.optional.json`
 - CC CHIPS status bar submodule (optional)
 - `install.sh` / `install.ps1` for macOS/Linux/Windows
