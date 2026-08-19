@@ -28,6 +28,7 @@ Claude Code exposes **27 hookable events** across 7 categories (official catalog
 | Category | Event | Trigger | Common Use | Example |
 |----------|-------|---------|------------|---------|
 | Session | `SessionStart` | New session boots / `--continue` resume | Inject context, warm caches, print banners | `context-sync-suggest.sh` |
+| Session | `SessionStart` | Session resumes right after `/compact` (matcher: `compact`) | Restore the next-task pointer left before compaction (relay skill) | `post-compact-restore.sh` |
 | Session | `SessionEnd` | Clean session shutdown | Persist summary, sync TODAY.md | `work-tracker-stop.sh` |
 | Turn | `UserPromptSubmit` | User sends a prompt | Track activity, pre-flight checks | `work-tracker-prompt.sh` |
 | Turn | `Stop` | Assistant finishes a clean turn | Nudge session-wrap, commit suggest | `session-wrap-suggest.sh` |
@@ -39,7 +40,7 @@ Claude Code exposes **27 hookable events** across 7 categories (official catalog
 | Tool | `PostToolUseFailure` | Tool returns non-zero (failure only) | Escalate repeated failures, alert | `examples/post-tool-use-failure.sh.example` |
 | Subagent | `SubagentStart` | Task tool spawns a subagent | Record subagent name + start time | `examples/subagent-start.sh.example` |
 | Subagent | `SubagentStop` | Subagent finishes (success or failure) | Log duration, cost accounting | `examples/subagent-stop.sh.example` |
-| Context | `PreCompact` | Before context compaction runs | Snapshot TODAY.md / plan.md | `examples/pre-compact.sh.example` |
+| Context | `PreCompact` | Before context compaction runs | Snapshot `plan.md` / `auto-loop-todo.md` / `decisions.md` | `pre-compact-snapshot.sh` |
 | Context | `PostCompact` | After compaction completes | Persist summary for audit/relay | `examples/post-compact.sh.example` |
 | System | `ConfigChange` | `settings.json` mutated | Revalidate schema, reload hooks | (custom) |
 | System | `CwdChanged` | Working directory changes | Reset project context | (custom) |
