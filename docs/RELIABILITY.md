@@ -222,21 +222,30 @@ group (`loop-detection.sh` — it self-filters to `Edit`/`Write` inside the scri
 effectively fire on the same tool calls).
 
 **How to disable.** Remove the corresponding entry from `settings.json`'s
-`hooks.PostToolUse` array. To reset `loop-detection.sh`'s per-file counters without
-disabling it, delete its session-scoped state file:
+`hooks.PostToolUse` array. Both hooks scope their state by the `session_id` in the hook
+payload, so state from one session never reaches another. To reset the counters for every
+session at once, delete the state files:
 
 ```bash
-rm /tmp/claude-loop-detect-*.jsonl
+rm /tmp/claude-loop-detect-*.jsonl      # loop-detection per-file counters
+rm /tmp/auto-verify-fix-*               # auto-verify-fix repeat-suppression markers
 ```
 
-**Env vars.** None — both hooks are self-contained with fixed thresholds (5/10 edits for
-loop-detection; the fixed extension allowlist above for auto-verify-fix) and no
-configuration surface.
+**Env vars.** Neither hook has a configuration surface: the thresholds (5/10 edits for
+loop-detection) and the extension allowlist (auto-verify-fix) are fixed. Both read
+`CLAUDE_SESSION_ID` only as a fallback for the payload's `session_id`, and setting it is
+neither required nor recommended. `auto-verify-fix.sh` ignores a suppression marker older
+than 6 hours, so a stale count cannot silence it permanently.
 
-**Test.** `bash -n` on both scripts, plus functional smoke: 5x and 10x same-file edits
-against `loop-detection.sh` confirm both threshold branches round-trip through the JSON
-envelope, and a `.py` file with a deliberate syntax error confirms `auto-verify-fix.sh`
-surfaces it.
+A third hook, `emdash-slop-guard.sh` (Korean prose pack), fires on the same `Edit|Write`
+event pair and does take one env var — set `CLAUDE_FORGE_EMDASH_GUARD_DISABLED=1` to turn
+it off without editing `settings.json`.
+
+**Test.** `bash scripts/tests/test_s5_hooks.sh` (15 cases) covers both threshold branches,
+the JSON envelope, session isolation across two session ids, the marker TTL, and a
+two-file fixture for the counter arithmetic. Two defects here shipped past a one-file smoke
+test that structurally could not see them, which is why the fixtures use two files and two
+sessions.
 
 ## Why these are grouped together
 

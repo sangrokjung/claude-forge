@@ -427,6 +427,57 @@ jobs:
             || { echo "::error file=settings.json::missing hooks object"; exit 1; }
           echo "OK: settings.json carries the hooks block"
 
+      # Three hooks shipped as mode 100644 and died with exit 126 the moment
+      # Claude Code executed them by path. `chmod +x` on a dev machine does not
+      # ship — git records the mode, so the guard reads the recorded mode.
+      - name: Wired hooks are executable
+        run: |
+          python3 <<'EOF'
+          import json, subprocess, sys
+          from pathlib import Path
+
+          settings = json.loads(Path("settings.json").read_text())
+          commands = sorted({
+              hook["command"]
+              for group in settings.get("hooks", {}).values()
+              for entry in group
+              for hook in entry.get("hooks", [])
+              if hook.get("type") == "command" and "command" in hook
+          })
+
+          modes = {}
+          for line in subprocess.run(
+                  ["git", "ls-files", "-s"], capture_output=True, text=True,
+                  check=True).stdout.splitlines():
+              meta, path = line.split("\t", 1)
+              modes[path] = meta.split()[0]
+
+          errors = checked = 0
+          for command in commands:
+              # settings.json addresses hooks by their installed location;
+              # ~/.claude/<x> is the repo's <x>.
+              if not command.startswith("~/.claude/"):
+                  continue
+              path = command[len("~/.claude/"):]
+              mode = modes.get(path)
+              if mode is None:
+                  print(f"::error file=settings.json::wired hook not tracked in this repo: {path}")
+                  errors += 1
+                  continue
+              checked += 1
+              if mode != "100755":
+                  print(f"::error file={path}::wired in settings.json but git mode is {mode} — "
+                        f"it will fail with exit 126 when executed. Run: "
+                        f"git update-index --chmod=+x {path}")
+                  errors += 1
+              else:
+                  print(f"OK: {path}")
+
+          print(f"checked {checked} wired hook file(s)")
+          if errors:
+              sys.exit(1)
+          EOF
+
       - name: Dry-run help
         run: ./install.sh --help || true
 
@@ -461,6 +512,38 @@ jobs:
 
       - name: Secret-guard regression suite
         run: bash scripts/tests/test_precommit_guard.sh
+
+      # test_precommit_guard.sh was the only suite CI ran. The other three
+      # existed and passed locally, which is how a hook that could not execute
+      # at all reached a release branch.
+      - name: Remaining regression suites
+        run: |
+          set -e
+          for suite in \
+              scripts/tests/test_hook_guard.sh \
+              scripts/tests/test_auto_resume_classify.sh \
+              scripts/tests/test_s5_hooks.sh; do
+            echo "::group::${suite}"
+            bash "$suite"
+            echo "::endgroup::"
+          done
+          echo "::group::scripts/tests/test_emdash_check.py"
+          python3 scripts/tests/test_emdash_check.py
+          echo "::endgroup::"
+
+      - name: Bats suites (skipped when bats is unavailable)
+        run: |
+          if ! command -v bats >/dev/null 2>&1; then
+            echo "bats not installed — skipping (the skill and its hooks work standalone)"
+            exit 0
+          fi
+          shopt -s nullglob
+          files=(skills/*/tests/*.bats)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "no .bats suites found"
+            exit 0
+          fi
+          bats "${files[@]}"
 
       - name: ShellCheck hooks
         uses: ludeeus/action-shellcheck@master

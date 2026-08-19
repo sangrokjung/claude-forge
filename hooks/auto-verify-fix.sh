@@ -6,7 +6,7 @@
 INPUT=$(cat)
 
 echo "$INPUT" | python3 -c "
-import sys, json, os, subprocess, hashlib, re
+import sys, json, os, subprocess, hashlib, re, time
 
 try:
     d = json.load(sys.stdin)
@@ -70,15 +70,28 @@ if r.returncode == 0 or not output:
     sys.exit(0)
 
 # --- repeat-suppression marker ---
-sid = os.environ.get('SESSION_ID', 'unknown')
+# The session id must come from the payload. Claude Code does not export
+# SESSION_ID to hook processes, so the old env lookup always fell through to
+# the constant 'unknown': every concurrent session shared one marker, and the
+# count>3 suppression below then silenced the hook machine-wide and forever.
+sid = (d.get('session_id')
+       or os.environ.get('CLAUDE_SESSION_ID')
+       or os.environ.get('SESSION_ID')
+       or 'unknown')
+sid = re.sub(r'[^A-Za-z0-9_-]', '_', str(sid))
 path_hash = hashlib.md5(file_path.encode()).hexdigest()
 marker = f'/tmp/auto-verify-fix-{sid}-{path_hash}'
+
+# A marker older than this is treated as absent, so a stale count (or a
+# fallback key shared across sessions) cannot suppress the hook indefinitely.
+MARKER_TTL_SEC = 6 * 3600
 
 count = 0
 if os.path.exists(marker):
     try:
-        count = int(open(marker).read().strip())
-    except:
+        if (time.time() - os.path.getmtime(marker)) <= MARKER_TTL_SEC:
+            count = int(open(marker).read().strip())
+    except Exception:
         count = 0
 count += 1
 try:
