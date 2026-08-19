@@ -33,6 +33,7 @@ Claude Code exposes **27 hookable events** across 7 categories (official catalog
 | Turn | `UserPromptSubmit` | User sends a prompt | Track activity, pre-flight checks | `work-tracker-prompt.sh` |
 | Turn | `Stop` | Assistant finishes a clean turn | Nudge session-wrap, commit suggest | `session-wrap-suggest.sh` |
 | Turn | `StopFailure` | Session ends abnormally (crash, rate-limit) | Dump crash report, set recovery flag | `examples/stop-failure.sh.example` |
+| Turn | `StopFailure` | Session dies on a retryable API error (529 / 5xx / stalled stream) | Schedule an unattended resume, under fork-bomb caps — see [`rules/api-error-recovery.md`](../rules/api-error-recovery.md) | `api-error-auto-resume.sh` |
 | Tool | `PreToolUse` | Before a tool runs | Guard destructive commands, rate-limit MCP | `remote-command-guard.sh` |
 | Tool | `PostToolUse` | After a tool runs (success OR failure) | Filter output secrets, log usage | `output-secret-filter.sh` |
 | Tool | `PostToolUse` | Edit/Write to the same file 5+ times in a session | Doom-loop guard — nudge a rethink | `loop-detection.sh` |

@@ -247,6 +247,17 @@
         ]
       }
     ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/api-error-auto-resume.sh",
+            "timeout": 8
+          }
+        ]
+      }
+    ],
     "TaskCompleted": [
       {
         "matcher": "",
