@@ -40,7 +40,7 @@ Marketing copy, landing pages, SNS posts, blog posts, newsletters, customer/team
 
 **Korean UI copy inside code files (`.tsx`/`.jsx`/`.html`, etc.) counts as prose too.** Headlines, subcopy, button labels, notices, FAQ text, and pricing/checkout copy don't get a pass just because the file extension is code. Even when a request is framed purely as "edit the checkout page," touching the Korean copy on it still falls under this rule.
 
-마케팅 카피·랜딩·SNS·블로그·뉴스레터·고객/팀 이메일·보고서 산문·제안서 산문·교육 콘텐츠·유튜브 스크립트·CS 답변·브랜드 스토리·회의록 요약 산문 등 **사람이 읽을 한국어 산문·메시지**. **코드 파일(tsx/jsx/html 등) 안의 사용자 노출 한국어 문자열도 산문이다** — 헤드라인·서브카피·버튼·안내문·FAQ·가격/결제 문구는 파일이 코드라는 이유로 아래 §2의 "코드" 제외를 적용받지 않는다.
+마케팅 카피·랜딩·SNS·블로그·뉴스레터·고객/팀 이메일·보고서 산문·제안서 산문·교육 콘텐츠·유튜브 스크립트·CS 답변·브랜드 스토리·회의록 요약 산문 등 **사람이 읽을 한국어 산문·메시지**. **코드 파일(tsx/jsx/html 등) 안의 사용자 노출 한국어 문자열도 산문이다.** 헤드라인·서브카피·버튼·안내문·FAQ·가격/결제 문구는 파일이 코드라는 이유로 아래 §2의 "코드" 제외를 적용받지 않는다.
 
 ## 2. Exclusions (제외)
 
@@ -51,9 +51,9 @@ Marketing copy, landing pages, SNS posts, blog posts, newsletters, customer/team
 - English output.
 - Cases where the user has explicitly asked for a machine/AI-sounding style.
 
-- 법률 조문·계약서 정형 문구 (register·정확성 우선 — 격식체는 AI 티가 아니다)
+- 법률 조문·계약서 정형 문구 (register·정확성 우선, 격식체는 AI 티가 아니다)
 - 직접 인용·고유명사·인명·제품명·수치·날짜·단위
-- 의도적 시각 카피 (빅 헤드라인·키워드 굵게 등 — 후킹 약화 금지). 이 제외는 "윤문이 훅을 죽이지 말라"는 뜻이지 헤드라인의 AI-tell 면제가 아니다 — 줄표(—) 삽입구·번역투·기계 병렬은 헤드라인·CTA 배지에서도 회피한다.
+- 의도적 시각 카피 (빅 헤드라인·키워드 굵게 등, 후킹 약화 금지). 이 제외는 "윤문이 훅을 죽이지 말라"는 뜻이지 헤드라인의 AI-tell 면제가 아니다. 줄표(—) 삽입구·번역투·기계 병렬은 헤드라인·CTA 배지에서도 회피한다.
 - 사용자가 AI/기계 스타일을 명시 요청한 경우
 
 ## 3. Principles (원칙)
@@ -64,18 +64,18 @@ Marketing copy, landing pages, SNS posts, blog posts, newsletters, customer/team
 4. **Fix on shortfall.** If a piece still falls short of the bar after generation, clean it up with the `humanize-korean` skill (post-gen, optional). See §5 before sending sensitive text through any cleanup pass.
 5. **Model/tool choice is out of scope for this rule.** Which model or tool writes and polishes the prose is a project decision this rule doesn't make; this rule sets the *quality bar*, not the routing.
 
-1. **pre-gen 우선** — 생성 단계에서 깨끗하게. 사후 윤문 패스를 모든 글에 강제하지 않는다.
-2. **AI 기계성만 제거, 나머지 보존** — 격식·전문성·register·장르·논지·사실은 100% 유지. **AI-tell ≠ 격식.**
-3. **과윤문 금지** — 원문에 없던 비유·수사를 임의로 추가하지 않는다. 의도된 톤·후킹을 해치지 않는다.
-4. **미달 시 보정** — 품질 바 미달이면 `humanize-korean` 스킬로 윤문(post-gen, 선택). 사후 윤문 시 §5를 준수한다.
-5. **모델 선택은 본 룰의 소관이 아니다** — 어떤 모델·도구로 문구를 쓰고 다듬을지는 프로젝트마다 다른 결정이다. 본 룰은 *품질 기준*이지 라우팅 룰이 아니다.
+1. **pre-gen 우선**: 생성 단계에서 깨끗하게. 사후 윤문 패스를 모든 글에 강제하지 않는다.
+2. **AI 기계성만 제거, 나머지 보존**: 격식·전문성·register·장르·논지·사실은 100% 유지. **AI-tell ≠ 격식.**
+3. **과윤문 금지**: 원문에 없던 비유·수사를 임의로 추가하지 않는다. 의도된 톤·후킹을 해치지 않는다.
+4. **미달 시 보정**: 품질 바 미달이면 `humanize-korean` 스킬로 윤문(post-gen, 선택). 사후 윤문 시 §5를 준수한다.
+5. **모델 선택은 본 룰의 소관이 아니다**: 어떤 모델·도구로 문구를 쓰고 다듬을지는 프로젝트마다 다른 결정이다. 본 룰은 *품질 기준*이지 라우팅 룰이 아니다.
 
 ## 4. The quality bar (품질 바)
 
 Core patterns confirmed, across before/after cleanup passes on real Korean prose, as defaults to avoid from the moment of generation:
 
 - **Translation-ese**: "~에 대해" overuse, "~를 통해" overuse, "가지고 있다" (literal "have/possess"), double passive ("~되어진다"), "~에 의해" passive, "~할 수 있다" overuse.
-- **AI idioms**: "결론적으로/요약하면" (in conclusion / to summarize), "시사하는 바가 크다/주목할 만하다" (has significant implications / noteworthy), hype words ("혁신적/획기적/압도적" — revolutionary/groundbreaking/overwhelming), "~이야말로 적기/~할 때다" (now is truly the time).
+- **AI idioms**: "결론적으로/요약하면" (in conclusion / to summarize), "시사하는 바가 크다/주목할 만하다" (has significant implications / noteworthy), hype words "혁신적/획기적/압도적" (revolutionary/groundbreaking/overwhelming), "~이야말로 적기/~할 때다" (now is truly the time).
 - **Structure**: "첫째 둘째 셋째" mechanical parallelism, emoji overuse, sentence-initial conjunction ("또한/따라서/즉") overuse, stacked hedging, formal-noun overuse ("것이다/점/수/바").
 - **Confirmed via real-world publishing feedback**: em-dash interjections (—…—), win/lose personification ("X beats/wins over Y"), abstract structural-noun overuse ("축/갈래/결/레이어" — axis/branch/texture/layer).
 
@@ -89,7 +89,7 @@ The full pattern reference (10 categories A–J, severity tiers S1/S2/S3, academ
 
 If a cleanup or rewrite pass routes Korean text through a model surface outside this session — a different vendor's API, a separate tool, a hosted service — treat that the same as any other outbound data transfer: don't send sensitive text (client names, deal amounts, PII, salary data, secrets) to a surface you haven't explicitly cleared for that kind of data. When in doubt, keep the cleanup pass local to this session, or redact the sensitive spans first.
 
-윤문·재작성 패스가 이 세션 밖의 모델 표면(다른 벤더 API·별도 도구·호스팅 서비스)을 거친다면, 다른 외부 발송과 똑같이 취급한다 — 그 표면에 보내도 된다고 명시적으로 확인하지 않은 민감 텍스트(고객 실명·거래 금액·PII·급여·시크릿)는 보내지 않는다. 애매하면 윤문을 이 세션 안에서만 하거나, 민감 구간을 먼저 가린다.
+윤문·재작성 패스가 이 세션 밖의 모델 표면(다른 벤더 API·별도 도구·호스팅 서비스)을 거친다면, 다른 외부 발송과 똑같이 취급한다. 그 표면에 보내도 된다고 명시적으로 확인하지 않은 민감 텍스트(고객 실명·거래 금액·PII·급여·시크릿)는 보내지 않는다. 애매하면 윤문을 이 세션 안에서만 하거나, 민감 구간을 먼저 가린다.
 
 ## 6. Verification (검증)
 

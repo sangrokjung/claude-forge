@@ -266,7 +266,7 @@ cd claude-forge && ./install.sh
 
 **Opt-in 예제 (직접 활성화 가능)**:
 
-`hooks/examples/`에 있는 `.example` 파일을 `.sh`로 바꾸고 `settings.json`에 등록하면 활성화돼요. SessionEnd(세션 종료), PreCompact(컴팩트 전), SubagentStart/Stop(서브에이전트 시작/종료), MessageStart/End(메시지 시작/끝), UserPromptReceived(사용자 입력 받음) 등 21가지 라이프사이클 이벤트(작동 시점)를 다뤄요. 전체 목록은 [`hooks/README.md`](hooks/README.md) 참고.
+`hooks/examples/`에 있는 `.example` 파일을 `.sh`로 바꾸고 `settings.json`에 등록하면 활성화돼요. 예제는 이벤트당 하나씩 9개입니다. PostCompact(컴팩트 후), PostToolUseFailure(도구 실패 후), PreCompact(컴팩트 전), StopFailure(종료 실패), SubagentStart/Stop(서브에이전트 시작/종료), TaskCreated(태스크 생성), WorktreeCreate/Remove(워크트리 생성/삭제). 하네스 전체가 다루는 라이프사이클 이벤트(작동 시점)는 21가지이고, Claude Code의 전체 27개 이벤트 카탈로그는 [`hooks/README.md`](hooks/README.md)에 있어요.
 
 </details>
 
@@ -637,7 +637,7 @@ You are an expert [역할]. Your mission is to [목표].
 | `frontend-code-review` | 프론트엔드 코드 리뷰 |
 | `humanize-korean` | 사실·수치·격식은 그대로 두고 한국어 산문에서 번역투·AI 관용구만 걷어냄 |
 | `korean-character-count` | 글자 수 제한이 있는 카피(제목·문자·광고 문구)용 한글 글자/음절 카운트 |
-| `korean-spell-check` | 내장 사전 기반 한국어 맞춤법·띄어쓰기 검사 |
+| `korean-spell-check` | 한국어 맞춤법·띄어쓰기 검사. 외부 서비스 nara-speller.co.kr로 텍스트를 전송하니 고객 실명·개인정보는 넣지 마세요 |
 | `loop-forge` | 반복 작업 한 줄을 재사용 가능한 자가검증 슬래시 명령으로 박제 (5개 루프 원형 + verifier·하드스톱 자동) |
 | `manage-skills` | 스킬 관리 도구 |
 | `prompts-chat` | 프롬프트 채팅 |

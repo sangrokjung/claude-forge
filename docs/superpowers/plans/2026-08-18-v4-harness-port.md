@@ -22,8 +22,8 @@ Copied from spec §3 — every task implicitly includes these:
 6. Ship what you reference: every sourced/exec'd file ships, or the reference is guarded `[ -r ... ] && source ...` and documented optional.
 7. Pass repo CI locally before each commit: `python3 -m json.tool settings.json`, frontmatter jobs (agents schema + commands/skills YAML), hooks-manifest guard (`! test -e hooks/hooks.json`), installer parity. Shell: `bash -n` on every touched `.sh`.
 8. Shebang for all ported hooks/scripts: `#!/bin/bash` (NOT `/usr/bin/env bash` — homebrew bash 5.3.15 deadlocks on <64KB variable herestrings, measured 2026-08-18). Any regex scan in guards uses `GREP=/usr/bin/grep` with `command -v grep` fallback.
-9. Source-of-truth paths (read-only inputs, never modified): `~/.claude/libs/`, `~/.claude/hooks/`, `~/.claude/scripts/`, `~/.claude/skills/`, `~/.claude/agents/`, `~/qjc-office/dotclaude/rules/`, `~/qjc-office/dotclaude/reference/`, `~/qjc-office/dotclaude/scripts/`.
-10. All work on branch `release/v4.0` in `/Users/sangrok/qjc-office/claude-forge`.
+9. Source-of-truth paths (read-only inputs, never modified): `<internal-harness>/libs/`, `<internal-harness>/hooks/`, `<internal-harness>/scripts/`, `<internal-harness>/skills/`, `<internal-harness>/agents/`, `<internal-harness>/rules/`, `<internal-harness>/reference/`, `<internal-harness>/scripts/`.
+10. All work on branch `release/v4.0` in this repository.
 
 ---
 
@@ -39,7 +39,7 @@ Copied from spec §3 — every task implicitly includes these:
 - [ ] **Step 1: Fetch and merge both PR branches into release/v4.0, preserving authorship**
 
 ```bash
-cd /Users/sangrok/qjc-office/claude-forge && git checkout release/v4.0
+cd "$(git rev-parse --show-toplevel)" && git checkout release/v4.0
 git fetch origin pull/23/head:pr-23 pull/24/head:pr-24
 git merge --no-ff pr-23 -m "feat(commands): add /workflow-classify for S/M/L/XL task sizing (#23)
 
@@ -86,7 +86,7 @@ gh pr comment 24 --body "Merged into release/v4.0 for the v4.0 release — thank
 ### Task 2: S1 — ship `libs/hook-guard.sh` and wire installers
 
 **Files:**
-- Create: `libs/hook-guard.sh` (from `~/.claude/libs/hook-guard.sh`, 59 lines, zero bindings — verbatim except header comment)
+- Create: `libs/hook-guard.sh` (from `<internal-harness>/libs/hook-guard.sh`, 59 lines, zero bindings — verbatim except header comment)
 - Create: `scripts/tests/test_hook_guard.sh`
 - Modify: `install.sh` (two `for` lists: line ~282 `for dir in agents rules commands scripts skills hooks ...` and verify list line ~575)
 - Modify: `install.ps1` (`$directories` array line ~257, `$items` verify array line ~341)
@@ -137,7 +137,7 @@ bash scripts/tests/test_hook_guard.sh
 - [ ] **Step 3: Port the library**
 
 ```bash
-mkdir -p libs && cp ~/.claude/libs/hook-guard.sh libs/hook-guard.sh
+mkdir -p libs && cp <internal-harness>/libs/hook-guard.sh libs/hook-guard.sh
 ```
 
 Then edit `libs/hook-guard.sh`: replace its header comment with a forge header (purpose, install path `~/.claude/libs/hook-guard.sh`, functions provided). Read the file first; if the cooldown state path is hardcoded (e.g. `/tmp/...` or `~/.claude/cache/...`), introduce `HOOK_GUARD_STATE_DIR="${HOOK_GUARD_STATE_DIR:-$HOME/.claude/cache/hook-guard}"` and use it, keeping mtime-based semantics identical. If the test's assumed function names differ from the real ones, fix the TEST to match the library (the library is the shipped contract), and update this task's Interfaces block in the same commit.
@@ -163,8 +163,8 @@ Note: the installer-parity CI reads install.sh's `for dir in` line as truth, so 
 ### Task 3: S5 — doom-loop detection + edit-time verify hooks
 
 **Files:**
-- Create: `hooks/loop-detection.sh` (from `~/.claude/hooks/loop-detection.sh`, 51 lines, zero bindings)
-- Create: `hooks/auto-verify-fix.sh` (from `~/.claude/hooks/auto-verify-fix.sh`, 134 lines, zero bindings)
+- Create: `hooks/loop-detection.sh` (from `<internal-harness>/hooks/loop-detection.sh`, 51 lines, zero bindings)
+- Create: `hooks/auto-verify-fix.sh` (from `<internal-harness>/hooks/auto-verify-fix.sh`, 134 lines, zero bindings)
 - Modify: `settings.json` (hooks block: add `loop-detection.sh` under `PostToolUse` unmatched group; add `auto-verify-fix.sh` under `PostToolUse` matcher `Edit|Write`)
 - Modify: `hooks/README.md` (two rows in the event catalog table)
 
@@ -175,7 +175,7 @@ Note: the installer-parity CI reads install.sh's `for dir in` line as truth, so 
 - [ ] **Step 1: Port both files, set shebang `#!/bin/bash`, read each for bindings**
 
 ```bash
-cp ~/.claude/hooks/loop-detection.sh ~/.claude/hooks/auto-verify-fix.sh hooks/
+cp <internal-harness>/hooks/loop-detection.sh <internal-harness>/hooks/auto-verify-fix.sh hooks/
 ```
 
 Read both. Confirm: no `moshi`/`qjc`/absolute internal paths (recon says zero; verify anyway with `grep -nE 'qjc|moshi|Discord|supabase' hooks/loop-detection.sh hooks/auto-verify-fix.sh` — expect no output). If `auto-verify-fix.sh` calls project-specific build commands, keep its detection generic (it should no-op when no recognized project type).
@@ -213,8 +213,8 @@ git commit -m "feat(hooks): doom-loop detection + edit-time verify (S5)"
 ### Task 4: S2 — secret commit guard + regression suite
 
 **Files:**
-- Create: `scripts/install-precommit.sh` (from `~/qjc-office/dotclaude/scripts/install-precommit.sh` v10)
-- Create: `scripts/tests/test_precommit_guard.sh` (from `~/qjc-office/dotclaude/scripts/tests/test_precommit_guard.sh`, 18 cases)
+- Create: `scripts/install-precommit.sh` (from `<internal-harness>/scripts/install-precommit.sh` v10)
+- Create: `scripts/tests/test_precommit_guard.sh` (from `<internal-harness>/scripts/tests/test_precommit_guard.sh`, 18 cases)
 - Modify: `.github/workflows/validate.yml` (new step in `security` job running the suite)
 - Modify: `docs/PLUGIN-VS-INSTALL-SH.md` (one row: guard is Method A/manual, not plugin)
 
@@ -224,13 +224,13 @@ git commit -m "feat(hooks): doom-loop detection + edit-time verify (S5)"
 - [ ] **Step 1: Port both files verbatim, then make three edits to the installer**
 
 ```bash
-cp ~/qjc-office/dotclaude/scripts/install-precommit.sh scripts/
-cp ~/qjc-office/dotclaude/scripts/tests/test_precommit_guard.sh scripts/tests/
+cp <internal-harness>/scripts/install-precommit.sh scripts/
+cp <internal-harness>/scripts/tests/test_precommit_guard.sh scripts/tests/
 ```
 
 Installer edits (read the file; anchors are exact):
 1. Inside `HOOK_CONTENT`, delete section `# 4. 카탈로그/카운트 드리프트 게이트` — the whole `if [ -f "scripts/gen_agent_catalog.py" ]; then ... fi` block (QJC-only; forge has no such scripts). Keep sections 1–3 and `exit 0`.
-2. Replace the trailing "find all repos under ~/qjc-office" driver with: default = install into the repo containing `$PWD` (`git rev-parse --git-dir`), `--all <base>` = previous find-based walk over `<base>`. Keep the version-signature SKIP, backup-to-`.bak`, and `chmod +x` logic identical.
+2. Replace the trailing "find all repos under the internal work root" driver with: default = install into the repo containing `$PWD` (`git rev-parse --git-dir`), `--all <base>` = previous find-based walk over `<base>`. Keep the version-signature SKIP, backup-to-`.bak`, and `chmod +x` logic identical.
 3. Header comment: translate to English, keep the v5–v10 changelog contents (they are the earned knowledge: SIGPIPE, ssh-pubkey false positives, placeholder filter, interpreter/grep pinning) but strip internal file paths and the QJC incident framing to one line each.
 
 The hook body's Korean inline comments: translate to English in the same pass (open-source readability). Do not alter any pattern or logic while translating — the suite is the referee.
@@ -249,13 +249,13 @@ Expected: `PASS=18 FAIL=0`. The multibyte watchdog case must PASS(<15s).
 
 ```bash
 D=$(mktemp -d); cd "$D" && git init -q . && git config user.email t@t && git config user.name t
-bash /Users/sangrok/qjc-office/claude-forge/scripts/install-precommit.sh
+bash scripts/install-precommit.sh
 head -2 .git/hooks/pre-commit          # must show the guard header
 # fixture assembled at runtime so this plan document itself never contains a
 # token-shaped literal (the guard would rightly block committing the plan)
 printf 'k = ghp_%s\n' 'A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8' > f.txt && git add f.txt
 git commit -m x 2>&1 | head -1          # must print "PRE-COMMIT BLOCKED"
-cd /Users/sangrok/qjc-office/claude-forge
+cd "$(git rev-parse --show-toplevel)"
 ```
 
 - [ ] **Step 4: Add CI step (security job, before ShellCheck)**
@@ -279,8 +279,8 @@ git commit -m "feat(scripts): pre-commit secret guard v10 + 18-case regression s
 ### Task 5: S4 — session relay + pre-compact snapshot
 
 **Files:**
-- Create: `skills/relay/` (SKILL.md, `scripts/relay-lib.sh`, `scripts/relay-collect.sh`, `scripts/relay-build-focus.sh`, `scripts/relay-write-baton.sh`, `tests/relay.bats`; from `~/.claude/skills/relay/` — do NOT port `references/legacy-relay-command.md`)
-- Create: `hooks/pre-compact-snapshot.sh` (from `~/.claude/hooks/pre-compact-snapshot.sh`, zero bindings)
+- Create: `skills/relay/` (SKILL.md, `scripts/relay-lib.sh`, `scripts/relay-collect.sh`, `scripts/relay-build-focus.sh`, `scripts/relay-write-baton.sh`, `tests/relay.bats`; from `<internal-harness>/skills/relay/` — do NOT port `references/legacy-relay-command.md`)
+- Create: `hooks/pre-compact-snapshot.sh` (from `<internal-harness>/hooks/pre-compact-snapshot.sh`, zero bindings)
 - Modify: `settings.json` (add `PreCompact` event entry running the snapshot hook)
 - Modify: `hooks/README.md` (PreCompact row now points at a shipped hook instead of an example)
 
@@ -291,8 +291,8 @@ git commit -m "feat(scripts): pre-commit secret guard v10 + 18-case regression s
 - [ ] **Step 1: Port, excluding legacy reference**
 
 ```bash
-mkdir -p skills/relay && cp -R ~/.claude/skills/relay/SKILL.md ~/.claude/skills/relay/scripts ~/.claude/skills/relay/tests skills/relay/
-cp ~/.claude/hooks/pre-compact-snapshot.sh hooks/
+mkdir -p skills/relay && cp -R <internal-harness>/skills/relay/SKILL.md <internal-harness>/skills/relay/scripts <internal-harness>/skills/relay/tests skills/relay/
+cp <internal-harness>/hooks/pre-compact-snapshot.sh hooks/
 ```
 
 - [ ] **Step 2: Cut the one binding — TODAY.md task-ledger block**
@@ -304,9 +304,9 @@ In `skills/relay/scripts/relay-collect.sh` around lines 123–128 (`# ---- tasks
 ```bash
 D=$(mktemp -d); cd "$D" && git init -q . && git config user.email t@t && git config user.name t
 echo hi > a.txt && git add a.txt && git commit -qm init && echo change >> a.txt
-bash /Users/sangrok/qjc-office/claude-forge/skills/relay/scripts/relay-collect.sh > collect.out; echo "rc=$?"
+bash skills/relay/scripts/relay-collect.sh > collect.out; echo "rc=$?"
 grep -c "a.txt" collect.out   # baton input must mention the dirty file
-cd /Users/sangrok/qjc-office/claude-forge
+cd "$(git rev-parse --show-toplevel)"
 ```
 
 rc must be 0 and the dirty file present. If the skill ships bats tests, also run `bats skills/relay/tests/relay.bats` when `bats` is available; otherwise note in SKILL.md that the suite needs bats (do not add a hard dependency).
@@ -325,9 +325,9 @@ git commit -m "feat(skills): session relay + pre-compact snapshot (S4)"
 ### Task 6: S3 — API-error auto-resume
 
 **Files:**
-- Create: `hooks/api-error-auto-resume.sh` (from `~/.claude/hooks/api-error-auto-resume.sh`, 323 lines)
-- Create: `scripts/api-error-resume-runner.sh` (from `~/.claude/scripts/api-error-resume-runner.sh`, 559 lines)
-- Create: `rules/api-error-recovery.md` (condensed from `~/qjc-office/dotclaude/rules/api-error-auto-resume.md`: contract, resume paths, guard caps, env vars, kill switch — drop internal incident log)
+- Create: `hooks/api-error-auto-resume.sh` (from `<internal-harness>/hooks/api-error-auto-resume.sh`, 323 lines)
+- Create: `scripts/api-error-resume-runner.sh` (from `<internal-harness>/scripts/api-error-resume-runner.sh`, 559 lines)
+- Create: `rules/api-error-recovery.md` (condensed from `<internal-harness>/rules/api-error-auto-resume.md`: contract, resume paths, guard caps, env vars, kill switch — drop internal incident log)
 - Create: `scripts/tests/test_auto_resume_classify.sh`
 - Modify: `settings.json` (add `StopFailure` event entry), `hooks/README.md` (StopFailure row)
 
@@ -338,8 +338,8 @@ git commit -m "feat(skills): session relay + pre-compact snapshot (S4)"
 - [ ] **Step 1: Port both files, apply the four documented cuts**
 
 ```bash
-cp ~/.claude/hooks/api-error-auto-resume.sh hooks/
-cp ~/.claude/scripts/api-error-resume-runner.sh scripts/
+cp <internal-harness>/hooks/api-error-auto-resume.sh hooks/
+cp <internal-harness>/scripts/api-error-resume-runner.sh scripts/
 ```
 
 Cuts (anchors verified against source on 2026-08-18):
@@ -405,9 +405,9 @@ Spec fallback: if genericization stalls (>1 review round on safety), drop this t
 ### Task 7: S6 — adversarial verification set (flagship)
 
 **Files:**
-- Create: `agents/adversarial-reviewer.md` (from `~/.claude/agents/adversarial-reviewer.md`, 60 lines; 3 gate references to cut)
-- Create: `agents/skeptical-auditor.md` (from `~/.claude/agents/skeptical-auditor.md`, 180 lines, zero bindings)
-- Create: `skills/review-loop/SKILL.md` (+ `references/` if portable; from `~/.claude/skills/review-loop/`, 104 lines)
+- Create: `agents/adversarial-reviewer.md` (from `<internal-harness>/agents/adversarial-reviewer.md`, 60 lines; 3 gate references to cut)
+- Create: `agents/skeptical-auditor.md` (from `<internal-harness>/agents/skeptical-auditor.md`, 180 lines, zero bindings)
+- Create: `skills/review-loop/SKILL.md` (+ `references/` if portable; from `<internal-harness>/skills/review-loop/`, 104 lines)
 - Create: `rules/adversarial-review.md` (new writing, ~60 lines)
 - Create: `docs/VERIFICATION-LOOP.md` (worked example)
 
@@ -421,7 +421,7 @@ In `adversarial-reviewer.md`, locate the 3 lines matching `grep -nE 'gate|receip
 
 - [ ] **Step 2: Port review-loop SKILL; strip gate/receipt machinery**
 
-Read `~/.claude/skills/review-loop/SKILL.md` + references. Keep: the loop state machine (implement → dispatch fresh checker → verdict → fix → re-dispatch until APPROVE), maker≠checker rule (checker session must not have authored the change; fork/self-review forbidden), verdict semantics (UNVERIFIED is not a pass; a dead reviewer is not approval), re-verification etiquette (tell the checker what changed, ask it to re-reproduce, invite attack on the fix itself). Cut: anything invoking gate CLI, SHA pinning, seatbelt, receipts, or internal hooks. The SKILL's dispatch instruction should use the generic Task/Agent tool phrasing (forge users may not have Agent Teams).
+Read `<internal-harness>/skills/review-loop/SKILL.md` + references. Keep: the loop state machine (implement → dispatch fresh checker → verdict → fix → re-dispatch until APPROVE), maker≠checker rule (checker session must not have authored the change; fork/self-review forbidden), verdict semantics (UNVERIFIED is not a pass; a dead reviewer is not approval), re-verification etiquette (tell the checker what changed, ask it to re-reproduce, invite attack on the fix itself). Cut: anything invoking gate CLI, SHA pinning, seatbelt, receipts, or internal hooks. The SKILL's dispatch instruction should use the generic Task/Agent tool phrasing (forge users may not have Agent Teams).
 
 - [ ] **Step 3: Write `rules/adversarial-review.md`** — the rule layer: when the loop is mandatory (behavioural changes), the three verdicts and what each obligates, the "reviewer death ≠ approval" clause, checker independence definition, and the escalation (2 consecutive REQUEST_CHANGES on the same finding → stop and surface to the human).
 
@@ -448,7 +448,7 @@ git commit -m "feat(agents,skills): adversarial verification loop — maker≠ch
 ### Task 8: S7 — debugging escalation chain agents
 
 **Files:**
-- Create: `agents/systematic-debugger.md`, `agents/rca-debugger.md`, `agents/escalation-fixer.md` (from `~/.claude/agents/` same names)
+- Create: `agents/systematic-debugger.md`, `agents/rca-debugger.md`, `agents/escalation-fixer.md` (from `<internal-harness>/agents/` same names)
 
 **Interfaces:**
 - Consumes: `skills/systematic-debugging/` (Task 1) as methodology reference — cited in prose, not as a frontmatter `skills:` dependency.
@@ -457,7 +457,7 @@ git commit -m "feat(agents,skills): adversarial verification loop — maker≠ch
 - [ ] **Step 1: Port and remap**
 
 ```bash
-cp ~/.claude/agents/systematic-debugger.md ~/.claude/agents/rca-debugger.md ~/.claude/agents/escalation-fixer.md agents/
+cp <internal-harness>/agents/systematic-debugger.md <internal-harness>/agents/rca-debugger.md <internal-harness>/agents/escalation-fixer.md agents/
 ```
 
 Per file: (a) frontmatter `tools`: rewrite `mcp__chrome__list_console_messages` → `mcp__chrome-devtools__list_console_messages` (same for every `mcp__chrome__*`), `mcp__plugin_playwright_playwright__browser_console_messages` → `mcp__playwright__browser_console_messages` (same pattern for all); (b) remove `superpowers:*` entries from any `skills:` frontmatter key and convert to a prose line "methodology: see skills/systematic-debugging" where apt (2 references each in systematic/rca); (c) sweep `grep -nE 'qjc|QJC|worktree-collision|dotclaude' agents/systematic-debugger.md agents/rca-debugger.md agents/escalation-fixer.md` → nothing; (d) if frontmatter carries `isolation: worktree`, keep it (native feature, not QJC).
@@ -599,7 +599,7 @@ git commit -m "docs(release): v4.0.0 — inventory, migration, reliability + ver
 
 **Files:** none in-repo (GitHub operations + review dispatch)
 
-- [ ] **Step 1: File 13 v4.1 backlog issues** — one per deferred set from spec §5, each with its survey rationale (2–3 sentences from `~/.claude/artifacts/forge-port-survey-20260818/REPORT.md`) and a `help wanted` label where external-contributor-friendly (pull-main, push-before-ci, dry-run preview, karpathy-check, sprint-contract).
+- [ ] **Step 1: File 13 v4.1 backlog issues** — one per deferred set from spec §5, each with its survey rationale (2–3 sentences from `<internal-harness>/artifacts/forge-port-survey-20260818/REPORT.md`) and a `help wanted` label where external-contributor-friendly (pull-main, push-before-ci, dry-run preview, karpathy-check, sprint-contract).
 
 - [ ] **Step 2: Open the release PR** `release/v4.0` → `main`, body: pack summaries, per-set source attribution ("ported from the maintainer's internal harness"), external contributions credited (#23, #24), CI evidence, and the dogfooding narrative.
 

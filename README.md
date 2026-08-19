@@ -279,7 +279,7 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | **frontend-code-review** | Frontend file review (.tsx, .ts, .js) with checklist rules. |
 | **humanize-korean** | Strip translation-ese and AI idioms from Korean prose without changing facts, numbers, or register. |
 | **korean-character-count** | Count Korean characters/syllables for length-constrained copy (titles, SMS, ad copy). |
-| **korean-spell-check** | Check Korean spelling and spacing against a built-in dictionary. |
+| **korean-spell-check** | Check Korean spelling and spacing. Sends the text to the third-party service nara-speller.co.kr, so keep client names and personal data out of it. |
 | **loop-forge** | Turn a one-line repetitive task into a reusable, self-guarding slash command (5 loop shapes + auto verifier & hardstop). |
 | **manage-skills** | Analyze session changes, detect missing verification skills, create/update skills. |
 | **prompts-chat** | Skill/prompt exploration, search, and improvement. |
@@ -348,7 +348,7 @@ See [`docs/RELIABILITY.md`](docs/RELIABILITY.md).
 
 #### Opt-in Examples (9 extra, v3.0+)
 
-9 additional `.example` files covering newer lifecycle events (SessionEnd, PreCompact, SubagentStart/Stop, MessageStart/End, UserPromptReceived, and more) live in [`hooks/examples/`](hooks/examples/). Full 21-event catalog: [`hooks/README.md`](hooks/README.md). To activate: rename `*.example` → `*.sh` and register in `settings.json`.
+9 additional `.example` files live in [`hooks/examples/`](hooks/examples/), one per event: PostCompact, PostToolUseFailure, PreCompact, StopFailure, SubagentStart, SubagentStop, TaskCreated, WorktreeCreate, WorktreeRemove. Full 21-event coverage; 27-event catalog: [`hooks/README.md`](hooks/README.md). To activate: rename `*.example` → `*.sh` and register in `settings.json`.
 
 </details>
 
@@ -408,6 +408,10 @@ After installing, type `/guide` for an interactive 3-minute tour. Or just type:
 ```
 
 Claude Forge will handle the entire plan-to-PR pipeline for you automatically.
+
+Prefer to read first? [`docs/FIRST-STEPS.md`](docs/FIRST-STEPS.md) walks through your first
+session step by step, and [`docs/WORKFLOW-RECIPES.md`](docs/WORKFLOW-RECIPES.md) collects the
+command sequences for common jobs.
 
 ---
 

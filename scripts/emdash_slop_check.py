@@ -18,6 +18,14 @@ files that aren't substantially Korean — so an English README full of
 em-dashes produces zero hits, by design, even though the same text would
 match the raw regex. See `is_korean_dominant()`.
 
+The same gate then runs a second time per line. A Korean-dominant file is
+routinely bilingual: a Korean rule document quotes the English patterns it
+bans, and a translated migration guide keeps English headings and code. On
+those English lines an em-dash aside is correct prose, not a tell, so the
+whole-file gate alone reported them and the checker's own rule file failed
+its own check. A line is only recorded once the line itself reads as Korean.
+See `is_korean_line()`.
+
 False-positive guards (kept from the pattern's underlying design):
 table empty-value cells `| — |` (pipe-adjacent, excluded by the regex itself),
 fenced code block contents, numeric ranges ("100-200px"), minus signs.
@@ -49,20 +57,41 @@ LATIN_PATTERN = re.compile(r'[A-Za-z]')
 KOREAN_RATIO_THRESHOLD = 0.15  # Hangul / (Hangul + Latin) letters, whole-file basis
 
 
-def is_korean_dominant(text: str, threshold: float = KOREAN_RATIO_THRESHOLD) -> bool:
-    """True if the file's letters are mostly Hangul rather than Latin.
-
-    Deliberate tradeoff: this is a whole-file ratio, not per-line. A mostly-
-    English doc with one Korean paragraph containing a real em-dash violation
-    will not be flagged — that's the accepted cost of not firing on English
-    docs at all (the false-positive class this checker exists to eliminate).
-    """
+def _hangul_ratio(text: str) -> float:
+    """Hangul share of the letters in `text`; 0.0 when there are no letters."""
     hangul = len(HANGUL_PATTERN.findall(text))
     latin = len(LATIN_PATTERN.findall(text))
     total = hangul + latin
     if total == 0:
-        return False
-    return (hangul / total) >= threshold
+        return 0.0
+    return hangul / total
+
+
+def is_korean_dominant(text: str, threshold: float = KOREAN_RATIO_THRESHOLD) -> bool:
+    """True if the file's letters are mostly Hangul rather than Latin.
+
+    Deliberate tradeoff: this is a whole-file ratio. A mostly-English doc with
+    one Korean paragraph containing a real em-dash violation will not be
+    flagged — that's the accepted cost of not firing on English docs at all
+    (the false-positive class this checker exists to eliminate).
+    """
+    return _hangul_ratio(text) >= threshold
+
+
+def is_korean_line(line: str, threshold: float = KOREAN_RATIO_THRESHOLD) -> bool:
+    """True if this single line reads as Korean rather than English.
+
+    Runs after the whole-file gate, on the line about to be recorded. Korean
+    documents quote English, and an em-dash aside inside an English sentence
+    is correct English prose — flagging it is noise regardless of what
+    language the rest of the file is in.
+
+    Same tradeoff as the file gate, one level down: a Korean sentence whose
+    line happens to be mostly Latin (a long path or identifier) is skipped.
+    Under-reporting on a bilingual line is cheaper than training the reader
+    to ignore this checker.
+    """
+    return _hangul_ratio(line) >= threshold
 
 
 def check_file(path: str):
@@ -85,7 +114,7 @@ def check_file(path: str):
             continue
         if in_code:
             continue
-        if INTERJECT.search(line):
+        if INTERJECT.search(line) and is_korean_line(line):
             kind = 'heading' if stripped.startswith('#') else 'body'
             hits.append((n, stripped, kind))
     return hits

@@ -5,8 +5,9 @@
 > Submission form: <https://clau.de/plugin-directory-submission>
 >
 > **Status (2026-04-24):** Ready for submission. All items in the reviewer-facing
-> checklist (§6) are verified against `main` at commit 51bef80. This document is the
-> final submission packet — values in §7 are ready to paste.
+> checklist (§6) were verified against `main` at commit 51bef80 for v3.0.1;
+> v4.0.0 re-verification is pending. This document is the final submission
+> packet — values in §7 are ready to paste.
 
 ## 1. Plugin Metadata (paste into the submission form)
 
@@ -131,7 +132,9 @@ post-fix state.
 
 ## 6. Reviewer-facing checklist
 
-Every box below has been verified against `main` at commit `51bef80` (2026-04-24).
+Every box below was verified against `main` at commit `51bef80` (2026-04-24) for
+v3.0.1. v4.0.0 re-verification is pending: treat these as the v3.0.1 result, not as a
+statement about the current tree.
 
 - [x] README `Quick Start` shows the two-step plugin install (`/plugin marketplace add
       sangrokjung/claude-forge` then `/plugin install claude-forge`) and clearly discloses

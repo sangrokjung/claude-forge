@@ -695,3 +695,15 @@ jobs:
             exit 1
           fi
           echo "OK: no stale current-state version references in user-facing docs."
+
+      # The Korean pack shipped a checker its own rule file failed: the document
+      # banning em-dash interjections used one inside the clause banning them.
+      # A guard that its author's own text cannot pass teaches readers to ignore
+      # it, so the Korean-facing docs are now held to it in CI.
+      - name: Korean prose em-dash gate (the checker's own docs must pass it)
+        run: |
+          python3 scripts/emdash_slop_check.py \
+            rules/korean-writing-quality.md \
+            MIGRATION.ko.md \
+            README.ko.md
+          echo "OK: Korean-facing docs pass scripts/emdash_slop_check.py"

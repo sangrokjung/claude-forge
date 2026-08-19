@@ -7,7 +7,7 @@
     Windows(네이티브 또는 WSL2)에 Claude Code 설정을 설치합니다.
     agents, rules, commands, skills, settings 파일을 ~/.claude/에 복사합니다.
 
-    -Upgrade : 기존 설치를 v3.0으로 업그레이드 (심볼릭/복사 대상 갱신 + 안내 출력)
+    -Upgrade : 기존 설치를 v4.0으로 업그레이드 (심볼릭/복사 대상 갱신 + 안내 출력)
     -DryRun  : 실제 파일 변경 없이 수행 예정 작업만 출력
 .NOTES
     관리자 권한 필요: PowerShell 우클릭 -> 관리자 권한으로 실행
@@ -30,11 +30,11 @@ if ($Help) {
     Write-Host "Usage: install.ps1 [-Upgrade] [-DryRun] [-Help]"
     Write-Host ""
     Write-Host "Options:"
-    Write-Host "  -Upgrade   Upgrade existing installation to v3.0"
+    Write-Host "  -Upgrade   Upgrade existing installation to v4.0"
     Write-Host "  -DryRun    Preview changes without modifying files"
     Write-Host "  -Help      Show this help message"
     Write-Host ""
-    Write-Host "v3.0 Breaking Changes (see docs/MIGRATION.md):"
+    Write-Host "Breaking changes since v2.1, introduced in v3.0 (see MIGRATION.md):"
     Write-Host "  - MCP servers: 6 -> 3 (playwright, context7, jina-reader)"
     Write-Host "  - Hooks: 5 events -> 21 (opt-in via hooks/examples/)"
     Write-Host "  - Subagent frontmatter: v2 optional fields"
@@ -44,7 +44,7 @@ if ($Help) {
 
 function Write-UpgradeBanner {
     Write-Host "=========================================="
-    Write-Host "  claude-forge v3.0 Upgrade"
+    Write-Host "  claude-forge v4.0 Upgrade"
     Write-Host "=========================================="
     Write-Host ""
     Write-Host "  Breaking changes since v2.1:"
@@ -76,7 +76,7 @@ function Write-UpgradeSummary {
     Write-Host "    - 16 agents, 32 skills (23 native + 8 moved from commands + 1 vendored: loop-forge), 35 commands, 14 rules, 21 hooks + 9 opt-in examples"
     Write-Host ""
     Write-Host "  Next steps:"
-    Write-Host "    1. Review docs/MIGRATION.md for detailed changes"
+    Write-Host "    1. Review MIGRATION.md for detailed changes"
     Write-Host "    2. Opt-in new hooks from hooks/examples/ as needed"
     Write-Host "    3. Run 'claude mcp list' to verify 3 MCP servers"
     Write-Host ""

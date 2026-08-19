@@ -274,6 +274,8 @@ Claude Forge 的命令专为链式协作而设计。开发任何新功能的推�
 
 Claude Forge 会自动完成从规划到 PR 的全部流程。
 
+想先读文档？[`docs/FIRST-STEPS.md`](docs/FIRST-STEPS.md) 逐步带你走完第一次会话，[`docs/WORKFLOW-RECIPES.md`](docs/WORKFLOW-RECIPES.md) 汇总了常见任务的命令组合。
+
 ---
 
 ## 🛡 v4.0 新增：对抗式验证循环 + 可靠性套件
@@ -286,7 +288,7 @@ Claude Forge 会自动完成从规划到 PR 的全部流程。
 | **任务难度自动分级** | `/workflow-classify` 按 S/M/L/XL 给任务分级，据此调整文档深度与验证力度（`rules/task-grade-routing.md`） |
 | **韩语行文质量护栏** | 从生成之初就避免翻译腔和 AI 套话，而不是靠事后润色。详见 [韩文版 README](README.ko.md) 的专门章节 |
 
-智能体 11 → **16 个**，命令 34 → **35 个**，技能 26 → **32 套**，钩子 15 → **21 个**，规则 9 → **14 份**。
+智能体 11 → **16 个**，命令 34 → **35 个**，技能 26 → **32 套**，钩子 15 → **21 个**，规则 10 → **14 份**。
 完整升级指南见 [MIGRATION.md](MIGRATION.md)。
 
 ## 🆕 v3.1.0 新增：loop-forge（历史版本）
@@ -527,7 +529,7 @@ cp setup/settings.local.template.json ~/.claude/settings.local.json
 | **frontend-code-review** | 前端文件审查（.tsx、.ts、.js）含检查清单规则 |
 | **humanize-korean** | 在不改变事实、数字和语域的前提下，去除韩语行文中的翻译腔和 AI 套话 |
 | **korean-character-count** | 为有字数限制的文案（标题、短信、广告语）统计韩文字符/音节数 |
-| **korean-spell-check** | 基于内置词典检查韩语拼写和分词 |
+| **korean-spell-check** | 检查韩语拼写和分词。文本会发送至第三方服务 nara-speller.co.kr，请勿包含客户名称或个人信息 |
 | **loop-forge** | 把一行重复任务变成可复用的自守护斜杠命令（5 种循环原型 + 自动校验器与硬停） |
 | **manage-skills** | 分析会话变更，检测缺失的验证技能，创建/更新技能 |
 | **prompts-chat** | 技能/提示探索、搜索与改进 |

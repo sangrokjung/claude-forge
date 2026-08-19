@@ -38,4 +38,25 @@ assert rc == 0, f"table-cell dash and numeric ranges must pass: {out}"
 rc, out = run("This is a body sentence — with an interjection — right here in English prose.\n")
 assert rc == 0 and out == "", f"English doc with em-dashes must not fire: {out}"
 
-print("OK: 4 cases")
+# Case 5 (per-line gate): a Korean-dominant file whose em-dash sits on an
+# ENGLISH line must not fire. Korean rule docs quote the English patterns they
+# ban, and a translated guide keeps English headings — an em-dash aside inside
+# an English sentence is correct English prose whatever the file's language is.
+rc, out = run(
+    "이 문서는 한국어 규칙 문서이고 본문 대부분이 한국어 문장으로 이어진다.\n"
+    "한국어 문장이 하나 더 있어야 파일 전체 비율이 한국어로 잡힌다.\n"
+    "This quoted English line has an interjection — like this one — inside it.\n"
+)
+assert rc == 0 and out == "", f"English line in a Korean file must not fire: {out}"
+
+# Case 6 (per-line gate, the other direction): the same file with the em-dash on
+# a KOREAN line must still fire. The per-line gate is a language filter, not an
+# escape hatch that silences the check inside bilingual documents.
+rc, out = run(
+    "이 문서는 한국어 규칙 문서이고 본문 대부분이 한국어 문장으로 이어진다.\n"
+    "This quoted English line is perfectly clean and carries no interjection.\n"
+    "한국어 본문에 줄표 삽입구 — 이런 형태 — 가 남아 있으면 반드시 잡아야 한다.\n"
+)
+assert rc != 0 and "body" in out, f"Korean line in a bilingual file must fire: {out}"
+
+print("OK: 6 cases")

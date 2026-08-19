@@ -136,7 +136,7 @@ rm .git/hooks/pre-commit
 
 # v2.1 → v3.0 마이그레이션 가이드
 
-> **TL;DR** — v3.0은 대부분의 사용자에게 **순수 추가 릴리스**입니다. 유일한 Breaking Change는 MCP 기본 세트(6 → 3)이며, 제거된 3개 서버는 전부 `mcp-servers.optional.json`에서 한 번의 복사/붙여넣기로 복구 가능합니다. Subagent · hooks · skills · commands · `settings.json`은 기존 동작을 건드리지 않고 새 기능만 추가합니다. 마이그레이션 프로젝트가 아닌 **5분짜리 업그레이드**로 계획하세요.
+> **TL;DR**: v3.0은 대부분의 사용자에게 **순수 추가 릴리스**입니다. 유일한 Breaking Change는 MCP 기본 세트(6 → 3)이며, 제거된 3개 서버는 전부 `mcp-servers.optional.json`에서 한 번의 복사/붙여넣기로 복구 가능합니다. Subagent · hooks · skills · commands · `settings.json`은 기존 동작을 건드리지 않고 새 기능만 추가합니다. 마이그레이션 프로젝트가 아닌 **5분짜리 업그레이드**로 계획하세요.
 
 ## 1분 업그레이드
 
@@ -265,7 +265,7 @@ color: blue
 ---
 ```
 
-기존 v2.1 frontmatter는 **완전히 지원됩니다**. Deprecation 없음. 새 필드는 명확히 도움이 되는 곳에만 추가하세요 — 파괴적 리팩토링에는 `isolation: worktree`, 무한 루프 방지에는 `maxTurns`, 심층 리뷰에는 `effort: max`. agent별 실전 레시피는 T2 레퍼런스 참조.
+기존 v2.1 frontmatter는 **완전히 지원됩니다**. Deprecation 없음. 새 필드는 명확히 도움이 되는 곳에만 추가하세요. 파괴적 리팩토링에는 `isolation: worktree`, 무한 루프 방지에는 `maxTurns`, 심층 리뷰에는 `effort: max`. agent별 실전 레시피는 T2 레퍼런스 참조.
 
 ### Step 5: Skills/Commands 정리
 
@@ -284,7 +284,7 @@ color: blue
 
 이 이동을 이끈 정책은 [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md)에 문서화되어 있습니다. 휴리스틱: `references/` 하위 트리가 있고 재사용 가능한 지식으로 로드되면 skill, 사용자가 타이밍을 결정하는 부작용(side effect)을 가진 단일 `.md`면 command.
 
-개인 스크립트나 hook에서 이 경로를 참조한다면 여유 있게 새 `skills/` 경로로 전환하세요 — 심볼릭 링크가 시간을 벌어줍니다.
+개인 스크립트나 hook에서 이 경로를 참조한다면 여유 있게 새 `skills/` 경로로 전환하세요. 심볼릭 링크가 시간을 벌어줍니다.
 
 ### Step 6: settings.json
 
@@ -300,9 +300,9 @@ v3.0 `settings.json`은 v2.1 위에 **최상위 3개 필드**를 추가합니다
 
 의미:
 
-- **`tui`** — 2026 터미널 UI(풍부한 statusline, 인라인 skill 힌트)에 opt-in. 생략하거나 `false`로 두면 v2.1 CLI 렌더링 유지. 하위 호환.
-- **`disableSkillShellExecution`** — `true`일 때 skill이 subshell을 spawn하지 못함. 조직 정책에서 요구하지 않는 한 `false` 유지 — 제공된 여러 skill(`/build-fix`, `/e2e`, `/auto`)이 shell 접근을 필요로 함.
-- **`enabledMcpjsonServers`** — `mcp-servers.json` 엔트리 중 실제로 부팅될 명시적 allowlist. `"servers"` 키와 일치하거나 부분집합이어야 함. Step 2에서 `memory` / `exa`를 복구하면 여기에도 추가.
+- **`tui`**: 2026 터미널 UI(풍부한 statusline, 인라인 skill 힌트)에 opt-in. 생략하거나 `false`로 두면 v2.1 CLI 렌더링 유지. 하위 호환.
+- **`disableSkillShellExecution`**: `true`일 때 skill이 subshell을 spawn하지 못함. 조직 정책에서 요구하지 않는 한 `false` 유지. 제공된 여러 skill(`/build-fix`, `/e2e`, `/auto`)이 shell 접근을 필요로 함.
+- **`enabledMcpjsonServers`**: `mcp-servers.json` 엔트리 중 실제로 부팅될 명시적 allowlist. `"servers"` 키와 일치하거나 부분집합이어야 함. Step 2에서 `memory` / `exa`를 복구하면 여기에도 추가.
 
 `permissions.allow` 블록도 변경되었습니다: `mcp__memory`, `mcp__exa`, `mcp__github`, `mcp__fetch`가 **제거**되었고, `mcp__playwright`가 **추가**되었습니다. 옛 MCP 서버를 복구한다면, `mcp__<server>__*` allow 엔트리도 다시 추가해 매 호출마다 tool search prompt가 뜨지 않도록 하세요.
 
@@ -311,7 +311,7 @@ v3.0 `settings.json`은 v2.1 위에 **최상위 3개 필드**를 추가합니다
 | 항목 | Deprecation 상태 | Sunset |
 |------|------------------|--------|
 | `commands/<skill>/` → `skills/<skill>/` 심볼릭 링크 | 1년 유지, 2026-10 이후 `show-setup`에서 경고 | **2027-04-01** |
-| v2.1 mcp-servers 기본값(`memory`, `exa`, `github`, `fetch`) | 기본에서 제거, `mcp-servers.optional.json`에서 복구 가능 | Sunset 없음 — optional 카탈로그 유지 |
+| v2.1 mcp-servers 기본값(`memory`, `exa`, `github`, `fetch`) | 기본에서 제거, `mcp-servers.optional.json`에서 복구 가능 | Sunset 없음 (optional 카탈로그 유지) |
 | v2.1 5필드 agent frontmatter | 완전 지원, deprecation 계획 없음 | Sunset 없음 |
 | v2.1 hooks 이벤트 세트(5개 연결 이벤트) | 여전히 기본, 새 이벤트는 엄격히 opt-in | Sunset 없음 |
 | `permissions.allow`의 `WebFetch` | 이미 v2.1에서 `deny`로 차단, 변경 없음 | 해당 없음 |
@@ -358,16 +358,16 @@ mv ~/.claude.bak-YYYYMMDD-HHMM ~/.claude
 **Q6. `disableSkillShellExecution: true`가 제공된 skill을 깨뜨리나요?**
 일부는 그렇습니다. `/build-fix`, `/e2e`, `/auto`, `/handoff-verify`, `/quick-commit`은 모두 shell 명령을 실행합니다. 조직에서 이 플래그를 의무화한다면, skill wrapper 대신 메인 대화에서 `Bash` 도구를 직접 호출해 해당 워크플로우를 실행하세요.
 
-**Q7. v3.0을 점진적으로 채택할 수 있나요 — MCP 먼저, hooks 나중?**
+**Q7. v3.0을 점진적으로 채택할 수 있나요 (MCP 먼저, hooks 나중)?**
 네. 위 각 단계는 독립적입니다. 유일한 하드 커플링은 "`mcp-servers.json`에 MCP 서버를 되돌리면, `enabledMcpjsonServers`와 `permissions.allow`에도 추가해야 한다"는 것뿐. 나머지는 각자 일정대로 진행 가능.
 
 ## 참조 문서
 
-- [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md) — 서버별 대체 레시피 (memory / exa / github / fetch)
-- [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md) — Step 5를 이끈 hybrid 정책
-- [`docs/AGENT-FRONTMATTER-V2.md`](docs/AGENT-FRONTMATTER-V2.md) — Step 4 필드 레퍼런스 (T2)
-- [`docs/CLAUDE-MD-GUIDE.md`](docs/CLAUDE-MD-GUIDE.md) — 200줄 원칙, 로드 계층, @import
-- [`hooks/README.md`](hooks/README.md) — 21개 이벤트 카탈로그, matcher 스키마
-- [`mcp-servers.optional.json`](mcp-servers.optional.json) — 복구용 서버 카탈로그
-- [`setup/CLAUDE.md.template`](setup/CLAUDE.md.template) — 새 프로젝트용 스타터 CLAUDE.md
+- [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md): 서버별 대체 레시피 (memory / exa / github / fetch)
+- [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md): Step 5를 이끈 hybrid 정책
+- [`docs/AGENT-FRONTMATTER-V2.md`](docs/AGENT-FRONTMATTER-V2.md): Step 4 필드 레퍼런스 (T2)
+- [`docs/CLAUDE-MD-GUIDE.md`](docs/CLAUDE-MD-GUIDE.md): 200줄 원칙, 로드 계층, @import
+- [`hooks/README.md`](hooks/README.md): 21개 이벤트 카탈로그, matcher 스키마
+- [`mcp-servers.optional.json`](mcp-servers.optional.json): 복구용 서버 카탈로그
+- [`setup/CLAUDE.md.template`](setup/CLAUDE.md.template): 새 프로젝트용 스타터 CLAUDE.md
 - [English version](MIGRATION.md)

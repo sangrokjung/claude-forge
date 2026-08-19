@@ -14,18 +14,18 @@ print_usage_and_exit() {
 Usage: install.sh [OPTIONS]
 
 Options:
-  --upgrade     Upgrade existing installation to v3.0 (preserves symlinks,
+  --upgrade     Upgrade existing installation to v4.0 (preserves symlinks,
                 refreshes targets, prints breaking-change guidance).
   --dry-run     Show what would change without modifying files.
   -h, --help    Show this help message.
 
 Examples:
   ./install.sh                 # Fresh install
-  ./install.sh --upgrade       # Upgrade v2.x -> v3.0 in place
+  ./install.sh --upgrade       # Upgrade v2.x -> v4.0 in place
   ./install.sh --dry-run       # Preview changes
   ./install.sh --upgrade --dry-run
 
-v3.0 Breaking Changes (see docs/MIGRATION.md):
+Breaking changes since v2.1, introduced in v3.0 (see MIGRATION.md):
   - MCP servers: 6 -> 3 (playwright, context7, jina-reader)
   - Hooks: 5 events -> 21 (opt-in via hooks/examples/)
   - Subagent frontmatter: v2 optional fields
@@ -97,7 +97,7 @@ NC='\033[0m' # No Color
 # Upgrade banner (printed when --upgrade is set)
 print_upgrade_banner() {
     echo "=========================================="
-    echo "  claude-forge v3.0 Upgrade"
+    echo "  claude-forge v4.0 Upgrade"
     echo "=========================================="
     echo ""
     echo "  Breaking changes since v2.1:"
@@ -172,7 +172,7 @@ print_upgrade_summary() {
     echo "    - 16 agents, 32 skills (23 native + 8 moved from commands + 1 vendored: loop-forge), 35 commands, 14 rules, 21 hooks + 9 opt-in examples"
     echo ""
     echo "  Next steps:"
-    echo "    1. Review docs/MIGRATION.md for detailed changes"
+    echo "    1. Review MIGRATION.md for detailed changes"
     echo "    2. Opt-in new hooks from hooks/examples/ as needed"
     echo "    3. Run 'claude mcp list' to verify 3 MCP servers"
     echo ""
