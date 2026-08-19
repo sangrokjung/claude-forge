@@ -3,9 +3,13 @@
 # so it is inert either way; kept so older installs keep behaving as before.
 # shellcheck disable=SC2034  # set for the sourced helper, never read by this script
 HOOK_GUARD_SKIP_STDIN=1
-# hook-guard.sh is an optional helper (not shipped with claude-forge). Source it
-# when present, but never hard-fail without it — the only thing this hook needs
-# from it is $PYTHON3, which falls back to the system interpreter below.
+# hook-guard.sh now ships with claude-forge (libs/hook-guard.sh, installed to
+# ~/.claude/libs/hook-guard.sh by install.sh/install.ps1). The guarded source
+# stays regardless: installs that predate this change, or plugin-only installs
+# (Option A — see README "Which option should I pick?", hooks aren't wired at
+# all there) may not have the file. Never hard-fail without it — the only
+# thing this hook needs from it is $PYTHON3, which falls back to the system
+# interpreter below.
 [ -r "$HOME/.claude/libs/hook-guard.sh" ] && . "$HOME/.claude/libs/hook-guard.sh"
 : "${PYTHON3:=$(command -v python3 || echo python3)}"
 # context-sync-suggest.sh - SessionStart Hook

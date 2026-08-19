@@ -1,3 +1,145 @@
+# Migrating from v3.1 to v4.0
+
+> **TL;DR** — v4.0 is a **net-additive release**, same as v3.0 was. Nothing existing is removed or
+> renamed. The new pieces (adversarial verification loop, reliability pack, debugging escalation
+> chain, task-grade routing, Korean prose quality guardrails) are new files, new agents, and new
+> hooks — none of them change how your existing commands, skills, or hooks behave. Plan for a
+> **5-minute upgrade**.
+
+## 1-Minute Upgrade
+
+```bash
+cd path/to/claude-forge
+git pull
+./install.sh --upgrade
+```
+
+`install.sh --upgrade` backs up your existing `~/.claude/` symlinks, then refreshes every
+directory the installer manages — including the two new ones this release adds, `libs/` and
+`reference/` (see [Step 2](#step-2-new-directories-libs-and-reference) below).
+
+## What Changed At a Glance (v3.1 → v4.0)
+
+| Area | v3.1 | v4.0 | Breaking? |
+|------|------|------|-----------|
+| Agents | 11 | 16 (+5: `adversarial-reviewer`, `skeptical-auditor`, `systematic-debugger`, `rca-debugger`, `escalation-fixer`) | No (additive) |
+| Commands | 34 | 35 (+1: `/workflow-classify`) | No (additive) |
+| Skills | 26 | 32 (+6: `humanize-korean`, `korean-character-count`, `korean-spell-check`, `relay`, `review-loop`, `systematic-debugging`) | No (additive) |
+| Hooks | 15 | 21 (+6, see below) | No (additive) |
+| Rules | 10 | 14 (+4: `adversarial-review`, `api-error-recovery`, `korean-writing-quality`, `task-grade-routing`) | No (additive) |
+| Installed directories | 8 (`agents rules commands scripts skills hooks libs cc-chips cc-chips-custom`) | 9 (+`reference`) | No (additive — see below) |
+| Hooks events wired in `settings.json` | `PreToolUse`, `SessionStart`, `UserPromptSubmit`, `PostToolUse`, `Stop`, `TaskCompleted` | + `StopFailure`, `PreCompact`, `SessionStart` (matcher `compact`) | No (additive) |
+| Hook message text | Mixed Korean/English across hooks | New v4.0 hooks are **English-only** — see [Step 5](#step-5-hook-message-text-is-now-english) | No (cosmetic — existing hooks unchanged) |
+
+### Step 1: New hook events wired
+
+v4.0 registers three events in `settings.json` that were previously only catalogued (opt-in
+examples), not wired by default:
+
+| Event | Matcher | Hook | Purpose |
+|---|---|---|---|
+| `StopFailure` | — | `api-error-auto-resume.sh` | Classify a session-ending API error, schedule an unattended resume |
+| `PreCompact` | — | `pre-compact-snapshot.sh` | Snapshot the `relay` skill's baton pointer before context compaction |
+| `SessionStart` | `compact` | `post-compact-restore.sh` | Restore that pointer into the fresh session, exactly once |
+
+None of these fire unless their trigger condition happens (a `StopFailure` event, or a
+`/compact`), so a clean upgrade has zero behavioral change until you hit one of those situations.
+Full wiring guide: [`docs/RELIABILITY.md`](docs/RELIABILITY.md).
+
+### Step 2: New directories (`libs/` and `reference/`)
+
+Two directories are now part of the installer's managed set:
+
+- **`libs/`** — ships `hook-guard.sh`, a shared cooldown/token-guard library other hooks
+  (`context-sync-suggest.sh`, `api-error-auto-resume.sh`) `source` if present. Every consumer
+  guards the `source` line (`[ -r ~/.claude/libs/hook-guard.sh ] && source ...`), so a pre-upgrade
+  install missing this directory degrades gracefully rather than erroring.
+- **`reference/`** — was already shipped in v3.0 (`agent-schema.json`), but was not in the
+  installer's directory list; v4.0 adds it explicitly (it also now carries
+  `ai-tell-taxonomy.md`, the Korean AI-tell classification SSOT).
+
+If you're re-running `./install.sh --upgrade` from a v3.1 checkout, both directories are picked
+up automatically — no manual step needed.
+
+### Step 3: Opt-in pre-commit secret guard
+
+New in v4.0, and **not wired automatically** — this protects git commits in whichever repo you
+point it at, separately from the Claude Code hooks above:
+
+```bash
+bash scripts/install-precommit.sh              # installs into the repo containing $PWD
+bash scripts/install-precommit.sh --all ~/code  # installs into every git repo under a tree
+```
+
+Blocks commits containing shapes that look like live credentials (`sk-...`, `ghp_...`,
+AWS `AKIA...`, Supabase `sbp_...`, and more), staged `.env` files, and unusually large files.
+Idempotent — re-running skips an already-installed guard. See [`docs/RELIABILITY.md`](docs/RELIABILITY.md).
+
+### Step 4: `FORGE_NOTIFY_CMD` contract (new)
+
+The new `api-error-auto-resume.sh` / `api-error-resume-runner.sh` pair can notify you when it
+self-disables or completes an unattended resume. Unset (the default), it's a silent no-op. Set
+it to **one executable path** (not a command line):
+
+```bash
+export FORGE_NOTIFY_CMD="$HOME/bin/forge-notify"   # your own script, called as: forge-notify "<title>" "<message>"
+```
+
+Nothing in this release ships a reference implementation of that script — write your own, or
+leave it unset. Full contract, including why it must be a single executable and not a command
+line: [`rules/api-error-recovery.md`](rules/api-error-recovery.md).
+
+### Step 5: Hook message text is now English
+
+All hooks shipped in v4.0 (`api-error-auto-resume.sh`, `loop-detection.sh`, `auto-verify-fix.sh`,
+`pre-compact-snapshot.sh`, `post-compact-restore.sh`, `emdash-slop-guard.sh`, and everything under
+`scripts/` for the same features) emit English-only log lines, prompts, and `additionalContext`
+messages. This is a **product decision for this release**, not a partial translation — those
+surfaces are read by the model and by international users, so English is the answer regardless of
+which language you work in. Pre-existing hooks from v3.x keep whatever language they already used
+(some are Korean) — this release does not retroactively translate them.
+
+### Step 6: Kill switches for the new reliability pack
+
+Every new always-on piece has an off switch:
+
+```bash
+# API-error auto-resume — the highest-risk new default-on feature
+touch ~/.claude/cache/auto-resume/DISABLED    # every session on this machine
+export CLAUDE_AUTO_RESUME_DISABLED=1          # this shell only
+export CLAUDE_AUTO_RESUME_TAKEOVER=0          # keep resume, but never kill+take over a live terminal session
+
+# Doom-loop / edit-time verify — deregister from settings.json's PostToolUse array,
+# or reset loop-detection's counters without disabling it:
+rm /tmp/claude-loop-detect-*.jsonl
+
+# Pre-commit secret guard (opt-in, so "off" is just never installing it, or per-repo):
+rm .git/hooks/pre-commit
+```
+
+Full reference for every kill switch and environment variable in the pack:
+[`docs/RELIABILITY.md`](docs/RELIABILITY.md) and [`rules/api-error-recovery.md`](rules/api-error-recovery.md).
+
+### Platform note
+
+The reliability pack (Step 6) was developed and tested on macOS. Portability was addressed at the
+source level for Linux/WSL, but the **takeover** (kill + headless-resume a live non-tmux session)
+and **tmux injection** paths were not exercised on a real Linux/WSL host in this release. See the
+platform matrix in [`docs/RELIABILITY.md`](docs/RELIABILITY.md) before relying on those two paths
+for an unattended long-running job on Linux.
+
+### References (v3.1 → v4.0)
+
+- [`docs/RELIABILITY.md`](docs/RELIABILITY.md) — wiring guide for the whole reliability pack (S1–S5)
+- [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md) — the adversarial verification loop, worked through on this release's own PRs
+- [`rules/adversarial-review.md`](rules/adversarial-review.md) — when the verification loop is mandatory
+- [`rules/api-error-recovery.md`](rules/api-error-recovery.md) — full auto-resume contract, verdicts, caps, env vars
+- [`rules/korean-writing-quality.md`](rules/korean-writing-quality.md) — Korean prose quality guardrails
+- [`rules/task-grade-routing.md`](rules/task-grade-routing.md) — `/workflow-classify` sizing and routing
+- [한국어 버전](MIGRATION.ko.md)
+
+---
+
 # Migrating from v2.1 to v3.0
 
 > **TL;DR** — v3.0 is a **net-additive release** for most users. The only breaking change is the MCP default set (6 → 3), and the 3 removed servers are all one-paste-away restorable from `mcp-servers.optional.json`. Subagents, hooks, skills, commands, and `settings.json` all gain new capabilities without touching existing behavior. Plan for a **5-minute upgrade**, not a migration project.

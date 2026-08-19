@@ -28,16 +28,21 @@ Claude Code exposes **27 hookable events** across 7 categories (official catalog
 | Category | Event | Trigger | Common Use | Example |
 |----------|-------|---------|------------|---------|
 | Session | `SessionStart` | New session boots / `--continue` resume | Inject context, warm caches, print banners | `context-sync-suggest.sh` |
+| Session | `SessionStart` | Session resumes right after `/compact` (matcher: `compact`) | Restore the next-task pointer left before compaction (relay skill) | `post-compact-restore.sh` |
 | Session | `SessionEnd` | Clean session shutdown | Persist summary, sync TODAY.md | `work-tracker-stop.sh` |
 | Turn | `UserPromptSubmit` | User sends a prompt | Track activity, pre-flight checks | `work-tracker-prompt.sh` |
 | Turn | `Stop` | Assistant finishes a clean turn | Nudge session-wrap, commit suggest | `session-wrap-suggest.sh` |
 | Turn | `StopFailure` | Session ends abnormally (crash, rate-limit) | Dump crash report, set recovery flag | `examples/stop-failure.sh.example` |
+| Turn | `StopFailure` | Session dies on a retryable API error (529 / 5xx / stalled stream) | Schedule an unattended resume, under fork-bomb caps — see [`rules/api-error-recovery.md`](../rules/api-error-recovery.md) | `api-error-auto-resume.sh` |
 | Tool | `PreToolUse` | Before a tool runs | Guard destructive commands, rate-limit MCP | `remote-command-guard.sh` |
 | Tool | `PostToolUse` | After a tool runs (success OR failure) | Filter output secrets, log usage | `output-secret-filter.sh` |
+| Tool | `PostToolUse` | Edit/Write to the same file 5+ times in a session | Doom-loop guard — nudge a rethink | `loop-detection.sh` |
+| Tool | `PostToolUse` | Edit/Write to a `.ts`/`.tsx`/`.js`/`.jsx`/`.py` file | Lightweight type/syntax check, surface fixable errors | `auto-verify-fix.sh` |
+| Tool | `PostToolUse` | Edit/Write to a `.md` file whose content is substantially Korean | Flag em-dash (—/–) AI-tell interjections — see [`rules/korean-writing-quality.md`](../rules/korean-writing-quality.md) | `emdash-slop-guard.sh` |
 | Tool | `PostToolUseFailure` | Tool returns non-zero (failure only) | Escalate repeated failures, alert | `examples/post-tool-use-failure.sh.example` |
 | Subagent | `SubagentStart` | Task tool spawns a subagent | Record subagent name + start time | `examples/subagent-start.sh.example` |
 | Subagent | `SubagentStop` | Subagent finishes (success or failure) | Log duration, cost accounting | `examples/subagent-stop.sh.example` |
-| Context | `PreCompact` | Before context compaction runs | Snapshot TODAY.md / plan.md | `examples/pre-compact.sh.example` |
+| Context | `PreCompact` | Before context compaction runs | Snapshot `plan.md` / `auto-loop-todo.md` / `decisions.md` | `pre-compact-snapshot.sh` |
 | Context | `PostCompact` | After compaction completes | Persist summary for audit/relay | `examples/post-compact.sh.example` |
 | System | `ConfigChange` | `settings.json` mutated | Revalidate schema, reload hooks | (custom) |
 | System | `CwdChanged` | Working directory changes | Reset project context | (custom) |

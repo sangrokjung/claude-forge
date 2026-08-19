@@ -144,6 +144,25 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/post-compact-restore.sh"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/pre-compact-snapshot.sh"
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -171,6 +190,10 @@
           {
             "type": "command",
             "command": "~/.claude/skills/continuous-learning-v2/hooks/observe.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/loop-detection.sh"
           }
         ]
       },
@@ -198,6 +221,14 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/security-auto-trigger.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/auto-verify-fix.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/emdash-slop-guard.sh"
           }
         ]
       }
@@ -216,6 +247,17 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/session-wrap-suggest.sh"
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/api-error-auto-resume.sh",
+            "timeout": 8
           }
         ]
       }

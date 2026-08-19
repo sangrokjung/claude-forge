@@ -1,6 +1,142 @@
+# v3.1 → v4.0 마이그레이션 가이드
+
+> **TL;DR**: v4.0도 v3.0 때와 마찬가지로 **순수 추가 릴리스**예요. 기존 걸 지우거나 이름을 바꾼 게 하나도 없어요. 새로 들어온 것들(적대적 검증 루프, 신뢰성 패키지, 디버깅 에스컬레이션 체인, 작업 난이도 자동 분류, 한국어 산문 품질 가드레일)은 전부 새 파일·새 에이전트·새 훅이라, 기존 커맨드·스킬·훅의 동작을 하나도 건드리지 않아요. **5분짜리 업그레이드**로 생각하시면 돼요.
+
+## 1분 업그레이드
+
+```bash
+cd path/to/claude-forge
+git pull
+./install.sh --upgrade
+```
+
+`install.sh --upgrade`가 기존 `~/.claude/` 심볼릭 링크를 백업한 뒤, 설치 프로그램이 관리하는 모든
+디렉토리를 새로고침해요. 이번 릴리스가 새로 추가한 두 디렉토리(`libs/`, `reference/`)도 여기 포함돼요
+(아래 [Step 2](#step-2-신규-디렉토리-libs와-reference) 참고).
+
+## 한눈에 보는 변경사항 (v3.1 → v4.0)
+
+| 영역 | v3.1 | v4.0 | Breaking? |
+|------|------|------|-----------|
+| 에이전트 | 11개 | 16개 (+5: `adversarial-reviewer`, `skeptical-auditor`, `systematic-debugger`, `rca-debugger`, `escalation-fixer`) | 아니요 (추가만) |
+| 커맨드 | 34개 | 35개 (+1: `/workflow-classify`) | 아니요 (추가만) |
+| 스킬 | 26개 | 32개 (+6: `humanize-korean`, `korean-character-count`, `korean-spell-check`, `relay`, `review-loop`, `systematic-debugging`) | 아니요 (추가만) |
+| 훅 | 15개 | 21개 (아래 참고) | 아니요 (추가만) |
+| 규칙 | 10개 | 14개 (+4: `adversarial-review`, `api-error-recovery`, `korean-writing-quality`, `task-grade-routing`) | 아니요 (추가만) |
+| 설치되는 디렉토리 | 8개 (`agents rules commands scripts skills hooks libs cc-chips cc-chips-custom`) | 9개 (+`reference`) | 아니요 (추가만, 아래 참고) |
+| `settings.json`에 연결된 훅 이벤트 | `PreToolUse`, `SessionStart`, `UserPromptSubmit`, `PostToolUse`, `Stop`, `TaskCompleted` | + `StopFailure`, `PreCompact`, `SessionStart`(matcher `compact`) | 아니요 (추가만) |
+| 훅 메시지 언어 | 훅마다 한국어/영어 혼재 | v4.0에서 새로 추가된 훅은 **영어 전용**. [Step 5](#step-5-훅-메시지가-영어로-바뀜) 참고 | 아니요 (표시 문구만, 기존 훅은 그대로) |
+
+### Step 1: 새로 연결된 훅 이벤트
+
+v4.0은 이전에는 카탈로그에만 있던(옵트인 예제 상태) 이벤트 3개를 `settings.json`에 실제로 연결해요.
+
+| 이벤트 | Matcher | 훅 | 하는 일 |
+|---|---|---|---|
+| `StopFailure` | — | `api-error-auto-resume.sh` | 세션이 끝나게 만든 API 오류를 분류하고, 무인 자동 재개를 예약해요 |
+| `PreCompact` | — | `pre-compact-snapshot.sh` | 컨텍스트 압축 직전에 `relay` 스킬의 배턴 위치를 스냅샷으로 남겨요 |
+| `SessionStart` | `compact` | `post-compact-restore.sh` | 그 위치를 새 세션에 한 번만 복원해요 |
+
+셋 다 트리거 조건(`StopFailure` 이벤트 또는 `/compact`)이 실제로 발생하기 전엔 아무 일도 안 하기
+때문에, 깨끗하게 업그레이드만 하면 그 상황을 만나기 전까지는 동작 변화가 전혀 없어요. 전체 배선
+가이드는 [`docs/RELIABILITY.md`](docs/RELIABILITY.md)에 있어요.
+
+### Step 2: 신규 디렉토리 (`libs`와 `reference`)
+
+두 디렉토리가 이제 설치 프로그램이 관리하는 목록에 들어가요.
+
+- **`libs/`**: 다른 훅(`context-sync-suggest.sh`, `api-error-auto-resume.sh`)이 있으면 가져다 쓰는
+  공용 쿨다운/토큰 검증 라이브러리 `hook-guard.sh`가 들어있어요. 모든 소비처가 `source` 줄을
+  가드해두어서(`[ -r ~/.claude/libs/hook-guard.sh ] && source ...`), 업그레이드 전이라 이 디렉토리가
+  없어도 에러 없이 조용히 넘어가요.
+- **`reference/`**: v3.0 때부터 이미 들어있었지만(`agent-schema.json`) 설치 프로그램의 디렉토리
+  목록에는 빠져 있었어요. v4.0에서 명시적으로 추가했고, 한국어 AI 티 분류의 SSOT인
+  `ai-tell-taxonomy.md`도 새로 여기 들어가요.
+
+v3.1 체크아웃에서 `./install.sh --upgrade`를 다시 돌리면 두 디렉토리 모두 자동으로 잡혀요. 따로 할
+일은 없어요.
+
+### Step 3: 옵트인 pre-commit 시크릿 가드
+
+v4.0에 새로 생겼고, **자동으로 연결되지 않아요**. 위 훅들과 달리, 여러분이 지정한 git 저장소의
+커밋을 보호하는 독립 도구예요.
+
+```bash
+bash scripts/install-precommit.sh              # $PWD가 속한 저장소에 설치
+bash scripts/install-precommit.sh --all ~/code  # 특정 경로 아래 모든 git 저장소에 설치
+```
+
+실제 키처럼 생긴 문자열(`sk-...`, `ghp_...`, AWS `AKIA...`, Supabase `sbp_...` 등), 스테이징된
+`.env` 파일, 비정상적으로 큰 파일이 담긴 커밋을 막아줘요. 재실행해도 안전해요(이미 설치된 가드는
+건너뛰어요). 상세: [`docs/RELIABILITY.md`](docs/RELIABILITY.md).
+
+### Step 4: `FORGE_NOTIFY_CMD` 계약 (신규)
+
+새로 생긴 `api-error-auto-resume.sh` / `api-error-resume-runner.sh` 쌍은 스스로 비활성화되거나
+무인 재개를 마쳤을 때 여러분에게 알려줄 수 있어요. 기본값(미설정)은 조용한 무동작이에요. 값을
+설정하려면 **실행 파일 경로 하나만** 넣으세요(명령줄 전체가 아니라):
+
+```bash
+export FORGE_NOTIFY_CMD="$HOME/bin/forge-notify"   # 직접 만든 스크립트, "forge-notify <제목> <메시지>" 형태로 호출됨
+```
+
+이 릴리스는 그 스크립트의 참조 구현을 제공하지 않아요. 직접 만들거나 그냥 비워두세요. 왜 명령줄이
+아니라 실행 파일 하나여야 하는지를 포함한 전체 계약은 [`rules/api-error-recovery.md`](rules/api-error-recovery.md)에 있어요.
+
+### Step 5: 훅 메시지가 영어로 바뀜
+
+v4.0에서 새로 추가된 훅(`api-error-auto-resume.sh`, `loop-detection.sh`, `auto-verify-fix.sh`,
+`pre-compact-snapshot.sh`, `post-compact-restore.sh`, `emdash-slop-guard.sh`, 그리고 같은 기능의
+`scripts/` 하위 스크립트 전부)은 로그 문구·프롬프트·`additionalContext` 메시지를 전부 영어로만
+내보내요. 번역이 덜 된 게 아니라 **이번 릴리스의 의도적인 제품 결정**이에요. 이 표면들은 모델과
+전 세계 사용자가 함께 읽으니, 여러분이 어떤 언어로 작업하든 영어가 정답이라고 판단했어요. v3.x부터
+있던 기존 훅은 원래 쓰던 언어(일부는 한국어)를 그대로 유지해요. 이번 릴리스가 기존 훅을 소급해서
+번역하지는 않아요.
+
+### Step 6: 신규 신뢰성 패키지의 킬 스위치
+
+새로 기본 켜진 기능은 전부 끄는 스위치가 있어요.
+
+```bash
+# API 오류 자동 재개, 새 기능 중 위험도가 가장 높은 기본 활성 기능
+touch ~/.claude/cache/auto-resume/DISABLED    # 이 머신의 모든 세션에 적용
+export CLAUDE_AUTO_RESUME_DISABLED=1          # 이 셸에서만
+export CLAUDE_AUTO_RESUME_TAKEOVER=0          # 자동 재개는 유지하되 살아있는 터미널 세션을 죽이고 넘겨받는 것만 끔
+
+# 무한루프 감지 / 편집 직후 검증. settings.json의 PostToolUse 배열에서 항목을 빼거나,
+# 끄지 않고 카운터만 초기화하려면:
+rm /tmp/claude-loop-detect-*.jsonl
+
+# pre-commit 시크릿 가드(옵트인이라 "끄기"는 애초에 설치하지 않거나 저장소별로 제거하면 됨):
+rm .git/hooks/pre-commit
+```
+
+패키지 전체의 킬 스위치·환경 변수 전체 목록은 [`docs/RELIABILITY.md`](docs/RELIABILITY.md)와
+[`rules/api-error-recovery.md`](rules/api-error-recovery.md)에 있어요.
+
+### 플랫폼 참고
+
+신뢰성 패키지(Step 6)는 macOS에서 개발하고 검증했어요. Linux/WSL 이식성은 소스 코드 수준에서
+신경 썼지만, **테이크오버**(살아있는 비-tmux 세션을 죽이고 헤드리스로 넘겨받는 경로)와 **tmux
+주입** 경로는 이번 릴리스에서 실제 Linux/WSL 환경에 돌려보지 않았어요. Linux에서 무인 장시간
+작업에 이 두 경로를 믿고 쓰기 전에 [`docs/RELIABILITY.md`](docs/RELIABILITY.md)의 플랫폼 표를
+먼저 확인하세요.
+
+### 참고 문서 (v3.1 → v4.0)
+
+- [`docs/RELIABILITY.md`](docs/RELIABILITY.md): 신뢰성 패키지(S1~S5) 전체 배선 가이드
+- [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md): 이 릴리스 자체의 실제 PR로 검증한 적대적 검증 루프 기록
+- [`rules/adversarial-review.md`](rules/adversarial-review.md): 검증 루프가 언제 의무인지
+- [`rules/api-error-recovery.md`](rules/api-error-recovery.md): 자동 재개 전체 계약, 판정, 상한, 환경 변수
+- [`rules/korean-writing-quality.md`](rules/korean-writing-quality.md): 한국어 산문 품질 가드레일
+- [`rules/task-grade-routing.md`](rules/task-grade-routing.md): `/workflow-classify` 분류·라우팅 기준
+- [English version](MIGRATION.md)
+
+---
+
 # v2.1 → v3.0 마이그레이션 가이드
 
-> **TL;DR** — v3.0은 대부분의 사용자에게 **순수 추가 릴리스**입니다. 유일한 Breaking Change는 MCP 기본 세트(6 → 3)이며, 제거된 3개 서버는 전부 `mcp-servers.optional.json`에서 한 번의 복사/붙여넣기로 복구 가능합니다. Subagent · hooks · skills · commands · `settings.json`은 기존 동작을 건드리지 않고 새 기능만 추가합니다. 마이그레이션 프로젝트가 아닌 **5분짜리 업그레이드**로 계획하세요.
+> **TL;DR**: v3.0은 대부분의 사용자에게 **순수 추가 릴리스**입니다. 유일한 Breaking Change는 MCP 기본 세트(6 → 3)이며, 제거된 3개 서버는 전부 `mcp-servers.optional.json`에서 한 번의 복사/붙여넣기로 복구 가능합니다. Subagent · hooks · skills · commands · `settings.json`은 기존 동작을 건드리지 않고 새 기능만 추가합니다. 마이그레이션 프로젝트가 아닌 **5분짜리 업그레이드**로 계획하세요.
 
 ## 1분 업그레이드
 
@@ -129,7 +265,7 @@ color: blue
 ---
 ```
 
-기존 v2.1 frontmatter는 **완전히 지원됩니다**. Deprecation 없음. 새 필드는 명확히 도움이 되는 곳에만 추가하세요 — 파괴적 리팩토링에는 `isolation: worktree`, 무한 루프 방지에는 `maxTurns`, 심층 리뷰에는 `effort: max`. agent별 실전 레시피는 T2 레퍼런스 참조.
+기존 v2.1 frontmatter는 **완전히 지원됩니다**. Deprecation 없음. 새 필드는 명확히 도움이 되는 곳에만 추가하세요. 파괴적 리팩토링에는 `isolation: worktree`, 무한 루프 방지에는 `maxTurns`, 심층 리뷰에는 `effort: max`. agent별 실전 레시피는 T2 레퍼런스 참조.
 
 ### Step 5: Skills/Commands 정리
 
@@ -148,7 +284,7 @@ color: blue
 
 이 이동을 이끈 정책은 [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md)에 문서화되어 있습니다. 휴리스틱: `references/` 하위 트리가 있고 재사용 가능한 지식으로 로드되면 skill, 사용자가 타이밍을 결정하는 부작용(side effect)을 가진 단일 `.md`면 command.
 
-개인 스크립트나 hook에서 이 경로를 참조한다면 여유 있게 새 `skills/` 경로로 전환하세요 — 심볼릭 링크가 시간을 벌어줍니다.
+개인 스크립트나 hook에서 이 경로를 참조한다면 여유 있게 새 `skills/` 경로로 전환하세요. 심볼릭 링크가 시간을 벌어줍니다.
 
 ### Step 6: settings.json
 
@@ -164,9 +300,9 @@ v3.0 `settings.json`은 v2.1 위에 **최상위 3개 필드**를 추가합니다
 
 의미:
 
-- **`tui`** — 2026 터미널 UI(풍부한 statusline, 인라인 skill 힌트)에 opt-in. 생략하거나 `false`로 두면 v2.1 CLI 렌더링 유지. 하위 호환.
-- **`disableSkillShellExecution`** — `true`일 때 skill이 subshell을 spawn하지 못함. 조직 정책에서 요구하지 않는 한 `false` 유지 — 제공된 여러 skill(`/build-fix`, `/e2e`, `/auto`)이 shell 접근을 필요로 함.
-- **`enabledMcpjsonServers`** — `mcp-servers.json` 엔트리 중 실제로 부팅될 명시적 allowlist. `"servers"` 키와 일치하거나 부분집합이어야 함. Step 2에서 `memory` / `exa`를 복구하면 여기에도 추가.
+- **`tui`**: 2026 터미널 UI(풍부한 statusline, 인라인 skill 힌트)에 opt-in. 생략하거나 `false`로 두면 v2.1 CLI 렌더링 유지. 하위 호환.
+- **`disableSkillShellExecution`**: `true`일 때 skill이 subshell을 spawn하지 못함. 조직 정책에서 요구하지 않는 한 `false` 유지. 제공된 여러 skill(`/build-fix`, `/e2e`, `/auto`)이 shell 접근을 필요로 함.
+- **`enabledMcpjsonServers`**: `mcp-servers.json` 엔트리 중 실제로 부팅될 명시적 allowlist. `"servers"` 키와 일치하거나 부분집합이어야 함. Step 2에서 `memory` / `exa`를 복구하면 여기에도 추가.
 
 `permissions.allow` 블록도 변경되었습니다: `mcp__memory`, `mcp__exa`, `mcp__github`, `mcp__fetch`가 **제거**되었고, `mcp__playwright`가 **추가**되었습니다. 옛 MCP 서버를 복구한다면, `mcp__<server>__*` allow 엔트리도 다시 추가해 매 호출마다 tool search prompt가 뜨지 않도록 하세요.
 
@@ -175,7 +311,7 @@ v3.0 `settings.json`은 v2.1 위에 **최상위 3개 필드**를 추가합니다
 | 항목 | Deprecation 상태 | Sunset |
 |------|------------------|--------|
 | `commands/<skill>/` → `skills/<skill>/` 심볼릭 링크 | 1년 유지, 2026-10 이후 `show-setup`에서 경고 | **2027-04-01** |
-| v2.1 mcp-servers 기본값(`memory`, `exa`, `github`, `fetch`) | 기본에서 제거, `mcp-servers.optional.json`에서 복구 가능 | Sunset 없음 — optional 카탈로그 유지 |
+| v2.1 mcp-servers 기본값(`memory`, `exa`, `github`, `fetch`) | 기본에서 제거, `mcp-servers.optional.json`에서 복구 가능 | Sunset 없음 (optional 카탈로그 유지) |
 | v2.1 5필드 agent frontmatter | 완전 지원, deprecation 계획 없음 | Sunset 없음 |
 | v2.1 hooks 이벤트 세트(5개 연결 이벤트) | 여전히 기본, 새 이벤트는 엄격히 opt-in | Sunset 없음 |
 | `permissions.allow`의 `WebFetch` | 이미 v2.1에서 `deny`로 차단, 변경 없음 | 해당 없음 |
@@ -222,16 +358,16 @@ mv ~/.claude.bak-YYYYMMDD-HHMM ~/.claude
 **Q6. `disableSkillShellExecution: true`가 제공된 skill을 깨뜨리나요?**
 일부는 그렇습니다. `/build-fix`, `/e2e`, `/auto`, `/handoff-verify`, `/quick-commit`은 모두 shell 명령을 실행합니다. 조직에서 이 플래그를 의무화한다면, skill wrapper 대신 메인 대화에서 `Bash` 도구를 직접 호출해 해당 워크플로우를 실행하세요.
 
-**Q7. v3.0을 점진적으로 채택할 수 있나요 — MCP 먼저, hooks 나중?**
+**Q7. v3.0을 점진적으로 채택할 수 있나요 (MCP 먼저, hooks 나중)?**
 네. 위 각 단계는 독립적입니다. 유일한 하드 커플링은 "`mcp-servers.json`에 MCP 서버를 되돌리면, `enabledMcpjsonServers`와 `permissions.allow`에도 추가해야 한다"는 것뿐. 나머지는 각자 일정대로 진행 가능.
 
 ## 참조 문서
 
-- [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md) — 서버별 대체 레시피 (memory / exa / github / fetch)
-- [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md) — Step 5를 이끈 hybrid 정책
-- [`docs/AGENT-FRONTMATTER-V2.md`](docs/AGENT-FRONTMATTER-V2.md) — Step 4 필드 레퍼런스 (T2)
-- [`docs/CLAUDE-MD-GUIDE.md`](docs/CLAUDE-MD-GUIDE.md) — 200줄 원칙, 로드 계층, @import
-- [`hooks/README.md`](hooks/README.md) — 21개 이벤트 카탈로그, matcher 스키마
-- [`mcp-servers.optional.json`](mcp-servers.optional.json) — 복구용 서버 카탈로그
-- [`setup/CLAUDE.md.template`](setup/CLAUDE.md.template) — 새 프로젝트용 스타터 CLAUDE.md
+- [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md): 서버별 대체 레시피 (memory / exa / github / fetch)
+- [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md): Step 5를 이끈 hybrid 정책
+- [`docs/AGENT-FRONTMATTER-V2.md`](docs/AGENT-FRONTMATTER-V2.md): Step 4 필드 레퍼런스 (T2)
+- [`docs/CLAUDE-MD-GUIDE.md`](docs/CLAUDE-MD-GUIDE.md): 200줄 원칙, 로드 계층, @import
+- [`hooks/README.md`](hooks/README.md): 21개 이벤트 카탈로그, matcher 스키마
+- [`mcp-servers.optional.json`](mcp-servers.optional.json): 복구용 서버 카탈로그
+- [`setup/CLAUDE.md.template`](setup/CLAUDE.md.template): 새 프로젝트용 스타터 CLAUDE.md
 - [English version](MIGRATION.md)
