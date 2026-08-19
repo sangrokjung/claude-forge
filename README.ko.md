@@ -30,7 +30,7 @@
   <a href="README.md">English</a>
 </p>
 
-> 🛡️ **v4.0.0 (2026년 8월)**: 가장 큰 변화는 **적대적 검증 루프(adversarial verification loop)**예요. 코드를 바꿀 때마다, 그 코드를 짜지 않았고 짠 사람의 생각 흐름도 모르는 독립 리뷰어(`adversarial-reviewer`)가 따로 검증해요. "작성자와 검증자는 다른 사람이어야 한다"(maker≠checker)는 원칙이고, 검증자가 `APPROVE`를 낼 때까지 반복해요. 이론이 아니라 실제로 v4.0을 만드는 동안 이 루프가 대표 유지자 본인의 PR(#58, #61)에서 진짜 결함 3건을 잡아냈어요. 자기 자신의 회귀를 통과시키던 CI 검사 하나, 그 검사를 고친 수정본에 똑같은 구멍이 한 단계 더 숨어 있던 것 하나, 그리고 1년 전 릴리스에 조용히 묶여있던 의존성 상한 하나였죠. 실제 검증 기록은 [`docs/VERIFICATION-LOOP.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/VERIFICATION-LOOP.md)에 있어요. 그 외에 **신뢰성 패키지**도 넣었어요. API 오류가 나면 세션을 스스로 재개하는 무인 자동 복구, `/compact` 이후에도 이어지는 세션 릴레이, 같은 파일을 계속 고치는 걸 감지하는 무한루프 가드, 옵트인 pre-commit 시크릿 가드가 들어있고, 배선 가이드는 [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md)에 있어요. **디버깅 에스컬레이션 체인**(`systematic-debugger` → `rca-debugger` → `escalation-fixer`), **작업 난이도 자동 분류**(`/workflow-classify`가 S/M/L/XL로 작업 크기를 매기고 문서화·검증 강도를 그에 맞춰요), **한국어 산문 품질 가드레일**(사후 윤문이 아니라 처음 쓸 때부터 번역투·AI 관용구를 피해요. 아래 별도 섹션 참고)도 함께 담았어요. 에이전트 16개, 커맨드 35개, 스킬 32개, 훅 21개, 규칙 14개. 상세: [MIGRATION.ko.md](MIGRATION.ko.md)
+> 🛡️ **v4.0.0 (2026년 8월)**: 가장 큰 변화는 **적대적 검증 루프(adversarial verification loop)**예요. 코드를 바꿀 때마다, 그 코드를 짜지 않았고 짠 사람의 생각 흐름도 모르는 독립 리뷰어(`adversarial-reviewer`)가 따로 검증해요. "작성자와 검증자는 다른 사람이어야 한다"(maker≠checker)는 원칙이고, 검증자가 `APPROVE`를 낼 때까지 반복해요. 이론이 아니라 실제로 v4.0을 만드는 동안 이 루프가 대표 유지자 본인의 PR(#58, #61)에서 진짜 결함 3건을 잡아냈어요. 자기 자신의 회귀를 통과시키던 CI 검사 하나, 그 검사를 고친 수정본에 똑같은 구멍이 한 단계 더 숨어 있던 것 하나, 그리고 1년 전 릴리스에 조용히 묶여있던 의존성 상한 하나였죠. 실제 검증 기록은 [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md)에 있어요. 그 외에 **신뢰성 패키지**도 넣었어요. API 오류가 나면 세션을 스스로 재개하는 무인 자동 복구, `/compact` 이후에도 이어지는 세션 릴레이, 같은 파일을 계속 고치는 걸 감지하는 무한루프 가드, 옵트인 pre-commit 시크릿 가드가 들어있고, 배선 가이드는 [`docs/RELIABILITY.md`](docs/RELIABILITY.md)에 있어요. **디버깅 에스컬레이션 체인**(`systematic-debugger` → `rca-debugger` → `escalation-fixer`), **작업 난이도 자동 분류**(`/workflow-classify`가 S/M/L/XL로 작업 크기를 매기고 문서화·검증 강도를 그에 맞춰요), **한국어 산문 품질 가드레일**(사후 윤문이 아니라 처음 쓸 때부터 번역투·AI 관용구를 피해요. 아래 별도 섹션 참고)도 함께 담았어요. 에이전트 16개, 커맨드 35개, 스킬 32개, 훅 21개, 규칙 14개. 상세: [MIGRATION.ko.md](MIGRATION.ko.md)
 >
 > 🔧 **v3.1.1 핫픽스 (2026년 8월)**: 플러그인 설치 시 아무것도 안 뜨던 문제를 고쳤어요(`Hook load failed: expected record, received undefined`). `/plugin install claude-forge` 후 `✘ failed to load`가 뜨고 스킬·에이전트·커맨드가 하나도 안 보였다면 3.1.1로 올리시면 됩니다. 윈도우 `install.ps1`이 statusLine과 `scripts/`를 복사하지 않던 문제도 함께 해결했어요. 관련: [#52](https://github.com/sangrokjung/claude-forge/issues/52) · [#57](https://github.com/sangrokjung/claude-forge/issues/57) · [#50](https://github.com/sangrokjung/claude-forge/issues/50)
 
@@ -243,7 +243,7 @@ cd claude-forge && ./install.sh
 | `post-compact-restore.sh` | `/compact` 직후(`SessionStart`, matcher `compact`) | 그 위치를 새 세션 컨텍스트에 한 번만 복원해요 |
 | `emdash-slop-guard.sh` | 한국어 비중이 높은 `.md` 파일을 수정한 직후 | 줄표(—/–) 삽입구 같은 AI 티를 잡아내요. 상세: [`rules/korean-writing-quality.md`](rules/korean-writing-quality.md) |
 
-배선 가이드 전문은 [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md)에 있어요. 별도로 옵트인 pre-commit
+배선 가이드 전문은 [`docs/RELIABILITY.md`](docs/RELIABILITY.md)에 있어요. 별도로 옵트인 pre-commit
 시크릿 가드(`scripts/install-precommit.sh`)도 v4.0에 추가됐는데, 이건 위 훅들과 달리 여러분이
 지정한 git 저장소의 커밋을 보호하는 독립 설치형 스크립트예요.
 
@@ -406,8 +406,8 @@ graph LR
 | 단계 | 할 일 |
 |:----:|:------|
 | 1 | 설치 후 `/guide` 실행: 3분 인터랙티브 투어 |
-| 2 | [첫 사용자 가이드](https://github.com/sangrokjung/claude-forge/blob/main/docs/FIRST-STEPS.md) 읽기: 용어 사전 + TOP 6 커맨드 |
-| 3 | [상황별 레시피](https://github.com/sangrokjung/claude-forge/blob/main/docs/WORKFLOW-RECIPES.md) 보기: 복사해서 쓰는 5가지 시나리오 |
+| 2 | [첫 사용자 가이드](docs/FIRST-STEPS.md) 읽기: 용어 사전 + TOP 6 커맨드 |
+| 3 | [상황별 레시피](docs/WORKFLOW-RECIPES.md) 보기: 복사해서 쓰는 5가지 시나리오 |
 
 또는 `/auto 로그인 페이지 만들기`를 입력하면 계획부터 PR까지 알아서 진행해요.
 
@@ -420,8 +420,8 @@ graph LR
 
 | 변경 | 설명 |
 |:-----|:-----|
-| **적대적 검증 루프** | `adversarial-reviewer` + `skeptical-auditor` 에이전트, `review-loop` 스킬, `rules/adversarial-review.md`. 작성자와 검증자는 다른 사람이어야 한다는 원칙(maker≠checker)이고, 그 코드를 짜지 않은 독립 검증자가 주장을 읽는 대신 직접 재현해서 `APPROVE` / `REQUEST_CHANGES` / `UNVERIFIED`로 판정해요. 실제 이 릴리스의 PR로 검증한 기록: [`docs/VERIFICATION-LOOP.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/VERIFICATION-LOOP.md) |
-| **신뢰성 패키지** | API 오류 발생 시 무인 자동 재개(`StopFailure`), `/compact` 이후에도 이어지는 세션 릴레이, 무한루프 감지 훅, 편집 직후 검증 훅, 옵트인 pre-commit 시크릿 가드, 그리고 이 도구들이 공유하는 `libs/hook-guard.sh`까지. 배선 가이드 전문: [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md) |
+| **적대적 검증 루프** | `adversarial-reviewer` + `skeptical-auditor` 에이전트, `review-loop` 스킬, `rules/adversarial-review.md`. 작성자와 검증자는 다른 사람이어야 한다는 원칙(maker≠checker)이고, 그 코드를 짜지 않은 독립 검증자가 주장을 읽는 대신 직접 재현해서 `APPROVE` / `REQUEST_CHANGES` / `UNVERIFIED`로 판정해요. 실제 이 릴리스의 PR로 검증한 기록: [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md) |
+| **신뢰성 패키지** | API 오류 발생 시 무인 자동 재개(`StopFailure`), `/compact` 이후에도 이어지는 세션 릴레이, 무한루프 감지 훅, 편집 직후 검증 훅, 옵트인 pre-commit 시크릿 가드, 그리고 이 도구들이 공유하는 `libs/hook-guard.sh`까지. 배선 가이드 전문: [`docs/RELIABILITY.md`](docs/RELIABILITY.md) |
 | **디버깅 에스컬레이션 체인** | `systematic-debugger` → `rca-debugger` → `escalation-fixer`. 앞 단계가 못 풀 때만 다음 단계가 나서요 |
 | **작업 난이도 자동 분류** | `/workflow-classify`가 작업을 S/M/L/XL로 매기고, 문서화 깊이와 검증 강도를 그 등급에 맞춰 라우팅해요(`rules/task-grade-routing.md`) |
 | **한국어 산문 품질 가드레일** | 사후 윤문이 아니라 처음 쓸 때부터 번역투·AI 관용구를 피해요. 자세한 내용은 바로 아래 섹션에 |
@@ -470,7 +470,7 @@ Claude Forge를 쓰는 사람이 한국어로 마케팅 카피, 블로그, 이�
 |:-----|:-----|
 | **훅 21 이벤트** | 자동 안전점검이 5개에서 21개 라이프사이클 이벤트로 확장됐어요. 샘플: [`hooks/examples/`](hooks/examples/), 전체 목록: [`hooks/README.md`](hooks/README.md) |
 | **서브에이전트 Frontmatter v2** | 에이전트 설정에 10개 선택 필드 추가: `isolation`(격리), `background`(배경 실행), `memory`(메모리), `maxTurns`(최대 턴) 등. 스키마: [`reference/agent-schema.json`](reference/agent-schema.json) |
-| **스킬/커맨드 하이브리드 정책** | 스킬(자동 호출)과 커맨드(사용자 직접 입력)의 역할 구분 명문화. [`docs/SKILLS-VS-COMMANDS.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/SKILLS-VS-COMMANDS.md) |
+| **스킬/커맨드 하이브리드 정책** | 스킬(자동 호출)과 커맨드(사용자 직접 입력)의 역할 구분 명문화. [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md) |
 | **MCP 최소 구성 (v3.0.1, 4개)** | 기본 외부 도구 4개로 최적화. 레거시 전체 세트는 [`mcp-servers.optional.json`](mcp-servers.optional.json) 보존 |
 | **CLAUDE.md 템플릿 + @import** | [`setup/CLAUDE.md.template`](setup/CLAUDE.md.template) 신규. 모듈형 프로젝트 지침 구성 지원 |
 | **settings.json 2026 필드** | `tui`(깜박임 없는 렌더링), `disableSkillShellExecution`(샌드박싱), `enabledMcpjsonServers`(명시적 허용 목록) |
@@ -661,7 +661,7 @@ You are an expert [역할]. Your mission is to [목표].
 <details>
 <summary><strong>아키텍처: 심볼릭 링크(바로가기) 구조</strong></summary>
 
-> **스킬 vs 커맨드**: `skills/`는 AI가 자동으로 찾아 쓰는 지식과 재사용 워크플로우예요. `commands/`는 사용자가 `/이름`을 직접 입력해 타이밍을 결정하는 명령이에요. 정책 상세: [docs/SKILLS-VS-COMMANDS.md](https://github.com/sangrokjung/claude-forge/blob/main/docs/SKILLS-VS-COMMANDS.md)
+> **스킬 vs 커맨드**: `skills/`는 AI가 자동으로 찾아 쓰는 지식과 재사용 워크플로우예요. `commands/`는 사용자가 `/이름`을 직접 입력해 타이밍을 결정하는 명령이에요. 정책 상세: [docs/SKILLS-VS-COMMANDS.md](docs/SKILLS-VS-COMMANDS.md)
 
 <p align="center">
   <img src="docs/architecture.jpg" alt="심볼릭 링크 아키텍처" width="720">

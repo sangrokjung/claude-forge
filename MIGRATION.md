@@ -44,7 +44,7 @@ examples), not wired by default:
 
 None of these fire unless their trigger condition happens (a `StopFailure` event, or a
 `/compact`), so a clean upgrade has zero behavioral change until you hit one of those situations.
-Full wiring guide: [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md).
+Full wiring guide: [`docs/RELIABILITY.md`](docs/RELIABILITY.md).
 
 ### Step 2: New directories (`libs/` and `reference/`)
 
@@ -73,7 +73,7 @@ bash scripts/install-precommit.sh --all ~/code  # installs into every git repo u
 
 Blocks commits containing shapes that look like live credentials (`sk-...`, `ghp_...`,
 AWS `AKIA...`, Supabase `sbp_...`, and more), staged `.env` files, and unusually large files.
-Idempotent — re-running skips an already-installed guard. See [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md).
+Idempotent — re-running skips an already-installed guard. See [`docs/RELIABILITY.md`](docs/RELIABILITY.md).
 
 ### Step 4: `FORGE_NOTIFY_CMD` contract (new)
 
@@ -118,20 +118,20 @@ rm .git/hooks/pre-commit
 ```
 
 Full reference for every kill switch and environment variable in the pack:
-[`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md) and [`rules/api-error-recovery.md`](rules/api-error-recovery.md).
+[`docs/RELIABILITY.md`](docs/RELIABILITY.md) and [`rules/api-error-recovery.md`](rules/api-error-recovery.md).
 
 ### Platform note
 
 The reliability pack (Step 6) was developed and tested on macOS. Portability was addressed at the
 source level for Linux/WSL, but the **takeover** (kill + headless-resume a live non-tmux session)
 and **tmux injection** paths were not exercised on a real Linux/WSL host in this release. See the
-platform matrix in [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md) before relying on those two paths
+platform matrix in [`docs/RELIABILITY.md`](docs/RELIABILITY.md) before relying on those two paths
 for an unattended long-running job on Linux.
 
 ### References (v3.1 → v4.0)
 
-- [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md) — wiring guide for the whole reliability pack (S1–S5)
-- [`docs/VERIFICATION-LOOP.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/VERIFICATION-LOOP.md) — the adversarial verification loop, worked through on this release's own PRs
+- [`docs/RELIABILITY.md`](docs/RELIABILITY.md) — wiring guide for the whole reliability pack (S1–S5)
+- [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md) — the adversarial verification loop, worked through on this release's own PRs
 - [`rules/adversarial-review.md`](rules/adversarial-review.md) — when the verification loop is mandatory
 - [`rules/api-error-recovery.md`](rules/api-error-recovery.md) — full auto-resume contract, verdicts, caps, env vars
 - [`rules/korean-writing-quality.md`](rules/korean-writing-quality.md) — Korean prose quality guardrails
@@ -190,7 +190,7 @@ git branch   # confirm you are ready to pull
 
 ### Step 2: MCP migration
 
-Full recipes live in [`docs/MCP-MIGRATION.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/MCP-MIGRATION.md). The short version:
+Full recipes live in [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md). The short version:
 
 1. `mcp-servers.json` now ships **3 servers** only: `playwright`, `context7`, `jina-reader`.
 2. The 4 servers removed from defaults (`memory`, `exa`, `github`, `fetch`) are in [`mcp-servers.optional.json`](mcp-servers.optional.json) together with 4 extras (`time`, `sequential-thinking`, `supabase`, `chrome-devtools`).
@@ -288,7 +288,7 @@ Eight directory-form entries that always behaved as skills have moved from `comm
 | `commands/stride-analysis-patterns/` | `skills/stride-analysis-patterns/` |
 | `commands/summarize/` | `skills/summarize/` |
 
-The policy that drove these moves is documented in [`docs/SKILLS-VS-COMMANDS.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/SKILLS-VS-COMMANDS.md). Heuristic: if a directory has a `references/` subtree and loads as reusable knowledge, it is a skill; if it is a flat `.md` with side effects the user times, it is a command.
+The policy that drove these moves is documented in [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md). Heuristic: if a directory has a `references/` subtree and loads as reusable knowledge, it is a skill; if it is a flat `.md` with side effects the user times, it is a command.
 
 If you reference these paths in personal scripts or hooks, switch to the new `skills/` path at your leisure — the symlinks buy you time.
 
@@ -369,10 +369,10 @@ Yes. Each step above is independent. The only hard coupling is "if you add an MC
 
 ## References
 
-- [`docs/MCP-MIGRATION.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/MCP-MIGRATION.md) — per-server replacement recipes (memory / exa / github / fetch)
-- [`docs/SKILLS-VS-COMMANDS.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/SKILLS-VS-COMMANDS.md) — hybrid policy driving Step 5
-- [`docs/AGENT-FRONTMATTER-V2.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/AGENT-FRONTMATTER-V2.md) — Step 4 field reference (T2)
-- [`docs/CLAUDE-MD-GUIDE.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/CLAUDE-MD-GUIDE.md) — 200-line rule, load hierarchy, @import
+- [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md) — per-server replacement recipes (memory / exa / github / fetch)
+- [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md) — hybrid policy driving Step 5
+- [`docs/AGENT-FRONTMATTER-V2.md`](docs/AGENT-FRONTMATTER-V2.md) — Step 4 field reference (T2)
+- [`docs/CLAUDE-MD-GUIDE.md`](docs/CLAUDE-MD-GUIDE.md) — 200-line rule, load hierarchy, @import
 - [`hooks/README.md`](hooks/README.md) — 21-event catalog and matcher schema
 - [`mcp-servers.optional.json`](mcp-servers.optional.json) — catalog of add-back servers
 - [`setup/CLAUDE.md.template`](setup/CLAUDE.md.template) — starter CLAUDE.md for new projects

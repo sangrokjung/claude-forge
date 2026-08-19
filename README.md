@@ -32,7 +32,7 @@
   <a href="README.ko.md">한국어</a>
 </p>
 
-> **v4.0.0 (August 2026)** — Leads with the **adversarial verification loop**: every behavioral change is checked by a fresh, independent reviewer (`adversarial-reviewer`) that did not write the code and does not see the maker's reasoning — maker≠checker until the checker issues `APPROVE`. This is not theoretical: building v4.0 itself, the loop caught three real defects in the maintainer's own PRs (#58, #61) — a CI parity guard that passed on its own regression, the same guard's fix carrying an identical hole one level down, and a dependency ceiling that silently pinned a year-old release. Full worked example with the actual envelopes: [`docs/VERIFICATION-LOOP.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/VERIFICATION-LOOP.md). Also ships a **reliability pack** (unattended API-error auto-resume, session relay across `/compact`, doom-loop + edit-time verify hooks, an opt-in pre-commit secret guard, and the shared `libs/hook-guard.sh` they build on — wiring guide: [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md)), a **debugging escalation chain** (`systematic-debugger` → `rca-debugger` → `escalation-fixer`), **task-grade routing** (`/workflow-classify` sizes work S/M/L/XL and routes documentation + verification depth accordingly), and **Korean prose quality guardrails** (translation-ese/AI-idiom avoidance at generation time, not just cleanup). 16 agents, 35 commands, 32 skills, 21 hooks, 14 rules. See [MIGRATION.md](MIGRATION.md).
+> **v4.0.0 (August 2026)** — Leads with the **adversarial verification loop**: every behavioral change is checked by a fresh, independent reviewer (`adversarial-reviewer`) that did not write the code and does not see the maker's reasoning — maker≠checker until the checker issues `APPROVE`. This is not theoretical: building v4.0 itself, the loop caught three real defects in the maintainer's own PRs (#58, #61) — a CI parity guard that passed on its own regression, the same guard's fix carrying an identical hole one level down, and a dependency ceiling that silently pinned a year-old release. Full worked example with the actual envelopes: [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md). Also ships a **reliability pack** (unattended API-error auto-resume, session relay across `/compact`, doom-loop + edit-time verify hooks, an opt-in pre-commit secret guard, and the shared `libs/hook-guard.sh` they build on — wiring guide: [`docs/RELIABILITY.md`](docs/RELIABILITY.md)), a **debugging escalation chain** (`systematic-debugger` → `rca-debugger` → `escalation-fixer`), **task-grade routing** (`/workflow-classify` sizes work S/M/L/XL and routes documentation + verification depth accordingly), and **Korean prose quality guardrails** (translation-ese/AI-idiom avoidance at generation time, not just cleanup). 16 agents, 35 commands, 32 skills, 21 hooks, 14 rules. See [MIGRATION.md](MIGRATION.md).
 >
 > **v3.1.1 (hotfix, August 2026)** — Fixes plugin install failing to load entirely (`Hook load failed: expected record, received undefined`). If `/plugin install claude-forge` showed `✘ failed to load` and none of the skills, agents or commands appeared, upgrade to 3.1.1. Also restores Windows `install.ps1` parity (statusLine and `scripts/` were never copied). See [#52](https://github.com/sangrokjung/claude-forge/issues/52), [#57](https://github.com/sangrokjung/claude-forge/issues/57), [#50](https://github.com/sangrokjung/claude-forge/issues/50).
 
@@ -323,7 +323,7 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | Hook | When it runs | What it does |
 |:-----|:------------|:-------------|
 | `api-error-auto-resume.sh` | Session ends on a retryable API error (`StopFailure`) | Classifies the failure, then schedules an unattended resume under fork-bomb-style caps. Full contract: [`rules/api-error-recovery.md`](rules/api-error-recovery.md) |
-| `loop-detection.sh` | After 5/10+ edits to the same file in one session | Nudges a rethink instead of letting the session spin — see [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md) |
+| `loop-detection.sh` | After 5/10+ edits to the same file in one session | Nudges a rethink instead of letting the session spin — see [`docs/RELIABILITY.md`](docs/RELIABILITY.md) |
 | `auto-verify-fix.sh` | After editing a `.ts`/`.tsx`/`.js`/`.jsx`/`.py` file | Lightweight type/syntax check, surfaces fixable errors immediately |
 | `pre-compact-snapshot.sh` | Before context compaction (`PreCompact`) | Snapshots the pointer to the most recent `relay` skill baton |
 | `post-compact-restore.sh` | Right after `/compact` (`SessionStart`, matcher `compact`) | Restores that pointer into the fresh session's context, exactly once |
@@ -344,7 +344,7 @@ Here is everything bundled in Claude Forge, explained in plain language:
 
 An opt-in **pre-commit secret guard** (`scripts/install-precommit.sh`) also ships as of v4.0
 — it protects git commits in any repo you point it at, separately from the hooks above.
-See [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md).
+See [`docs/RELIABILITY.md`](docs/RELIABILITY.md).
 
 #### Opt-in Examples (9 extra, v3.0+)
 
@@ -431,7 +431,7 @@ graph LR
     HOME --> CLAUDE
 ```
 
-> **Skills vs Commands:** `skills/` are knowledge and procedures Claude discovers and follows automatically. `commands/` are explicit actions you trigger by typing `/name`. See [docs/SKILLS-VS-COMMANDS.md](https://github.com/sangrokjung/claude-forge/blob/main/docs/SKILLS-VS-COMMANDS.md).
+> **Skills vs Commands:** `skills/` are knowledge and procedures Claude discovers and follows automatically. `commands/` are explicit actions you trigger by typing `/name`. See [docs/SKILLS-VS-COMMANDS.md](docs/SKILLS-VS-COMMANDS.md).
 
 <details>
 <summary><strong>Full Directory Tree</strong></summary>
@@ -477,8 +477,8 @@ claude-forge/
 
 | Change | Description |
 |:-------|:------------|
-| **Adversarial verification loop** | `adversarial-reviewer` + `skeptical-auditor` agents, `review-loop` skill, `rules/adversarial-review.md`. Maker≠checker: a fresh, independent reviewer that did not write the change reproduces the claim rather than reading it, and returns `APPROVE` / `REQUEST_CHANGES` / `UNVERIFIED`. Worked example from this release's own PRs: [`docs/VERIFICATION-LOOP.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/VERIFICATION-LOOP.md). |
-| **Reliability pack** | Unattended API-error auto-resume (`StopFailure`), session relay across `/compact`, doom-loop + edit-time verify hooks, an opt-in pre-commit secret guard, and the shared `libs/hook-guard.sh` they build on. Full wiring guide: [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md). |
+| **Adversarial verification loop** | `adversarial-reviewer` + `skeptical-auditor` agents, `review-loop` skill, `rules/adversarial-review.md`. Maker≠checker: a fresh, independent reviewer that did not write the change reproduces the claim rather than reading it, and returns `APPROVE` / `REQUEST_CHANGES` / `UNVERIFIED`. Worked example from this release's own PRs: [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md). |
+| **Reliability pack** | Unattended API-error auto-resume (`StopFailure`), session relay across `/compact`, doom-loop + edit-time verify hooks, an opt-in pre-commit secret guard, and the shared `libs/hook-guard.sh` they build on. Full wiring guide: [`docs/RELIABILITY.md`](docs/RELIABILITY.md). |
 | **Debugging escalation chain** | `systematic-debugger` → `rca-debugger` → `escalation-fixer`. Each step only fires when the one before it couldn't close the case. |
 | **Task-grade routing** | `/workflow-classify` sizes a task S/M/L/XL and routes documentation depth and verification rigor accordingly (`rules/task-grade-routing.md`). |
 | **Korean prose quality guardrails** | Translation-ese and AI-idiom avoidance **at generation time**, not just a cleanup pass — `rules/korean-writing-quality.md`, `reference/ai-tell-taxonomy.md`, `emdash-slop-guard.sh`, plus `humanize-korean` / `korean-character-count` / `korean-spell-check` skills. |
@@ -519,7 +519,7 @@ LLM-readable install paths (root `INSTALL.md` + above-the-fold one-liner) and mu
 |:-------|:------------|
 | **Hooks 21 Events** | Lifecycle hooks expanded from 5 to 21 events. Opt-in samples in [`hooks/examples/`](hooks/examples/). |
 | **Subagent Frontmatter v2** | 10 optional fields: `isolation`, `background`, `memory`, `maxTurns`, `skills`, `mcpServers`, `effort`, `hooks`, `permissionMode`, `disallowedTools`. Schema: [`reference/agent-schema.json`](reference/agent-schema.json). |
-| **Skills/Commands Hybrid Policy** | Clear boundary documented at [`docs/SKILLS-VS-COMMANDS.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/SKILLS-VS-COMMANDS.md). |
+| **Skills/Commands Hybrid Policy** | Clear boundary documented at [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md). |
 | **MCP Minimal (4 servers)** | Default set: `playwright` · `context7` · `jina-reader` · `chrome-devtools-mcp@0.23.0`. Legacy full set in [`mcp-servers.optional.json`](mcp-servers.optional.json). |
 | **CLAUDE.md Template** | New [`setup/CLAUDE.md.template`](setup/CLAUDE.md.template) with `@import` pattern. |
 | **Upgrade in One Command** | `./install.sh --upgrade` safely migrates v2.1 installs with backup and diff preview. |
@@ -543,7 +543,7 @@ LLM-readable install paths (root `INSTALL.md` + above-the-fold one-liner) and mu
 | **jina-reader** | Reads web pages and converts them to clean text | None — auto-installed |
 | **chrome-devtools** | Runs Lighthouse audits and Core Web Vitals checks | None — auto-installed |
 
-Additional servers (memory, exa search, GitHub, fetch) are available opt-in via [`mcp-servers.optional.json`](mcp-servers.optional.json). Full recipes: [`docs/MCP-MIGRATION.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/MCP-MIGRATION.md).
+Additional servers (memory, exa search, GitHub, fetch) are available opt-in via [`mcp-servers.optional.json`](mcp-servers.optional.json). Full recipes: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md).
 
 ---
 
@@ -617,7 +617,7 @@ Run `git pull` in the claude-forge directory. Because the installer uses symlink
 <details>
 <summary><strong>Does Claude Forge work on Windows?</strong></summary>
 
-Yes. Run `install.ps1` in PowerShell as Administrator. Windows uses file copies instead of symlinks, so re-run `install.ps1` after each `git pull` to apply updates. Agents, commands, and skills work the same on Windows, macOS, and Linux. The v4.0.0 reliability hooks (auto-resume, session relay, doom-loop detection, and the rest of S1-S5) were built and verified on macOS only — Linux/WSL was addressed at the source level but not exercised, and two of the auto-resume paths were never fired on any platform in this release. See the platform matrix in [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md#platform-matrix) for the exact breakdown.
+Yes. Run `install.ps1` in PowerShell as Administrator. Windows uses file copies instead of symlinks, so re-run `install.ps1` after each `git pull` to apply updates. Agents, commands, and skills work the same on Windows, macOS, and Linux. The v4.0.0 reliability hooks (auto-resume, session relay, doom-loop detection, and the rest of S1-S5) were built and verified on macOS only — Linux/WSL was addressed at the source level but not exercised, and two of the auto-resume paths were never fired on any platform in this release. See the platform matrix in [`docs/RELIABILITY.md`](docs/RELIABILITY.md#platform-matrix) for the exact breakdown.
 
 </details>
 

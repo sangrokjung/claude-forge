@@ -39,7 +39,7 @@ v4.0은 이전에는 카탈로그에만 있던(옵트인 예제 상태) 이벤�
 
 셋 다 트리거 조건(`StopFailure` 이벤트 또는 `/compact`)이 실제로 발생하기 전엔 아무 일도 안 하기
 때문에, 깨끗하게 업그레이드만 하면 그 상황을 만나기 전까지는 동작 변화가 전혀 없어요. 전체 배선
-가이드는 [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md)에 있어요.
+가이드는 [`docs/RELIABILITY.md`](docs/RELIABILITY.md)에 있어요.
 
 ### Step 2: 신규 디렉토리 (`libs`와 `reference`)
 
@@ -68,7 +68,7 @@ bash scripts/install-precommit.sh --all ~/code  # 특정 경로 아래 모든 gi
 
 실제 키처럼 생긴 문자열(`sk-...`, `ghp_...`, AWS `AKIA...`, Supabase `sbp_...` 등), 스테이징된
 `.env` 파일, 비정상적으로 큰 파일이 담긴 커밋을 막아줘요. 재실행해도 안전해요(이미 설치된 가드는
-건너뛰어요). 상세: [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md).
+건너뛰어요). 상세: [`docs/RELIABILITY.md`](docs/RELIABILITY.md).
 
 ### Step 4: `FORGE_NOTIFY_CMD` 계약 (신규)
 
@@ -111,7 +111,7 @@ rm /tmp/claude-loop-detect-*.jsonl
 rm .git/hooks/pre-commit
 ```
 
-패키지 전체의 킬 스위치·환경 변수 전체 목록은 [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md)와
+패키지 전체의 킬 스위치·환경 변수 전체 목록은 [`docs/RELIABILITY.md`](docs/RELIABILITY.md)와
 [`rules/api-error-recovery.md`](rules/api-error-recovery.md)에 있어요.
 
 ### 플랫폼 참고
@@ -119,13 +119,13 @@ rm .git/hooks/pre-commit
 신뢰성 패키지(Step 6)는 macOS에서 개발하고 검증했어요. Linux/WSL 이식성은 소스 코드 수준에서
 신경 썼지만, **테이크오버**(살아있는 비-tmux 세션을 죽이고 헤드리스로 넘겨받는 경로)와 **tmux
 주입** 경로는 이번 릴리스에서 실제 Linux/WSL 환경에 돌려보지 않았어요. Linux에서 무인 장시간
-작업에 이 두 경로를 믿고 쓰기 전에 [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md)의 플랫폼 표를
+작업에 이 두 경로를 믿고 쓰기 전에 [`docs/RELIABILITY.md`](docs/RELIABILITY.md)의 플랫폼 표를
 먼저 확인하세요.
 
 ### 참고 문서 (v3.1 → v4.0)
 
-- [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md): 신뢰성 패키지(S1~S5) 전체 배선 가이드
-- [`docs/VERIFICATION-LOOP.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/VERIFICATION-LOOP.md): 이 릴리스 자체의 실제 PR로 검증한 적대적 검증 루프 기록
+- [`docs/RELIABILITY.md`](docs/RELIABILITY.md): 신뢰성 패키지(S1~S5) 전체 배선 가이드
+- [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md): 이 릴리스 자체의 실제 PR로 검증한 적대적 검증 루프 기록
 - [`rules/adversarial-review.md`](rules/adversarial-review.md): 검증 루프가 언제 의무인지
 - [`rules/api-error-recovery.md`](rules/api-error-recovery.md): 자동 재개 전체 계약, 판정, 상한, 환경 변수
 - [`rules/korean-writing-quality.md`](rules/korean-writing-quality.md): 한국어 산문 품질 가드레일
@@ -184,7 +184,7 @@ git branch   # pull 준비 상태 확인
 
 ### Step 2: MCP 마이그레이션
 
-전체 레시피는 [`docs/MCP-MIGRATION.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/MCP-MIGRATION.md)에 있습니다. 요약하면:
+전체 레시피는 [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md)에 있습니다. 요약하면:
 
 1. `mcp-servers.json`은 이제 **3개 서버**만 포함: `playwright`, `context7`, `jina-reader`.
 2. 기본에서 제거된 4개(`memory`, `exa`, `github`, `fetch`)는 [`mcp-servers.optional.json`](mcp-servers.optional.json)에 4개 추가 서버(`time`, `sequential-thinking`, `supabase`, `chrome-devtools`)와 함께 보관.
@@ -282,7 +282,7 @@ color: blue
 | `commands/stride-analysis-patterns/` | `skills/stride-analysis-patterns/` |
 | `commands/summarize/` | `skills/summarize/` |
 
-이 이동을 이끈 정책은 [`docs/SKILLS-VS-COMMANDS.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/SKILLS-VS-COMMANDS.md)에 문서화되어 있습니다. 휴리스틱: `references/` 하위 트리가 있고 재사용 가능한 지식으로 로드되면 skill, 사용자가 타이밍을 결정하는 부작용(side effect)을 가진 단일 `.md`면 command.
+이 이동을 이끈 정책은 [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md)에 문서화되어 있습니다. 휴리스틱: `references/` 하위 트리가 있고 재사용 가능한 지식으로 로드되면 skill, 사용자가 타이밍을 결정하는 부작용(side effect)을 가진 단일 `.md`면 command.
 
 개인 스크립트나 hook에서 이 경로를 참조한다면 여유 있게 새 `skills/` 경로로 전환하세요 — 심볼릭 링크가 시간을 벌어줍니다.
 
@@ -363,10 +363,10 @@ mv ~/.claude.bak-YYYYMMDD-HHMM ~/.claude
 
 ## 참조 문서
 
-- [`docs/MCP-MIGRATION.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/MCP-MIGRATION.md) — 서버별 대체 레시피 (memory / exa / github / fetch)
-- [`docs/SKILLS-VS-COMMANDS.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/SKILLS-VS-COMMANDS.md) — Step 5를 이끈 hybrid 정책
-- [`docs/AGENT-FRONTMATTER-V2.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/AGENT-FRONTMATTER-V2.md) — Step 4 필드 레퍼런스 (T2)
-- [`docs/CLAUDE-MD-GUIDE.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/CLAUDE-MD-GUIDE.md) — 200줄 원칙, 로드 계층, @import
+- [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md) — 서버별 대체 레시피 (memory / exa / github / fetch)
+- [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md) — Step 5를 이끈 hybrid 정책
+- [`docs/AGENT-FRONTMATTER-V2.md`](docs/AGENT-FRONTMATTER-V2.md) — Step 4 필드 레퍼런스 (T2)
+- [`docs/CLAUDE-MD-GUIDE.md`](docs/CLAUDE-MD-GUIDE.md) — 200줄 원칙, 로드 계층, @import
 - [`hooks/README.md`](hooks/README.md) — 21개 이벤트 카탈로그, matcher 스키마
 - [`mcp-servers.optional.json`](mcp-servers.optional.json) — 복구용 서버 카탈로그
 - [`setup/CLAUDE.md.template`](setup/CLAUDE.md.template) — 새 프로젝트용 스타터 CLAUDE.md

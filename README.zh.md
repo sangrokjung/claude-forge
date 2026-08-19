@@ -30,7 +30,7 @@
   <a href="#-常见问题">常见问题</a>
 </p>
 
-> **v4.0.0（2026 年 8 月）** — 核心是**对抗式验证循环（adversarial verification loop）**：每一次行为变更都由一个从未写过这段代码、也不了解作者思路的独立审查员（`adversarial-reviewer`）复核——作者与审查者必须是两个不同的角色（maker≠checker），直到审查员给出 `APPROVE` 才算完成。这不是纸上谈兵：在开发 v4.0 本身的过程中，该循环就在维护者自己的 PR（#58、#61）里发现了三个真实缺陷——一个能通过自身回归测试的 CI 校验、修复该校验时在同一处留下的同类漏洞、以及一个悄悄锁定在一年前旧版本上的依赖上限。完整验证记录见 [`docs/VERIFICATION-LOOP.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/VERIFICATION-LOOP.md)。此外还新增了**可靠性套件**（API 报错后的无人值守自动续接、`/compact` 后仍可继续的会话交接、死循环与编辑后即时校验钩子、可选的 pre-commit 密钥防泄漏、以及它们共用的 `libs/hook-guard.sh`，接线指南见 [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md)）、**调试升级链**（`systematic-debugger` → `rca-debugger` → `escalation-fixer`）、**任务难度自动分级**（`/workflow-classify` 按 S/M/L/XL 给任务分级，并据此调整文档深度与验证力度），以及**韩语行文质量护栏**（从生成之初就避免翻译腔和 AI 套话，详见韩文版 README）。智能体 16 个、命令 35 个、技能 32 个、钩子 21 个、规则 14 份。详见 [MIGRATION.md](MIGRATION.md)。
+> **v4.0.0（2026 年 8 月）** — 核心是**对抗式验证循环（adversarial verification loop）**：每一次行为变更都由一个从未写过这段代码、也不了解作者思路的独立审查员（`adversarial-reviewer`）复核——作者与审查者必须是两个不同的角色（maker≠checker），直到审查员给出 `APPROVE` 才算完成。这不是纸上谈兵：在开发 v4.0 本身的过程中，该循环就在维护者自己的 PR（#58、#61）里发现了三个真实缺陷——一个能通过自身回归测试的 CI 校验、修复该校验时在同一处留下的同类漏洞、以及一个悄悄锁定在一年前旧版本上的依赖上限。完整验证记录见 [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md)。此外还新增了**可靠性套件**（API 报错后的无人值守自动续接、`/compact` 后仍可继续的会话交接、死循环与编辑后即时校验钩子、可选的 pre-commit 密钥防泄漏、以及它们共用的 `libs/hook-guard.sh`，接线指南见 [`docs/RELIABILITY.md`](docs/RELIABILITY.md)）、**调试升级链**（`systematic-debugger` → `rca-debugger` → `escalation-fixer`）、**任务难度自动分级**（`/workflow-classify` 按 S/M/L/XL 给任务分级，并据此调整文档深度与验证力度），以及**韩语行文质量护栏**（从生成之初就避免翻译腔和 AI 套话，详见韩文版 README）。智能体 16 个、命令 35 个、技能 32 个、钩子 21 个、规则 14 份。详见 [MIGRATION.md](MIGRATION.md)。
 >
 > **v3.1.1 热修复（2026 年 8 月）** — 修复插件安装后完全无法加载的问题（`Hook load failed: expected record, received undefined`）。如果执行 `/plugin install claude-forge` 后显示 `✘ failed to load`、技能/智能体/命令一个都没出现，请升级到 3.1.1。同时修复 Windows `install.ps1` 未复制 statusLine 与 `scripts/` 的问题。相关：[#52](https://github.com/sangrokjung/claude-forge/issues/52)、[#57](https://github.com/sangrokjung/claude-forge/issues/57)、[#50](https://github.com/sangrokjung/claude-forge/issues/50)。
 
@@ -207,7 +207,7 @@ Claude 会根据任务性质自动调用合适的智能体，你不需要手动�
 | `post-compact-restore.sh` | `/compact` 之后（`SessionStart`，matcher `compact`） | 把该指针恢复进新会话的上下文，仅恢复一次 |
 | `emdash-slop-guard.sh` | 编辑韩语占比高的 `.md` 文件后 | 标记破折号插入语这类韩语行文中的 AI 痕迹，详见 [`rules/korean-writing-quality.md`](rules/korean-writing-quality.md) |
 
-完整接线指南见 [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md)。另外 v4.0 还新增了一个可选的 pre-commit
+完整接线指南见 [`docs/RELIABILITY.md`](docs/RELIABILITY.md)。另外 v4.0 还新增了一个可选的 pre-commit
 密钥防泄漏脚本（`scripts/install-precommit.sh`），它和上面的钩子不同，是你自己安装到指定 git 仓库、保护提交安全的独立工具。
 
 额外 9 个可选示例钩子（覆盖 SessionEnd、PreCompact、SubagentStart/Stop 等更多事件）存放在 [`hooks/examples/`](hooks/examples/) 目录。完整 21 事件目录：[`hooks/README.md`](hooks/README.md)。启用方法：把 `*.example` 文件改名为 `*.sh`，然后在 `settings.json` 中注册。
@@ -280,8 +280,8 @@ Claude Forge 会自动完成从规划到 PR 的全部流程。
 
 | 变更 | 说明 |
 |:----|:----|
-| **对抗式验证循环** | `adversarial-reviewer` + `skeptical-auditor` 智能体、`review-loop` 技能、`rules/adversarial-review.md`。作者与审查者必须是两个角色（maker≠checker），未写过这段代码的独立审查员会去复现结论而不是读一遍就信了，返回 `APPROVE` / `REQUEST_CHANGES` / `UNVERIFIED`。真实验证记录见 [`docs/VERIFICATION-LOOP.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/VERIFICATION-LOOP.md) |
-| **可靠性套件** | API 报错后的无人值守自动续接（`StopFailure`）、`/compact` 后仍可继续的会话交接、死循环与编辑后即时校验钩子、可选 pre-commit 密钥防泄漏、以及共用库 `libs/hook-guard.sh`。完整接线指南：[`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md) |
+| **对抗式验证循环** | `adversarial-reviewer` + `skeptical-auditor` 智能体、`review-loop` 技能、`rules/adversarial-review.md`。作者与审查者必须是两个角色（maker≠checker），未写过这段代码的独立审查员会去复现结论而不是读一遍就信了，返回 `APPROVE` / `REQUEST_CHANGES` / `UNVERIFIED`。真实验证记录见 [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md) |
+| **可靠性套件** | API 报错后的无人值守自动续接（`StopFailure`）、`/compact` 后仍可继续的会话交接、死循环与编辑后即时校验钩子、可选 pre-commit 密钥防泄漏、以及共用库 `libs/hook-guard.sh`。完整接线指南：[`docs/RELIABILITY.md`](docs/RELIABILITY.md) |
 | **调试升级链** | `systematic-debugger` → `rca-debugger` → `escalation-fixer`，只有前一步解决不了才轮到下一步 |
 | **任务难度自动分级** | `/workflow-classify` 按 S/M/L/XL 给任务分级，据此调整文档深度与验证力度（`rules/task-grade-routing.md`） |
 | **韩语行文质量护栏** | 从生成之初就避免翻译腔和 AI 套话，而不是靠事后润色。详见 [韩文版 README](README.ko.md) 的专门章节 |
@@ -326,7 +326,7 @@ LLM 可读安装路径（根目录 `INSTALL.md` + 置顶一行命令）及多渠
 |:----|:----|
 | **钩子 21 事件** | 生命周期钩子从 5 个扩展到 21 个事件，可选示例存放于 [`hooks/examples/`](hooks/examples/)。 |
 | **子智能体前置参数 v2** | 10 个可选字段：`isolation`、`background`、`memory`、`maxTurns`、`skills`、`mcpServers`、`effort`、`hooks`、`permissionMode`、`disallowedTools`。Schema：[`reference/agent-schema.json`](reference/agent-schema.json)。 |
-| **技能/命令混合策略** | 清晰边界文档：[`docs/SKILLS-VS-COMMANDS.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/SKILLS-VS-COMMANDS.md)。 |
+| **技能/命令混合策略** | 清晰边界文档：[`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md)。 |
 | **MCP 最小化（4 个服务器）** | 默认集：`playwright` · `context7` · `jina-reader` · `chrome-devtools-mcp@0.23.0`。旧版完整集合存于 [`mcp-servers.optional.json`](mcp-servers.optional.json)。 |
 | **CLAUDE.md 模板** | 新增 [`setup/CLAUDE.md.template`](setup/CLAUDE.md.template)，支持 `@import` 模式。 |
 | **一键升级** | `./install.sh --upgrade` 支持从 v2.1 安全迁移，含备份和差异预览。 |
@@ -409,7 +409,7 @@ cp setup/settings.local.template.json ~/.claude/settings.local.json
 <details>
 <summary><strong>Windows 上能用吗？</strong></summary>
 
-可以。以管理员身份在 PowerShell 中运行 `install.ps1`。Windows 使用文件复制而非符号链接，因此每次 `git pull` 后需重新运行 `install.ps1` 应用更新。智能体、命令和技能在 Windows、macOS 和 Linux 上功能完全一致。v4.0.0 的可靠性钩子（自动续接、会话交接、死循环检测等 S1–S5 全部组件）只在 macOS 上开发和验证过：Linux/WSL 在源码层面做了兼容处理，但未在真实环境中运行过，其中两条自动续接路径在本次发布中从未在任何平台上被真正触发过。完整平台对照表见 [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md#platform-matrix)。
+可以。以管理员身份在 PowerShell 中运行 `install.ps1`。Windows 使用文件复制而非符号链接，因此每次 `git pull` 后需重新运行 `install.ps1` 应用更新。智能体、命令和技能在 Windows、macOS 和 Linux 上功能完全一致。v4.0.0 的可靠性钩子（自动续接、会话交接、死循环检测等 S1–S5 全部组件）只在 macOS 上开发和验证过：Linux/WSL 在源码层面做了兼容处理，但未在真实环境中运行过，其中两条自动续接路径在本次发布中从未在任何平台上被真正触发过。完整平台对照表见 [`docs/RELIABILITY.md`](docs/RELIABILITY.md#platform-matrix)。
 
 </details>
 
@@ -565,7 +565,7 @@ graph LR
     HOME --> CLAUDE
 ```
 
-> **技能 vs 命令：** `skills/` 是 Claude 自动发现并遵循的知识和操作流程；`commands/` 是你通过输入 `/名称` 主动触发的操作。详见 [docs/SKILLS-VS-COMMANDS.md](https://github.com/sangrokjung/claude-forge/blob/main/docs/SKILLS-VS-COMMANDS.md)。
+> **技能 vs 命令：** `skills/` 是 Claude 自动发现并遵循的知识和操作流程；`commands/` 是你通过输入 `/名称` 主动触发的操作。详见 [docs/SKILLS-VS-COMMANDS.md](docs/SKILLS-VS-COMMANDS.md)。
 
 **完整目录结构：**
 
