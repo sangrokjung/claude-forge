@@ -32,6 +32,8 @@
   <a href="README.ko.md">한국어</a>
 </p>
 
+> **v4.0.0 (August 2026)** — Leads with the **adversarial verification loop**: every behavioral change is checked by a fresh, independent reviewer (`adversarial-reviewer`) that did not write the code and does not see the maker's reasoning — maker≠checker until the checker issues `APPROVE`. This is not theoretical: building v4.0 itself, the loop caught two real defects in the maintainer's own PRs (#58, #61) — a CI parity guard that passed on its own regression, and a dependency ceiling that silently pinned a year-old release. Full worked example with the actual envelopes: [`docs/VERIFICATION-LOOP.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/VERIFICATION-LOOP.md). Also ships a **reliability pack** (unattended API-error auto-resume, session relay across `/compact`, doom-loop + edit-time verify hooks, an opt-in pre-commit secret guard, and the shared `libs/hook-guard.sh` they build on — wiring guide: [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md)), a **debugging escalation chain** (`systematic-debugger` → `rca-debugger` → `escalation-fixer`), **task-grade routing** (`/workflow-classify` sizes work S/M/L/XL and routes documentation + verification depth accordingly), and **Korean prose quality guardrails** (translation-ese/AI-idiom avoidance at generation time, not just cleanup). 16 agents, 35 commands, 32 skills, 21 hooks, 14 rules. See [MIGRATION.md](MIGRATION.md).
+>
 > **v3.1.1 (hotfix, August 2026)** — Fixes plugin install failing to load entirely (`Hook load failed: expected record, received undefined`). If `/plugin install claude-forge` showed `✘ failed to load` and none of the skills, agents or commands appeared, upgrade to 3.1.1. Also restores Windows `install.ps1` parity (statusLine and `scripts/` were never copied). See [#52](https://github.com/sangrokjung/claude-forge/issues/52), [#57](https://github.com/sangrokjung/claude-forge/issues/57), [#50](https://github.com/sangrokjung/claude-forge/issues/50).
 
 > **v3.1.0 released (June 2026)** — Adds **loop-forge** (turn a repetitive task into a reusable, self-guarding slash command) and a full beginner-friendly rewrite of this README with diagrams. Built on v3.0.2 (LLM-readable install) and v3.0.1 (Anthropic 2026 standard alignment: Hooks 21+ events, Subagent frontmatter v2, Skills/Commands hybrid policy, 4-server MCP minimum). See [MIGRATION.md](MIGRATION.md).
@@ -44,11 +46,11 @@
 
 Claude Forge is the **equipment pack** for that assistant. One install gives it:
 
-- 11 specialist "colleagues" (agents) it can delegate to — planner, security reviewer, TDD guide, and more
-- 34 one-word shortcuts (commands like `/plan`, `/tdd`, `/code-review`) that trigger full workflows
-- 26 saved procedures (skills) it follows automatically
-- 15 safety checks (hooks) that run silently in the background every time it touches your code
-- 10 rule files that define how it should behave
+- 16 specialist "colleagues" (agents) it can delegate to — planner, security reviewer, TDD guide, adversarial reviewer, and more
+- 35 one-word shortcuts (commands like `/plan`, `/tdd`, `/code-review`) that trigger full workflows
+- 32 saved procedures (skills) it follows automatically
+- 21 safety checks (hooks) that run silently in the background every time it touches your code — including an unattended API-error auto-resume and a doom-loop guard
+- 14 rule files that define how it should behave
 - 4 external tool connections (browser automation, live docs search, and more)
 
 > **The oh-my-zsh analogy:** oh-my-zsh is a free add-on that turns a plain terminal into a colorful, plugin-packed power tool — without changing what the terminal fundamentally does. Claude Forge does the same thing for Claude Code.
@@ -61,7 +63,7 @@ Claude Forge is the **equipment pack** for that assistant. One install gives it:
 |:---------------------|:-----------------|
 | Claude Code writes code, but you have to remind it about tests, security, and docs every time | Automated pipeline: plan → test → review → verify → ship, all connected |
 | No safety net — Claude can run dangerous commands or leak secrets by accident | 6-layer hook system blocks risky actions before they happen |
-| One AI doing everything alone | 11 specialist agents working in parallel (planner, architect, security reviewer…) |
+| One AI doing everything alone | 16 specialist agents working in parallel (planner, architect, security reviewer, adversarial reviewer…) |
 | Hours assembling your own config | 5-minute install, everything pre-wired |
 | Updates require manual copy-paste | `git pull` — done |
 
@@ -108,11 +110,11 @@ cd claude-forge
 
 | What you get | Option A (`/plugin install`) | Option B (`./install.sh`) |
 |:-------------|:----------------------------:|:-------------------------:|
-| Commands (34 shortcuts)        | ✅ | ✅ |
-| Skills (26 saved procedures)   | ⚠️ partial | ✅ |
-| Agents (11 specialists)        | ❌ | ✅ |
-| Hooks (15 safety checks)       | ❌ | ✅ |
-| Rules (10 behavior guidelines)  | ❌ | ✅ |
+| Commands (35 shortcuts)        | ✅ | ✅ |
+| Skills (32 saved procedures)   | ⚠️ partial | ✅ |
+| Agents (16 specialists)        | ❌ | ✅ |
+| Hooks (21 safety checks)       | ❌ | ✅ |
+| Rules (14 behavior guidelines)  | ❌ | ✅ |
 | MCP connections (4 tools)      | ❌ | ✅ |
 
 **Recommendation:** Use Option B unless you only need a taste of commands and skills.
@@ -129,15 +131,15 @@ Here is everything bundled in Claude Forge, explained in plain language:
 
 | What | Count | Plain English |
 |:-----|:-----:|:--------------|
-| **Agents** (specialist colleagues) | 11 | Each one is an AI focused on a single job — planner, architect, security checker, test guide, database expert, and more. Claude calls the right one automatically. |
-| **Commands** (shortcut buttons) | 34 | Type `/plan` and Claude creates a full implementation plan. Type `/tdd` and it writes tests first, then code. All 34 are pre-built shortcuts for common developer tasks. |
-| **Skills** (saved procedures) | 26 | Step-by-step playbooks Claude follows automatically — like a recipe it has memorized. `loop-forge` turns any repetitive task into a reusable slash command in seconds. |
-| **Hooks** (silent safety checks) | 15 built-in + 9 opt-in examples | These run before and after every action Claude takes. They block leaked passwords, dangerous database commands, and unsafe remote scripts — without you having to think about it. Covers 21 lifecycle events. |
-| **Rules** (behavior guidelines) | 10 | Written instructions Claude reads at the start of every session — coding style, security principles, git workflow conventions, and more. |
+| **Agents** (specialist colleagues) | 16 | Each one is an AI focused on a single job — planner, architect, security checker, test guide, database expert, adversarial reviewer, and more. Claude calls the right one automatically. |
+| **Commands** (shortcut buttons) | 35 | Type `/plan` and Claude creates a full implementation plan. Type `/tdd` and it writes tests first, then code. All 35 are pre-built shortcuts for common developer tasks. |
+| **Skills** (saved procedures) | 32 | Step-by-step playbooks Claude follows automatically — like a recipe it has memorized. `loop-forge` turns any repetitive task into a reusable slash command in seconds; `review-loop` runs the maker≠checker verification cycle. |
+| **Hooks** (silent safety checks) | 21 built-in + 9 opt-in examples | These run before and after every action Claude takes. They block leaked passwords, dangerous database commands, and unsafe remote scripts — and, new in v4.0, they auto-resume a session after a retryable API error and nudge you when you're stuck editing the same file. Covers 21 lifecycle events. |
+| **Rules** (behavior guidelines) | 14 | Written instructions Claude reads at the start of every session — coding style, security principles, git workflow conventions, when the verification loop is mandatory, and more. |
 | **MCP connections** (external tools) | 4 | Browser automation (Playwright), live library docs (context7), web page reader (jina-reader), and Chrome DevTools for performance audits. |
 
 <details>
-<summary><strong>Full list: 11 Agents</strong></summary>
+<summary><strong>Full list: 16 Agents</strong></summary>
 
 #### Deep Analysis Agents (use the most capable model)
 
@@ -160,10 +162,20 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | **doc-updater** | Keeps documentation and code maps in sync after changes. |
 | **verify-agent** | Opens a fresh context to verify build, lint, and tests all pass — like a second pair of eyes. |
 
+#### Verification & Debugging Agents (v4.0)
+
+| Agent | What it does |
+|:------|:-------------|
+| **adversarial-reviewer** | Independent, read-only checker for the verification loop. Never wrote the change, never sees the maker's reasoning — tries to break the claim rather than confirm it. Returns `APPROVE`, `REQUEST_CHANGES`, or `UNVERIFIED`. |
+| **skeptical-auditor** | A second, cheaper independent pass — mechanical re-execution plus fixed checks, used when a lighter second opinion is enough. |
+| **systematic-debugger** | Reproduce → bisect → hypothesize → verify. Never guesses at a fix without a failing test that proves the hypothesis. |
+| **rca-debugger** | Escalation from systematic-debugger for multi-system failures — 5-why + fishbone analysis when bisection alone is inconclusive. |
+| **escalation-fixer** | Last resort when build-error-resolver can't close a build error — allowed architectural-level changes, reads the escalation log to avoid repeating failed approaches. |
+
 </details>
 
 <details>
-<summary><strong>Full list: 34 Commands</strong></summary>
+<summary><strong>Full list: 35 Commands</strong></summary>
 
 #### Core Workflow
 
@@ -179,6 +191,7 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | `/auto` | One-button automation: plan to PR without stopping. |
 | `/guide` | Interactive 3-minute tour for first-time users. |
 | `/loop-forge` | Turn a repetitive task into a reusable, self-guarding slash command. |
+| `/workflow-classify` | Size a task S/M/L/XL and route documentation depth + verification rigor accordingly. |
 
 #### Exploration & Analysis
 
@@ -188,14 +201,13 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | `/build-fix` | Incrementally fix TypeScript and build errors. |
 | `/next-task` | Recommend next task based on project state. |
 | `/suggest-automation` | Analyze repetitive patterns and suggest automation. |
+| `/agent-router` | Route a request to the specialist agent best suited for the task. |
 
 #### Security
 
 | Command | What it does |
 |:--------|:------------|
 | `/security-review` | CWE Top 25 + STRIDE threat modeling. |
-| `/stride-analysis-patterns` | Systematic STRIDE methodology for threat identification. |
-| `/security-compliance` | SOC2, ISO27001, GDPR, HIPAA compliance checks. |
 
 #### Testing & Evaluation
 
@@ -204,8 +216,6 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | `/e2e` | Generate and run Playwright end-to-end tests. |
 | `/test-coverage` | Analyze coverage gaps and generate missing tests. |
 | `/eval` | Eval-driven development workflow management. |
-| `/evaluating-code-models` | Benchmark code generation models (HumanEval, MBPP). |
-| `/evaluating-llms-harness` | Benchmark LLMs across 60+ academic benchmarks. |
 
 #### Documentation & Sync
 
@@ -216,6 +226,8 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | `/sync-docs` | Sync prompt_plan.md, spec.md, CLAUDE.md + rules. |
 | `/sync` | Pull latest changes and sync all project docs. Use after any workflow or at session start. |
 | `/pull` | Quick `git pull origin main`. |
+| `/forge-update` | Update Claude Forge itself to the latest version from the remote. |
+| `/show-setup` | Show the current install status and project info. |
 
 #### Project Management
 
@@ -232,9 +244,6 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | Command | What it does |
 |:--------|:------------|
 | `/refactor-clean` | Identify and remove dead code with test verification. |
-| `/debugging-strategies` | Systematic debugging techniques and profiling. |
-| `/dependency-upgrade` | Major dependency upgrades with compatibility analysis. |
-| `/extract-errors` | Extract and catalog error messages. |
 
 #### Git Worktree
 
@@ -243,16 +252,16 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | `/worktree-start` | Create git worktree for parallel development. |
 | `/worktree-cleanup` | Clean up worktrees after PR completion. |
 
-#### Utilities
-
-| Command | What it does |
-|:--------|:------------|
-| `/summarize` | Summarize URLs, podcasts, transcripts, local files. |
-
 </details>
 
+> The 8 commands that moved to `skills/` in v3.0 (`debugging-strategies`, `dependency-upgrade`,
+> `evaluating-code-models`, `evaluating-llms-harness`, `extract-errors`, `security-compliance`,
+> `stride-analysis-patterns`, `summarize`) are listed once, under Skills below — see
+> [MIGRATION.md](MIGRATION.md) Step 5. `install.sh` still creates compatibility symlinks under
+> `commands/` for them.
+
 <details>
-<summary><strong>Full list: 26 Skills</strong></summary>
+<summary><strong>Full list: 32 Skills</strong></summary>
 
 | Skill | What it does |
 |:------|:------------|
@@ -268,9 +277,14 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | **evaluating-llms-harness** | Benchmark LLMs across 60+ academic benchmarks. |
 | **extract-errors** | Extract and catalog error messages. |
 | **frontend-code-review** | Frontend file review (.tsx, .ts, .js) with checklist rules. |
+| **humanize-korean** | Strip translation-ese and AI idioms from Korean prose without changing facts, numbers, or register. |
+| **korean-character-count** | Count Korean characters/syllables for length-constrained copy (titles, SMS, ad copy). |
+| **korean-spell-check** | Check Korean spelling and spacing against a built-in dictionary. |
 | **loop-forge** | Turn a one-line repetitive task into a reusable, self-guarding slash command (5 loop shapes + auto verifier & hardstop). |
 | **manage-skills** | Analyze session changes, detect missing verification skills, create/update skills. |
 | **prompts-chat** | Skill/prompt exploration, search, and improvement. |
+| **relay** | Session handoff across `/compact`: writes a `/compact` one-liner plus a "baton" file with the next task, key files, and facts pulled verbatim from git/plan/session-summary state. |
+| **review-loop** | The adversarial verification loop procedure: dispatch `adversarial-reviewer`, act on `REQUEST_CHANGES`, stop only on `APPROVE` against the current revision. |
 | **security-compliance** | SOC2, ISO27001, GDPR, HIPAA compliance checks. |
 | **security-pipeline** | CWE Top 25 + STRIDE automated security verification pipeline. |
 | **session-wrap** | End-of-session cleanup: 4 parallel subagents detect docs, patterns, learnings, follow-ups. |
@@ -278,6 +292,7 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | **strategic-compact** | Suggest manual context compaction at logical intervals to preserve context. |
 | **stride-analysis-patterns** | Systematic STRIDE methodology for threat identification. |
 | **summarize** | Summarize URLs, podcasts, transcripts, local files. |
+| **systematic-debugging** | 6-phase structured debugging procedure — reproduce, isolate, hypothesize, test, fix, verify. |
 | **team-orchestrator** | Agent Teams engine: team composition, task distribution, dependency management. |
 | **using-superpowers** | Discover and invoke installed skills before responding to any request. |
 | **verification-engine** | Integrated verification engine: fresh-context subagent verification loop. |
@@ -286,7 +301,7 @@ Here is everything bundled in Claude Forge, explained in plain language:
 </details>
 
 <details>
-<summary><strong>Full list: 15 Hooks (safety checks)</strong></summary>
+<summary><strong>Full list: 21 Hooks (safety checks)</strong></summary>
 
 #### Security Hooks — block dangerous actions automatically
 
@@ -303,6 +318,17 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | `rate-limiter.sh` | Before MCP tool use | MCP server abuse / excessive calls |
 | `mcp-usage-tracker.sh` | Before MCP tool use | Tracks MCP usage for monitoring |
 
+#### Reliability Hooks — v4.0, unattended-session safety net
+
+| Hook | When it runs | What it does |
+|:-----|:------------|:-------------|
+| `api-error-auto-resume.sh` | Session ends on a retryable API error (`StopFailure`) | Classifies the failure, then schedules an unattended resume under fork-bomb-style caps. Full contract: [`rules/api-error-recovery.md`](rules/api-error-recovery.md) |
+| `loop-detection.sh` | After 5/10+ edits to the same file in one session | Nudges a rethink instead of letting the session spin — see [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md) |
+| `auto-verify-fix.sh` | After editing a `.ts`/`.tsx`/`.js`/`.jsx`/`.py` file | Lightweight type/syntax check, surfaces fixable errors immediately |
+| `pre-compact-snapshot.sh` | Before context compaction (`PreCompact`) | Snapshots the pointer to the most recent `relay` skill baton |
+| `post-compact-restore.sh` | Right after `/compact` (`SessionStart`, matcher `compact`) | Restores that pointer into the fresh session's context, exactly once |
+| `emdash-slop-guard.sh` | After editing a `.md` file whose content is substantially Korean | Flags em-dash AI-tell interjections — see [`rules/korean-writing-quality.md`](rules/korean-writing-quality.md) |
+
 #### Utility Hooks — helpful nudges in the background
 
 | Hook | When it runs | What it does |
@@ -315,6 +341,10 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | `work-tracker-stop.sh` | On stop | Finalizes work tracking data |
 | `task-completed.sh` | When subagent finishes | Notifies on subagent task completion |
 | `expensive-mcp-warning.sh` | Before costly operations | Warns about expensive MCP calls |
+
+An opt-in **pre-commit secret guard** (`scripts/install-precommit.sh`) also ships as of v4.0
+— it protects git commits in any repo you point it at, separately from the hooks above.
+See [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md).
 
 #### Opt-in Examples (9 extra, v3.0+)
 
@@ -401,35 +431,36 @@ graph LR
     HOME --> CLAUDE
 ```
 
-> **Skills vs Commands:** `skills/` are knowledge and procedures Claude discovers and follows automatically. `commands/` are explicit actions you trigger by typing `/name`. See [docs/SKILLS-VS-COMMANDS.md](docs/SKILLS-VS-COMMANDS.md).
+> **Skills vs Commands:** `skills/` are knowledge and procedures Claude discovers and follows automatically. `commands/` are explicit actions you trigger by typing `/name`. See [docs/SKILLS-VS-COMMANDS.md](https://github.com/sangrokjung/claude-forge/blob/main/docs/SKILLS-VS-COMMANDS.md).
 
 <details>
 <summary><strong>Full Directory Tree</strong></summary>
 
 ```
 claude-forge/
-  ├── agents/                    Agent definitions (11 .md files, frontmatter v2)
+  ├── agents/                    Agent definitions (16 .md files, frontmatter v2)
   ├── cc-chips/                  Status bar submodule
   ├── cc-chips-custom/           Custom status bar overlay
-  ├── commands/                  Slash commands (34 .md, 8 dirs moved to skills/)
-  ├── docs/                      Screenshots, diagrams, policy docs (v3.0 guides)
-  ├── hooks/                     Event-driven shell scripts (15)
+  ├── commands/                  Slash commands (35 .md, 8 dirs moved to skills/)
+  ├── docs/                      Screenshots, diagrams, policy docs (v3.0+ guides, incl. RELIABILITY.md / VERIFICATION-LOOP.md)
+  ├── hooks/                     Event-driven shell scripts (21)
   │   └── examples/              Opt-in .example samples for 21 lifecycle events (9)
   ├── knowledge/                 Knowledge base entries
-  ├── reference/                 Reference docs (+ agent-schema.json)
-  ├── rules/                     Auto-loaded rule files (10)
-  ├── scripts/                   Utility scripts
+  ├── libs/                      Shared shell libraries hooks source (hook-guard.sh)
+  ├── reference/                 Reference docs (+ agent-schema.json, ai-tell-taxonomy.md)
+  ├── rules/                     Auto-loaded rule files (14)
+  ├── scripts/                   Utility scripts (incl. install-precommit.sh, api-error-resume-runner.sh)
   ├── setup/                     Installation guides + CLAUDE.md template
-  ├── skills/                    Multi-step skill workflows (26, hybrid policy)
+  ├── skills/                    Multi-step skill workflows (32, hybrid policy)
   ├── install.sh                 macOS/Linux installer (--upgrade supported)
   ├── install.ps1                Windows installer (--upgrade supported)
   ├── mcp-servers.json           MCP server defaults (4 minimal)
   ├── mcp-servers.optional.json  Optional MCP servers (memory/exa/github/fetch/time/...)
-  ├── .claude-plugin/plugin.json Plugin manifest (3.1.1)
-  ├── .claude-plugin/marketplace.json  Marketplace entry (3.1.1)
+  ├── .claude-plugin/plugin.json Plugin manifest (4.0.0)
+  ├── .claude-plugin/marketplace.json  Marketplace entry (4.0.0)
   ├── settings.json              Claude Code settings (2026 fields)
-  ├── MIGRATION.md               v2.1 → v3.0 migration guide (EN)
-  ├── MIGRATION.ko.md            v2.1 → v3.0 migration guide (KO)
+  ├── MIGRATION.md               v2.1 → v4.0 migration guide (EN)
+  ├── MIGRATION.ko.md            v2.1 → v4.0 migration guide (KO)
   ├── CONTRIBUTING.md            Contribution guide
   ├── SECURITY.md                Security policy
   └── LICENSE                    MIT License
@@ -439,7 +470,25 @@ claude-forge/
 
 ---
 
-## 🔧 What's New in v3.0
+## 🔧 What's New in v4.0
+
+<details open>
+<summary><strong>v4.0 changes (click to collapse)</strong></summary>
+
+| Change | Description |
+|:-------|:------------|
+| **Adversarial verification loop** | `adversarial-reviewer` + `skeptical-auditor` agents, `review-loop` skill, `rules/adversarial-review.md`. Maker≠checker: a fresh, independent reviewer that did not write the change reproduces the claim rather than reading it, and returns `APPROVE` / `REQUEST_CHANGES` / `UNVERIFIED`. Worked example from this release's own PRs: [`docs/VERIFICATION-LOOP.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/VERIFICATION-LOOP.md). |
+| **Reliability pack** | Unattended API-error auto-resume (`StopFailure`), session relay across `/compact`, doom-loop + edit-time verify hooks, an opt-in pre-commit secret guard, and the shared `libs/hook-guard.sh` they build on. Full wiring guide: [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md). |
+| **Debugging escalation chain** | `systematic-debugger` → `rca-debugger` → `escalation-fixer`. Each step only fires when the one before it couldn't close the case. |
+| **Task-grade routing** | `/workflow-classify` sizes a task S/M/L/XL and routes documentation depth and verification rigor accordingly (`rules/task-grade-routing.md`). |
+| **Korean prose quality guardrails** | Translation-ese and AI-idiom avoidance **at generation time**, not just a cleanup pass — `rules/korean-writing-quality.md`, `reference/ai-tell-taxonomy.md`, `emdash-slop-guard.sh`, plus `humanize-korean` / `korean-character-count` / `korean-spell-check` skills. |
+
+Inventory: 11 → **16 agents**, 34 → **35 commands**, 26 → **32 skills**, 15 → **21 hooks**,
+10 → **14 rules**. See [MIGRATION.md](MIGRATION.md) for the full v3 → v4 upgrade guide.
+
+</details>
+
+## 🔧 What's New in v3.0 (historical)
 
 <details>
 <summary><strong>v3.0 → v3.1.0 changes (click to expand)</strong></summary>
@@ -470,7 +519,7 @@ LLM-readable install paths (root `INSTALL.md` + above-the-fold one-liner) and mu
 |:-------|:------------|
 | **Hooks 21 Events** | Lifecycle hooks expanded from 5 to 21 events. Opt-in samples in [`hooks/examples/`](hooks/examples/). |
 | **Subagent Frontmatter v2** | 10 optional fields: `isolation`, `background`, `memory`, `maxTurns`, `skills`, `mcpServers`, `effort`, `hooks`, `permissionMode`, `disallowedTools`. Schema: [`reference/agent-schema.json`](reference/agent-schema.json). |
-| **Skills/Commands Hybrid Policy** | Clear boundary documented at [`docs/SKILLS-VS-COMMANDS.md`](docs/SKILLS-VS-COMMANDS.md). |
+| **Skills/Commands Hybrid Policy** | Clear boundary documented at [`docs/SKILLS-VS-COMMANDS.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/SKILLS-VS-COMMANDS.md). |
 | **MCP Minimal (4 servers)** | Default set: `playwright` · `context7` · `jina-reader` · `chrome-devtools-mcp@0.23.0`. Legacy full set in [`mcp-servers.optional.json`](mcp-servers.optional.json). |
 | **CLAUDE.md Template** | New [`setup/CLAUDE.md.template`](setup/CLAUDE.md.template) with `@import` pattern. |
 | **Upgrade in One Command** | `./install.sh --upgrade` safely migrates v2.1 installs with backup and diff preview. |
@@ -494,7 +543,7 @@ LLM-readable install paths (root `INSTALL.md` + above-the-fold one-liner) and mu
 | **jina-reader** | Reads web pages and converts them to clean text | None — auto-installed |
 | **chrome-devtools** | Runs Lighthouse audits and Core Web Vitals checks | None — auto-installed |
 
-Additional servers (memory, exa search, GitHub, fetch) are available opt-in via [`mcp-servers.optional.json`](mcp-servers.optional.json). Full recipes: [`docs/MCP-MIGRATION.md`](docs/MCP-MIGRATION.md).
+Additional servers (memory, exa search, GitHub, fetch) are available opt-in via [`mcp-servers.optional.json`](mcp-servers.optional.json). Full recipes: [`docs/MCP-MIGRATION.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/MCP-MIGRATION.md).
 
 ---
 
@@ -515,10 +564,10 @@ cp setup/settings.local.template.json ~/.claude/settings.local.json
 
 | Feature | Claude Forge | Basic `.claude/` setup | Individual plugins |
 |:--------|:-----------:|:----------------------:|:------------------:|
-| Specialist agents | 11 ready | Manual setup | Varies |
-| Slash commands | 34 ready | None | Per-plugin |
-| Skill workflows | 26 ready | None | Per-plugin |
-| Safety hooks | 15 + 9 examples | None by default | Per-plugin |
+| Specialist agents | 16 ready | Manual setup | Varies |
+| Slash commands | 35 ready | None | Per-plugin |
+| Skill workflows | 32 ready | None | Per-plugin |
+| Safety hooks | 21 + 9 examples | None by default | Per-plugin |
 | External tool connections | 4 default (8+ optional) | None | Per-plugin |
 | Setup time | ~5 minutes | Hours | Per-plugin install |
 | Updates | `git pull` | Manual per-file | Per-plugin update |
@@ -547,7 +596,7 @@ Claude Code is Anthropic's official AI coding assistant that runs in your termin
 <details>
 <summary><strong>How is Claude Forge different from other Claude Code plugins?</strong></summary>
 
-Most Claude Code plugins solve one problem at a time. Claude Forge is a complete development environment — 11 agents, 34 commands, 26 skills, 15 hooks, and 10 rules that work together as a cohesive system. Instead of assembling individual plugins, you get a pre-wired pipeline: `/plan` feeds into `/tdd`, which feeds into `/code-review`, which feeds into `/handoff-verify`, which feeds into `/commit-push-pr`. The 6-layer security hook system also runs automatically without extra configuration.
+Most Claude Code plugins solve one problem at a time. Claude Forge is a complete development environment — 16 agents, 35 commands, 32 skills, 21 hooks, and 14 rules that work together as a cohesive system. Instead of assembling individual plugins, you get a pre-wired pipeline: `/plan` feeds into `/tdd`, which feeds into `/code-review`, which feeds into `/handoff-verify`, which feeds into `/commit-push-pr` — and, new in v4.0, an adversarial verification loop that a fresh reviewer must `APPROVE` before any behavioral change is considered done. The 6-layer security hook system also runs automatically without extra configuration.
 
 </details>
 
