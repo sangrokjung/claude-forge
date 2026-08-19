@@ -121,7 +121,7 @@ hook_cooldown "other-$$" 30       && ok "different key independent" || no "diffe
 
 hook_token_valid "real-token-abc"     && ok "real token accepted"      || no "real token accepted"
 hook_token_valid ""                   && no "empty rejected"           || ok "empty rejected"
-hook_token_valid "YOUR_MOSHI_TOKEN"   && no "placeholder rejected"     || ok "placeholder rejected"
+hook_token_valid "YOUR_WEBHOOK_TOKEN" && no "placeholder rejected"     || ok "placeholder rejected"
 hook_token_valid "REPLACE_ME"         && no "REPLACE_ME rejected"      || ok "REPLACE_ME rejected"
 
 [ -n "${PYTHON3:-}" ] && ok "PYTHON3 defined" || no "PYTHON3 defined"

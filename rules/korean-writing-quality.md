@@ -32,7 +32,7 @@ critical: false
 
 When generating Korean prose a human will read, avoid translation-ese, AI idioms, and mechanical patterns **at generation time** — write naturally the first time, rather than treating a cleanup pass as mandatory for everything. Run a cleanup pass (`skills/humanize-korean`, shipped alongside this rule) only on output that still falls short after generation.
 
-CC·Codex 등 어느 실행 환경에서도, **사람이 읽을 한국어 산문을 생성할 때 번역투·AI 관용구·기계 패턴을 생성 단계에서 회피**한다. 매번 사후 윤문을 강제하는 게 아니라 처음부터 자연스럽게 쓴다(pre-gen). 미달 산출물만 `humanize-korean` 스킬로 보정한다(post-gen).
+어느 실행 환경에서도, **사람이 읽을 한국어 산문을 생성할 때 번역투·AI 관용구·기계 패턴을 생성 단계에서 회피**한다. 매번 사후 윤문을 강제하는 게 아니라 처음부터 자연스럽게 쓴다(pre-gen). 미달 산출물만 `humanize-korean` 스킬로 보정한다(post-gen).
 
 ## 1. Scope (적용 대상)
 
