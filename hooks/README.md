@@ -38,6 +38,7 @@ Claude Code exposes **27 hookable events** across 7 categories (official catalog
 | Tool | `PostToolUse` | After a tool runs (success OR failure) | Filter output secrets, log usage | `output-secret-filter.sh` |
 | Tool | `PostToolUse` | Edit/Write to the same file 5+ times in a session | Doom-loop guard — nudge a rethink | `loop-detection.sh` |
 | Tool | `PostToolUse` | Edit/Write to a `.ts`/`.tsx`/`.js`/`.jsx`/`.py` file | Lightweight type/syntax check, surface fixable errors | `auto-verify-fix.sh` |
+| Tool | `PostToolUse` | Edit/Write to a `.md` file whose content is substantially Korean | Flag em-dash (—/–) AI-tell interjections — see [`rules/korean-writing-quality.md`](../rules/korean-writing-quality.md) | `emdash-slop-guard.sh` |
 | Tool | `PostToolUseFailure` | Tool returns non-zero (failure only) | Escalate repeated failures, alert | `examples/post-tool-use-failure.sh.example` |
 | Subagent | `SubagentStart` | Task tool spawns a subagent | Record subagent name + start time | `examples/subagent-start.sh.example` |
 | Subagent | `SubagentStop` | Subagent finishes (success or failure) | Log duration, cost accounting | `examples/subagent-stop.sh.example` |

@@ -225,6 +225,10 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/auto-verify-fix.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/emdash-slop-guard.sh"
           }
         ]
       }
