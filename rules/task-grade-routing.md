@@ -31,7 +31,7 @@ Regardless of size:
 - Auth, payments, PII, RLS policies, secrets boundaries, or irreversible deploys start at XL.
 - Non-destructive schema or API contract changes start at L.
 
-Escalate up, never down. A change that looks XS but touches one of these is XL from the first
+Escalate up, never down. A change that looks S but touches one of these is XL from the first
 draft, not XL after a downgrade gets caught later.
 
 ## Reviewer death is not a pass
