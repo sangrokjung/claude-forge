@@ -52,20 +52,25 @@ mkdir -p "$BASE/counts" "$BASE/locks" "$BASE/runs" "$LOG_DIR" 2>/dev/null
 
 log() { echo "[$(date '+%F %T')] [hook] $*" >> "$LOG" 2>/dev/null; }
 
-# stat(1) is not portable: BSD/macOS takes -f, GNU/Linux takes -c. Falling back
-# to 0 on both would silently disable the cap window, so try both spellings and
-# validate the result.
+# stat(1) is not portable: BSD/macOS takes -f, GNU/Linux takes -c.
+#
+# Branch on the OUTPUT, never on the exit status. On GNU coreutils `-f` means
+# --file-system, where %m is not a valid directive: it can be reported as "?"
+# with rc=0, so a status-only fallback would never reach the -c form and the
+# caller would silently receive 0 — which is exactly the failure this helper
+# exists to prevent (a 0 mtime makes the cap window dead and every lock stale).
+# Accept a form only once its output is a plain integer.
 _mtime() {
     local v
-    v=$(stat -f %m "$1" 2>/dev/null) || v=$(stat -c %Y "$1" 2>/dev/null) || v=0
-    [[ "$v" =~ ^[0-9]+$ ]] || v=0
-    printf '%s' "$v"
+    v=$(stat -f %m "$1" 2>/dev/null); [[ "$v" =~ ^[0-9]+$ ]] && { printf '%s' "$v"; return; }
+    v=$(stat -c %Y "$1" 2>/dev/null); [[ "$v" =~ ^[0-9]+$ ]] && { printf '%s' "$v"; return; }
+    printf '0'
 }
 _fsize() {
     local v
-    v=$(stat -f %z "$1" 2>/dev/null) || v=$(stat -c %s "$1" 2>/dev/null) || v=0
-    [[ "$v" =~ ^[0-9]+$ ]] || v=0
-    printf '%s' "$v"
+    v=$(stat -f %z "$1" 2>/dev/null); [[ "$v" =~ ^[0-9]+$ ]] && { printf '%s' "$v"; return; }
+    v=$(stat -c %s "$1" 2>/dev/null); [[ "$v" =~ ^[0-9]+$ ]] && { printf '%s' "$v"; return; }
+    printf '0'
 }
 
 # ── Kill switch ───────────────────────────────────────────

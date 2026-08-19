@@ -58,6 +58,16 @@ Classification reads the stdin payload first and falls back to the last 256 KB o
 transcript (newest 200 records). It never greps the raw file for a status code — base64
 payloads produce false positives.
 
+**`stop_reason` wins over `error_type`, and shadows it when it matches nothing.** The
+classifier evaluates `stop_reason or error_type` as a single value, so a payload carrying
+both, such as `{"stop_reason":"error","error_type":"overloaded"}`, is judged on the literal
+string `error`, matches neither the retryable nor the fatal set, and comes out `SKIP
+(inconclusive)` — the `overloaded` is never consulted. This is the most surprising
+behaviour in the classifier and the reason a plausible-looking fixture can assert the wrong
+verdict. If you are writing a test or reading a puzzling `inconclusive` verdict, check
+`stop_reason` first. Note that the transcript fallback still runs for such a payload, so a
+transcript with a real `api_error` record recovers the RETRY.
+
 `Retry in Ns` (also `Nm Ms`) is parsed out of the error text and handed to the runner,
 which waits `max(DELAY, retry_in + RETRY_BUFFER)`, clamped to `MAX_DELAY`, plus up to 30 s
 of jitter. Claude Code gets its own recovery window before we intervene, so "2 minutes" is
@@ -115,7 +125,8 @@ deduplicated much harder than a notification would be.
 | `CLAUDE_AUTO_RESUME_MAX_RETRIES` | 3 | Per-session resumes per 6 h |
 | `CLAUDE_AUTO_RESUME_RETRY_RATELIMIT=1` | off | Also retry a plain `rate_limit` — off by default so a resume cannot burn down your own usage limit |
 | `CLAUDE_AUTO_RESUME_RETRY_429=1` | off | Let the runner proceed even when the last error was a 429. Not recommended |
-| `CLAUDE_AUTO_RESUME_DRY_RUN=1` | off | Runner logs the resume it would run and resumes nothing |
+| `CLAUDE_AUTO_RESUME_DRY_RUN=1` | off | Runner logs the resume it would run and resumes nothing. It still waits first — see below |
+| `CLAUDE_AUTO_RESUME_SELFTEST=1` | off | Runner prints its guard state and exits immediately. No lock, no wait, no resume |
 | `CLAUDE_AUTO_RESUME_PROMPT` | built-in | Replaces the resume instruction — including its no-outward-actions guard |
 | `CLAUDE_AUTO_RESUME_PERMISSION_MODE` | unset | Passed to `claude --permission-mode` on resume |
 | `CLAUDE_AUTO_RESUME_MAX_RUNTIME` | 7200 | Watchdog ceiling for a headless resume, in seconds |
@@ -129,6 +140,29 @@ deduplicated much harder than a notification would be.
 | `CLAUDE_AUTO_RESUME_NOPROGRESS_MAX` | 2 | Fruitless resumes in a row before self-disable |
 | `CLAUDE_AUTO_RESUME_STRIP_API_KEY=1` | off | Unset `ANTHROPIC_API_KEY` / `ANTHROPIC_AUTH_TOKEN` for the resumed process. Leave it off if you authenticate with an API key; turn it on if your interactive sessions log in some other way and you do not want resumes billed to a stray key |
 | `FORGE_NOTIFY_CMD` | unset | Optional notifier — see below |
+
+### Dry run is not a fast smoke test
+
+`CLAUDE_AUTO_RESUME_DRY_RUN=1` suppresses the resume itself, not the wait in front of it.
+The runner still takes the lock, increments the cap counter, sleeps `EFF_DELAY + jitter`
+(120 s by default, up to `MAX_DELAY` + 30 s, so roughly 15 minutes in the worst case) and
+queues for a stagger slot before it logs the resume it would have run. That is deliberate:
+a dry run exercises the real timing path. It is a poor fit for "did I break the script".
+
+For an instant check, use the self test, which evaluates every guard and exits without
+taking a lock, waiting, or resuming:
+
+```bash
+CLAUDE_AUTO_RESUME_SELFTEST=1 ~/.claude/scripts/api-error-resume-runner.sh <session-id> <cwd>
+# SELFTEST-OK: 429=no-transcript concurrent=0/6 hourly=0/24 daily=0/80 noprogress_max=2
+```
+
+If a cap is already tripped the self test exits at that cap instead of printing the line,
+and the reason lands in the log as the matching `GUARD-*` entry.
+
+To shorten a real dry run instead, set `CLAUDE_AUTO_RESUME_DELAY=0` (jitter still adds up
+to 30 s). Classification is covered separately by
+`scripts/tests/test_auto_resume_classify.sh`, which runs in seconds.
 
 ### Notifications
 
