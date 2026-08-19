@@ -7,6 +7,8 @@ allowed-tools: Read, Glob, Grep
 
 Classify task size and recommend the appropriate pipeline. Use this **before starting work** to avoid over-engineering small tasks or under-preparing large ones.
 
+Size alone doesn't tell you what to write down or how many independent eyes look at the change before it counts as done. `rules/task-grade-routing.md` maps each grade to a documentation and verification obligation, and the classification report below always prints both.
+
 ## Classification Criteria
 
 | Size | Criteria | Pipeline |
@@ -31,7 +33,7 @@ Classify task size and recommend the appropriate pipeline. Use this **before sta
 
 ### L — Phased Pipeline
 ```
-/plan (master) → /plan-review → (human review)
+/plan (master, gated by planner's Restate Gate) → (human review)
   → [Per Phase]
     Phase N: /explore → /plan → /tdd → /code-review
   → /handoff-verify
@@ -40,6 +42,7 @@ Classify task size and recommend the appropriate pipeline. Use this **before sta
 - Each Phase should be M-sized (5-15 files max)
 - One session = one Phase (prevent context exhaustion)
 - Phase failure: manual rollback to Phase branch
+- There is no separate `/plan-review` command. `agents/planner.md`'s Restate Gate already forces a one-sentence restatement and an explicit user confirmation before the master plan is handed off, so that gate stands in for the missing step above.
 
 ### XL — Phased Pipeline + Security
 ```
@@ -71,6 +74,10 @@ Split triggers:
 1. Does the change touch implicit system contracts?
 2. Can failure NOT be rolled back with simple `git reset`? → auto XL
 3. Does it affect user data or auth/authorization? → auto XL
+4. Does it touch payments, PII, RLS policies, or a secrets boundary? → auto XL
+5. Is it a non-destructive schema or API contract change with none of the risk signals above? → minimum L
+
+Rules 4-5 are the escalation floor from `rules/task-grade-routing.md`; that file also has the documentation and verification obligation that comes with each grade.
 
 ## Procedure (Graduated Observation)
 
@@ -104,7 +111,8 @@ Read up to **3 key files** to check:
 ### Phase 3: Final Classification
 1. Classify based on Phase 1 or Phase 2 results
 2. **If Phase 2 is still uncertain, upgrade one level** (under-classification costs more than over-classification)
-3. Report in this format:
+3. Look up the assigned grade's row in `rules/task-grade-routing.md` for its documentation and verification obligation
+4. Report in this format:
 
 ```
 ## Classification Result
@@ -115,6 +123,8 @@ Read up to **3 key files** to check:
 - **Estimated files**: N
 - **Key files checked**: (Phase 2 only) file1 (exported N places), file2 (integration)
 - **Escalation**: (if applied, which rule triggered it)
+- **Documentation**: (from `rules/task-grade-routing.md`, e.g. "M: micro-spec — Goal/Non-goals/Acceptance/Test")
+- **Verification**: (from `rules/task-grade-routing.md`, e.g. "M: targeted check + 1 independent review lane")
 - **Recommended next step**: (next command to run)
 ```
 
