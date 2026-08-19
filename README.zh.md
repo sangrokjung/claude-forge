@@ -30,7 +30,7 @@
   <a href="#-常见问题">常见问题</a>
 </p>
 
-> **v4.0.0（2026 年 8 月）** — 核心是**对抗式验证循环（adversarial verification loop）**：每一次行为变更都由一个从未写过这段代码、也不了解作者思路的独立审查员（`adversarial-reviewer`）复核——作者与审查者必须是两个不同的角色（maker≠checker），直到审查员给出 `APPROVE` 才算完成。这不是纸上谈兵：在开发 v4.0 本身的过程中，该循环就在维护者自己的 PR（#58、#61）里发现了两个真实缺陷——一个能通过自身回归测试的 CI 校验、以及一个悄悄锁定在一年前旧版本上的依赖上限。完整验证记录见 [`docs/VERIFICATION-LOOP.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/VERIFICATION-LOOP.md)。此外还新增了**可靠性套件**（API 报错后的无人值守自动续接、`/compact` 后仍可继续的会话交接、死循环与编辑后即时校验钩子、可选的 pre-commit 密钥防泄漏、以及它们共用的 `libs/hook-guard.sh`，接线指南见 [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md)）、**调试升级链**（`systematic-debugger` → `rca-debugger` → `escalation-fixer`）、**任务难度自动分级**（`/workflow-classify` 按 S/M/L/XL 给任务分级，并据此调整文档深度与验证力度），以及**韩语行文质量护栏**（从生成之初就避免翻译腔和 AI 套话，详见韩文版 README）。智能体 16 个、命令 35 个、技能 32 个、钩子 21 个、规则 14 份。详见 [MIGRATION.md](MIGRATION.md)。
+> **v4.0.0（2026 年 8 月）** — 核心是**对抗式验证循环（adversarial verification loop）**：每一次行为变更都由一个从未写过这段代码、也不了解作者思路的独立审查员（`adversarial-reviewer`）复核——作者与审查者必须是两个不同的角色（maker≠checker），直到审查员给出 `APPROVE` 才算完成。这不是纸上谈兵：在开发 v4.0 本身的过程中，该循环就在维护者自己的 PR（#58、#61）里发现了三个真实缺陷——一个能通过自身回归测试的 CI 校验、修复该校验时在同一处留下的同类漏洞、以及一个悄悄锁定在一年前旧版本上的依赖上限。完整验证记录见 [`docs/VERIFICATION-LOOP.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/VERIFICATION-LOOP.md)。此外还新增了**可靠性套件**（API 报错后的无人值守自动续接、`/compact` 后仍可继续的会话交接、死循环与编辑后即时校验钩子、可选的 pre-commit 密钥防泄漏、以及它们共用的 `libs/hook-guard.sh`，接线指南见 [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md)）、**调试升级链**（`systematic-debugger` → `rca-debugger` → `escalation-fixer`）、**任务难度自动分级**（`/workflow-classify` 按 S/M/L/XL 给任务分级，并据此调整文档深度与验证力度），以及**韩语行文质量护栏**（从生成之初就避免翻译腔和 AI 套话，详见韩文版 README）。智能体 16 个、命令 35 个、技能 32 个、钩子 21 个、规则 14 份。详见 [MIGRATION.md](MIGRATION.md)。
 >
 > **v3.1.1 热修复（2026 年 8 月）** — 修复插件安装后完全无法加载的问题（`Hook load failed: expected record, received undefined`）。如果执行 `/plugin install claude-forge` 后显示 `✘ failed to load`、技能/智能体/命令一个都没出现，请升级到 3.1.1。同时修复 Windows `install.ps1` 未复制 statusLine 与 `scripts/` 的问题。相关：[#52](https://github.com/sangrokjung/claude-forge/issues/52)、[#57](https://github.com/sangrokjung/claude-forge/issues/57)、[#50](https://github.com/sangrokjung/claude-forge/issues/50)。
 
@@ -409,7 +409,7 @@ cp setup/settings.local.template.json ~/.claude/settings.local.json
 <details>
 <summary><strong>Windows 上能用吗？</strong></summary>
 
-可以。以管理员身份在 PowerShell 中运行 `install.ps1`。Windows 使用文件复制而非符号链接，因此每次 `git pull` 后需重新运行 `install.ps1` 应用更新。所有智能体、命令、技能和钩子在 Windows、macOS 和 Linux 上功能完全一致。
+可以。以管理员身份在 PowerShell 中运行 `install.ps1`。Windows 使用文件复制而非符号链接，因此每次 `git pull` 后需重新运行 `install.ps1` 应用更新。智能体、命令和技能在 Windows、macOS 和 Linux 上功能完全一致。v4.0.0 的可靠性钩子（自动续接、会话交接、死循环检测等 S1–S5 全部组件）只在 macOS 上开发和验证过：Linux/WSL 在源码层面做了兼容处理，但未在真实环境中运行过，其中两条自动续接路径在本次发布中从未在任何平台上被真正触发过。完整平台对照表见 [`docs/RELIABILITY.md`](https://github.com/sangrokjung/claude-forge/blob/main/docs/RELIABILITY.md#platform-matrix)。
 
 </details>
 
