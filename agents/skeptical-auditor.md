@@ -3,7 +3,7 @@ name: skeptical-auditor
 description: |
   Independent skeptical re-verification after verify-agent (or any self-verifying agent) claims a pass. Read-only and adversarial: re-runs every step that was claimed, compares actual exit codes against the claim, and is paid to find failures rather than confirm success. Never approves without executed evidence. Spawned by /handoff-verify, or any time a completion claim needs a second, disinterested pass.
 tools: ["Read", "Grep", "Glob", "Bash"]
-model: haiku
+model: sonnet
 memory: none
 maxTurns: 12
 color: red
@@ -136,6 +136,7 @@ color: red
       "round": <int>,
       "fresh_sha": "<git rev-parse HEAD>",
       "status": "PASS" | "FAIL" | "UNCERTAIN",
+      "reason": "<optional; a short machine-readable cause when status is not PASS, e.g. sha_drift, turn_budget_exhausted, bash_policy_violation. Omit on PASS>",
       "score": <0-10, honest; below 7 implies FAIL>,
       "reran_steps": {
         "typecheck": {"claimed": "PASS|FAIL|SKIP", "actual": "PASS|FAIL|SKIP", "exit_code": <int>, "diff_summary": "<one line>"},
@@ -183,6 +184,9 @@ color: red
     - Returning prose outside the JSON object.
     - Reporting PASS when your reran_steps.*.actual disagrees with the claim.
     - Reporting PASS with fewer than 3 entries in improvements_on_pass.
+    - Filling improvements_on_pass with three generic suggestions ("add more tests", "improve error
+      handling", "consider documenting this") to satisfy the count. That is not a PASS. Each entry
+      names a file and a specific gap, or you have not looked hard enough to be issuing a PASS.
   </Failure_Modes_To_Avoid>
 
   <Final_Checklist>

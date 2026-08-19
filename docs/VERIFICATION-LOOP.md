@@ -56,7 +56,7 @@ emits:
   "findings": [
     {
       "severity": "HIGH",
-      "location": ".github/workflows/validate.yml:237",
+      "location": ".github/workflows/validate.yml:241",
       "description": "The parity step greps the entire install.ps1 text for each directory name, not the $directories array. I removed \"scripts\" from the array on a copy, left the comment above it (which quotes \"scripts\" and \"cc-chips-custom\") in place, and the guard reported missing=0. The guard therefore passes on the exact regression it was added to catch, and the comment shipped in this same PR is what masks it.",
       "suggestion": "Parse the array rather than the file: extract $directories from install.ps1 through the PowerShell AST, and read install.sh's `for dir in ...; do` loop as the source of truth instead of hardcoding the list."
     }

@@ -280,6 +280,59 @@ jobs:
           print("OK: every skill argument-hint is a string")
           EOF
 
+      # The forge.review/v1 envelope is written out twice: once as the checker's
+      # output contract, once as the worked example. Two copies of a contract
+      # drift silently, and the drift only shows up when someone tries to parse a
+      # verdict. Compare the shapes here instead.
+      - name: forge.review/v1 envelope parity (agent contract vs worked example)
+        run: |
+          python3 <<'EOF'
+          import json, re, sys, textwrap
+          from pathlib import Path
+
+          FENCE = re.compile(r'^[ \t]*```json[ \t]*\n(.*?)^[ \t]*```[ \t]*$',
+                             re.DOTALL | re.MULTILINE)
+          SOURCES = ["agents/adversarial-reviewer.md", "docs/VERIFICATION-LOOP.md"]
+
+          def envelope(path):
+              for m in FENCE.finditer(Path(path).read_text()):
+                  body = textwrap.dedent(m.group(1))
+                  if "forge.review/v1" not in body:
+                      continue
+                  try:
+                      data = json.loads(body)
+                  except json.JSONDecodeError as e:
+                      print(f"::error file={path}::forge.review/v1 block is not parseable JSON: {e}")
+                      sys.exit(1)
+                  if not isinstance(data.get("findings"), list) or not data["findings"]:
+                      print(f"::error file={path}::forge.review/v1 block has no findings[] item to compare")
+                      sys.exit(1)
+                  return data
+              print(f"::error file={path}::no forge.review/v1 JSON block found")
+              sys.exit(1)
+
+          ref_path = SOURCES[0]
+          ref = envelope(ref_path)
+          ref_top, ref_find = set(ref), set(ref["findings"][0])
+          errors = 0
+          for path in SOURCES[1:]:
+              other = envelope(path)
+              top, find = set(other), set(other["findings"][0])
+              if top != ref_top:
+                  print(f"::error file={path}::forge.review/v1 top-level keys drifted from "
+                        f"{ref_path}: {sorted(top ^ ref_top)}")
+                  errors += 1
+              if find != ref_find:
+                  print(f"::error file={path}::forge.review/v1 findings[] keys drifted from "
+                        f"{ref_path}: {sorted(find ^ ref_find)}")
+                  errors += 1
+          if errors:
+              sys.exit(1)
+          print(f"OK: forge.review/v1 envelope identical across {len(SOURCES)} files")
+          print(f"    top-level: {sorted(ref_top)}")
+          print(f"    findings[]: {sorted(ref_find)}")
+          EOF
+
   installer:
     name: Installer Dry-Run
     strategy:

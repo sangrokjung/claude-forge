@@ -63,6 +63,12 @@ All four must hold:
 A checker that reads the maker's summary and agrees with it has verified the summary, not the code.
 Independence is about what the checker reproduces, not about which model ran it.
 
+These four conditions are enforced by convention, not by machinery: nothing in this repository
+physically prevents a maker from reviewing its own change, and a self-review returns an envelope
+that looks exactly like a real one. The loop is only as good as the dispatcher honouring condition 2.
+That is why the honest failure report is `UNVERIFIED` rather than a verdict you were in no position
+to issue.
+
 ## Escalate to a human after two
 
 When the same finding comes back `REQUEST_CHANGES` twice in a row, stop. Two failed fixes on one
