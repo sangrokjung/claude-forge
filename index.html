@@ -481,7 +481,7 @@ function paintStars(animate){
   var p=document.getElementById("gaugePct"); if(p) p.textContent=pctv.toFixed(1)+"%";
 }
 function countUp(el,from,to){
-  if(from===to){el.textContent=nfmt(to);return;}
+  if(from===to){el.textContent=starLabel(to);return;}
   var t0=performance.now(),dur=900;
   (function step(now){
     var k=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-k,3);
