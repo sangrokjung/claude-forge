@@ -5,6 +5,10 @@
 </picture>
 
 <p align="center">
+  <a href="https://sangrokjung.github.io/claude-forge/"><b>⚡ New here? Walk through setup in 60 seconds →</b></a>
+</p>
+
+<p align="center">
   <a href="README.md"><b>English</b></a> · <a href="README.ko.md">한국어</a> · <a href="README.zh.md">中文</a>
 </p>
 
