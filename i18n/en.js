@@ -70,5 +70,6 @@ window.__I18N__.en = {
   "s5_star_reminder": "Didn't star it earlier? No pressure, the button's still up top.",
   "s5_docs": "Read the docs",
   "s5_issues": "Report a bug / ask a question",
-  "s5_docs_classic": "Developer page"
+  "s5_docs_classic": "Developer page",
+  "btn_copy_failed": "Select \u0026 copy"
 };
