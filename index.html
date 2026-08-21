@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title data-i18n="page_title">Claude Forge</title>
-<meta name="description" data-i18n-attr="content:page_desc" content="">
+<title data-i18n="page_title">Claude Forge — Equip Your Claude Code</title>
+<meta name="description" data-i18n-attr="content:page_desc" content="Claude Code comes bare. Claude Forge gives it 16 agents, 35 commands, 32 skills and more — free, open source, install in minutes.">
 <meta name="theme-color" content="#0B0E14">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔨</text></svg>">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sangrokjung.github.io/claude-forge/">
-<meta property="og:title" data-i18n-attr="content:page_title" content="Claude Forge">
-<meta property="og:description" data-i18n-attr="content:page_desc" content="">
+<meta property="og:title" data-i18n-attr="content:page_title" content="Claude Forge — Equip Your Claude Code">
+<meta property="og:description" data-i18n-attr="content:page_desc" content="Claude Code comes bare. Claude Forge gives it 16 agents, 35 commands, 32 skills and more — free, open source, install in minutes.">
 <meta property="og:image" content="https://raw.githubusercontent.com/sangrokjung/claude-forge/main/docs/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 
@@ -333,8 +333,8 @@ details.help p{font-size:15.5px;color:var(--muted);padding-bottom:13px;line-heig
     </div>
     <div id="paneWin" hidden>
       <p class="note" data-i18n="s4_win_note"></p>
-      <div class="code" style="margin-top:11px"><code>git clone https://github.com/sangrokjung/claude-forge.git</code>
-        <button class="copy" data-copy="git clone https://github.com/sangrokjung/claude-forge.git" data-i18n="btn_copy"></button></div>
+      <div class="code" style="margin-top:11px"><code>git clone --recurse-submodules https://github.com/sangrokjung/claude-forge.git</code>
+        <button class="copy" data-copy="git clone --recurse-submodules https://github.com/sangrokjung/claude-forge.git" data-i18n="btn_copy"></button></div>
       <div class="code" style="margin-top:7px"><code>cd claude-forge; .\install.ps1</code>
         <button class="copy" data-copy="cd claude-forge; .\install.ps1" data-i18n="btn_copy"></button></div>
       <details class="help" style="margin-top:11px"><summary data-i18n="s4_terminal_help_title"></summary>
@@ -380,7 +380,22 @@ var SUPPORTED=["en","ko","ja","zh","es","pt","fr","de","ru","hi","vi","id","ar"]
 
 var I18N=window.__I18N__||{};
 var lang="en", S=I18N.en||{};
-var LS=(function(){try{localStorage.getItem("t");return localStorage}catch(e){return {getItem:function(){return null},setItem:function(){}}}})();
+var LS=(function(){
+  // 읽기만 되고 쓰기가 막힌 환경(사생활 보호 모드·저장공간 가득·기업 정책)이 있다.
+  // setItem이 throw하면 부팅이 통째로 죽으므로 쓰기 가능 여부를 실제로 탐침하고,
+  // 그 뒤에도 호출마다 감싼다. 불가하면 메모리에 담아 페이지는 정상 동작시킨다.
+  var writable=false;
+  try{ localStorage.setItem("__cf_probe","1"); localStorage.removeItem("__cf_probe"); writable=true; }catch(e){}
+  if(writable) return {
+    getItem:function(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+    setItem:function(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  };
+  var mem={};
+  return {
+    getItem:function(k){ return Object.prototype.hasOwnProperty.call(mem,k)?mem[k]:null; },
+    setItem:function(k,v){ mem[k]=String(v); }
+  };
+})();
 
 /* ---------- i18n ---------- */
 function pickLang(){
@@ -444,17 +459,21 @@ var NATIVE={en:"English",ko:"한국어",ja:"日本語",zh:"简体中文",es:"Esp
   fr:"Français",de:"Deutsch",ru:"Русский",hi:"हिन्दी",vi:"Tiếng Việt",id:"Indonesia",ar:"العربية"};
 
 /* ---------- stars ---------- */
-var stars=Number(LS.getItem("cf_stars"))||FALLBACK_STARS;
+var cachedStars=Number(LS.getItem("cf_stars"))||0;
+var starsEstimate=!cachedStars;   // 실측값 없이 하드코딩 스냅샷을 쓰는 중인가
+var stars=cachedStars||FALLBACK_STARS;
 var starred=LS.getItem("cf_starred")==="1";
 var awaitingReturn=false;
 
 function nfmt(n){ try{return n.toLocaleString(lang==="en"?"en-US":lang);}catch(e){return String(n);} }
+// 추정치는 실측처럼 보이면 안 된다
+function starLabel(n){ return (starsEstimate?"~":"")+nfmt(n); }
 function paintStars(animate){
-  var el=document.getElementById("topStarCount"); if(el) el.textContent=nfmt(stars);
+  var el=document.getElementById("topStarCount"); if(el) el.textContent=starLabel(stars);
   var n=document.getElementById("starNum");
   if(n){
     if(animate) countUp(n,Number(String(n.textContent).replace(/\D/g,""))||stars,stars);
-    else n.textContent=nfmt(stars);
+    else n.textContent=starLabel(stars);
   }
   var g=document.getElementById("starGoal"); if(g) g.textContent=nfmt(GOAL);
   var pctv=Math.max(0,Math.min(100,stars/GOAL*100));
@@ -466,7 +485,7 @@ function countUp(el,from,to){
   var t0=performance.now(),dur=900;
   (function step(now){
     var k=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-k,3);
-    el.textContent=nfmt(Math.round(from+(to-from)*e));
+    el.textContent=starLabel(Math.round(from+(to-from)*e));
     if(k<1) requestAnimationFrame(step);
   })(t0);
 }
@@ -479,6 +498,7 @@ function fetchStars(cb){
       if(j&&typeof j.stargazers_count==="number"){
         var grew=j.stargazers_count>stars;
         stars=j.stargazers_count;
+        starsEstimate=false;
         LS.setItem("cf_stars",String(stars)); LS.setItem("cf_stars_at",String(Date.now()));
         paintStars(true); cb&&cb(grew);
       } else cb&&cb(false);
