@@ -59,7 +59,7 @@ window.__I18N__.ko = {
   "s4_title": "이제 장비를 갖춰볼까요",
   "s4_win_note": "Windows용 한 줄 설치는 아직 없어요. 대신 프로젝트를 내려받아 PowerShell을 관리자 권한으로 열고 install.ps1을 실행해주세요.",
   "s5_bubble1": "Claude Code를 열고 /plan이라고 입력해보세요. 코드 짜기 전에 진짜로 생각부터 하는 걸 보게 될 거예요.",
-  "s5_bubble2": "이제 가서 뭔가 만들어보세요. 저는 여기서 조용히 사장님 터미널을 더 좋게 만들고 있을게요.",
+  "s5_bubble2": "이제 가서 뭔가 만들어보세요. 저는 여기서 조용히 터미널을 더 좋게 만들고 있을게요.",
   "s5_btn_copy_link": "링크 복사",
   "s5_btn_share_reddit": "Reddit에 공유하기",
   "s5_btn_share_x": "X에 공유하기",
