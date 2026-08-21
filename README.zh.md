@@ -5,6 +5,10 @@
 </picture>
 
 <p align="center">
+  <a href="https://sangrokjung.github.io/claude-forge/?lang=zh"><b>⚡ 第一次来？60 秒安装指南 →</b></a>
+</p>
+
+<p align="center">
   <strong>Claude Code 的 oh-my-zsh — 一键安装，专业全套装备</strong>
 </p>
 

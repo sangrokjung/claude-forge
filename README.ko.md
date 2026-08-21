@@ -5,6 +5,10 @@
 </picture>
 
 <p align="center">
+  <a href="https://sangrokjung.github.io/claude-forge/?lang=ko"><b>⚡ 처음이신가요? 60초 설치 가이드 →</b></a>
+</p>
+
+<p align="center">
   <a href="README.md">English</a> · <a href="README.ko.md"><b>한국어</b></a> · <a href="README.zh.md">中文</a>
 </p>
 
