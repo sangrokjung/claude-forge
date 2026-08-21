@@ -12,9 +12,14 @@
 <meta property="og:url" content="https://sangrokjung.github.io/claude-forge/">
 <meta property="og:title" data-i18n-attr="content:page_title" content="Claude Forge — Equip Your Claude Code">
 <meta property="og:description" data-i18n-attr="content:page_desc" content="Claude Code comes bare. Claude Forge gives it 16 agents, 35 commands, 32 skills and more — free, open source, install in minutes.">
-<meta property="og:image" content="https://raw.githubusercontent.com/sangrokjung/claude-forge/main/docs/og-image.png">
+<meta property="og:image" content="https://sangrokjung.github.io/claude-forge/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Claude Forge — 16 agents, 35 commands, 32 skills, 21 safety hooks in one install">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sangrokjung.github.io/claude-forge/img/og.jpg">
 
+<link rel="preload" as="image" href="img/face-idle.png">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 
@@ -65,7 +70,7 @@ body::after{
   display:flex;align-items:center;gap:10px}
 .brand{display:flex;align-items:center;gap:9px;font-weight:750;letter-spacing:-.015em;font-size:15.5px;min-width:0}
 .brand>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.brand .mark{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:15px;
+.brand .mark{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:15px;overflow:hidden;padding:1px;
   background:linear-gradient(145deg,#2A1B10,#3A2413);border:1px solid #5A3A1E;
   box-shadow:0 0 16px rgba(255,122,24,.35)}
 .spacer{flex:1}
@@ -84,12 +89,13 @@ select#lang:focus{outline:2px solid var(--violet);outline-offset:1px}
 /* ---------- chat ---------- */
 main{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;
   padding:22px 16px 190px}
-.row{display:flex;gap:11px;align-items:flex-start;margin-bottom:11px;
+.row{display:flex;gap:12px;align-items:flex-start;margin-bottom:11px;
   animation:pop .45s var(--ease) both}
 @keyframes pop{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
 .avatar.hide{visibility:hidden}
-.avatar{flex:0 0 38px;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
-  font-size:19px;background:linear-gradient(145deg,#2A1B10,#3B2514);border:1px solid #5A3A1E;
+.avatar img,.brand .mark img{width:100%;height:100%;object-fit:contain;display:block;user-select:none;-webkit-user-drag:none}
+.avatar{flex:0 0 42px;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+  overflow:hidden;padding:1px;font-size:19px;background:linear-gradient(145deg,#2A1B10,#3B2514);border:1px solid #5A3A1E;
   box-shadow:0 0 18px rgba(255,122,24,.3);position:sticky;top:70px}
 .bubble{background:var(--surface);border:1px solid var(--line);border-radius:4px 18px 18px 18px;
   padding:13px 16px;max-width:470px;flex:0 1 auto;min-width:0;font-size:17px;line-height:1.6}
@@ -98,9 +104,16 @@ main{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;
 .typing i{width:7px;height:7px;border-radius:50%;background:var(--dim);animation:bounce 1.1s infinite}
 .typing i:nth-child(2){animation-delay:.16s}.typing i:nth-child(3){animation-delay:.32s}
 @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-6px);opacity:1}}
-.panel{margin:6px 0 20px 49px;min-width:0;animation:pop .5s var(--ease) both}
+.hero-mascot{display:flex;justify-content:center;margin:2px 0 14px;animation:pop .6s var(--ease) both}
+.hero-mascot img{width:min(46vw,178px);height:auto;
+  filter:drop-shadow(0 12px 34px rgba(255,122,24,.28));animation:bob 4.2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.party-mascot{display:flex;justify-content:center;margin:0 0 6px}
+.party-mascot img{width:min(52vw,196px);height:auto;
+  filter:drop-shadow(0 14px 38px rgba(255,208,40,.3))}
+.panel{margin:6px 0 20px 54px;min-width:0;animation:pop .5s var(--ease) both}
 [dir="rtl"] .bubble{border-radius:18px 4px 18px 18px}
-[dir="rtl"] .panel{margin:6px 49px 20px 0}
+[dir="rtl"] .panel{margin:6px 54px 20px 0}
 @media(max-width:480px){.panel{margin-left:0}[dir="rtl"] .panel{margin-right:0}}
 
 /* ---------- action dock ---------- */
@@ -202,6 +215,7 @@ main{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;
   font:inherit;font-size:12.5px;font-weight:650;padding:6px 12px;border-radius:8px;cursor:pointer;transition:.2s}
 .copy:hover{border-color:var(--ember);color:var(--ember2)}
 .copy.done{border-color:var(--green);color:var(--green);background:rgba(53,208,127,.12)}
+.copy.warn{border-color:var(--ember);color:var(--ember2);background:rgba(255,122,24,.12)}
 details.help{margin-top:6px;background:#ffffff06;border:1px solid var(--line);border-radius:12px;padding:0 14px}
 details.help summary{cursor:pointer;font-size:15.5px;font-weight:600;color:var(--muted);padding:12px 0;list-style:none}
 details.help summary::-webkit-details-marker{display:none}
@@ -237,7 +251,7 @@ details.help p{font-size:15.5px;color:var(--muted);padding-bottom:13px;line-heig
 
 <div class="topbar">
   <div class="topbar-in">
-    <div class="brand"><span class="mark">🔨</span><span>Claude Forge</span></div>
+    <div class="brand"><span class="mark"><img src="img/face-idle.png" alt="" width="128" height="128"></span><span>Claude Forge</span></div>
     <div class="spacer"></div>
     <a class="ghost-star" id="topStar" href="https://github.com/sangrokjung/claude-forge" target="_blank" rel="noopener">
       ⭐ <b id="topStarCount">—</b>
@@ -345,6 +359,7 @@ details.help p{font-size:15.5px;color:var(--muted);padding-bottom:13px;line-heig
 </template>
 
 <template id="panel-done">
+  <div class="party-mascot"><img src="img/forge-party.png" alt="" width="420" height="481" draggable="false"></div>
   <div id="lastNudge" hidden>
     <div class="note" style="border-color:#4A3A1A;background:rgba(255,208,40,.07)">
       <span data-i18n="s5_star_reminder"></span>
@@ -378,6 +393,8 @@ var GOAL=2000, FALLBACK_STARS=805;
 var RTL={ar:1,he:1,fa:1,ur:1};
 var SUPPORTED=["en","ko","ja","zh","es","pt","fr","de","ru","hi","vi","id","ar"];
 
+// Legacy Edge는 NodeList.forEach가 없다. querySelectorAll 결과 순회는 전부 이걸로.
+function each(list,fn){ for(var i=0;i<list.length;i++) fn(list[i],i); }
 var I18N=window.__I18N__||{};
 var lang="en", S=I18N.en||{};
 var LS=(function(){
@@ -413,16 +430,27 @@ function pickLang(){
   }
   return "en";
 }
+var langGen=0;
 function loadLang(code,cb){
-  if(code==="en"||I18N[code]) return cb();
+  // 느린 네트워크에서 A→B로 빠르게 바꾸면 두 스크립트가 동시에 뜬다.
+  // 세대 번호로 늦게 도착한 이전 요청을 폐기한다.
+  var gen=++langGen;
+  var done=function(){ if(gen===langGen) cb(); };
+  if(code==="en"||I18N[code]) return done();
   var s=document.createElement("script");
   s.src="i18n/"+code+".js";
-  s.onload=cb;
-  s.onerror=function(){ cb(); }; // graceful: stay on English
+  s.onload=done;
+  s.onerror=done;   // 404여도 영어 폴백으로 계속 간다
   document.head.appendChild(s);
 }
+function merge(){   // Object.assign은 IE에 없다. 없으면 부팅이 통째로 죽는다.
+  var out={};
+  for(var i=0;i<arguments.length;i++){ var o=arguments[i]||{};
+    for(var k in o) if(Object.prototype.hasOwnProperty.call(o,k)) out[k]=o[k]; }
+  return out;
+}
 function applyLang(code){
-  S=Object.assign({},I18N.en||{},I18N[code]||{});
+  S=merge(I18N.en||{},I18N[code]||{});
   lang=I18N[code]?code:"en";
   document.documentElement.lang=lang;
   document.documentElement.dir=RTL[lang]?"rtl":"ltr";
@@ -431,13 +459,14 @@ function applyLang(code){
 }
 function t(k){ return (S&&S[k])||(I18N.en&&I18N.en[k])||""; }
 function translate(root){
-  root.querySelectorAll("[data-i18n]").forEach(function(el){
+  each(root.querySelectorAll("[data-i18n]"),function(el){
     var v=t(el.getAttribute("data-i18n")); if(v) el.textContent=v;
   });
-  root.querySelectorAll("[data-i18n-attr]").forEach(function(el){
-    el.getAttribute("data-i18n-attr").split(",").forEach(function(pair){
-      var p=pair.split(":"), v=t(p[1]); if(v) el.setAttribute(p[0].trim(),v);
-    });
+  each(root.querySelectorAll("[data-i18n-attr]"),function(el){
+    var parts=el.getAttribute("data-i18n-attr").split(",");
+    for(var i=0;i<parts.length;i++){
+      var p=parts[i].split(":"), v=t(p[1]); if(v) el.setAttribute(p[0].trim(),v);
+    }
   });
 }
 function buildLangSelect(){
@@ -480,30 +509,41 @@ function paintStars(animate){
   var f=document.getElementById("gaugeFill"); if(f) f.style.width=pctv.toFixed(1)+"%";
   var p=document.getElementById("gaugePct"); if(p) p.textContent=pctv.toFixed(1)+"%";
 }
+var countRaf=null;
 function countUp(el,from,to){
+  if(countRaf!==null){ cancelAnimationFrame(countRaf); countRaf=null; }  // 중첩 애니메이션 방지
   if(from===to){el.textContent=starLabel(to);return;}
   var t0=performance.now(),dur=900;
   (function step(now){
     var k=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-k,3);
     el.textContent=starLabel(Math.round(from+(to-from)*e));
-    if(k<1) requestAnimationFrame(step);
+    countRaf = k<1 ? requestAnimationFrame(step) : null;
   })(t0);
 }
-function fetchStars(cb){
+var starsInFlight=false, starsGen=0;
+function fetchStars(cb,force){
+  // 부팅·패널 진입·복귀에서 여러 번 불린다. 응답이 역순으로 오면
+  // 오래된 낮은 숫자가 최신값을 덮어쓰므로 세대 번호로 폐기한다.
   var last=Number(LS.getItem("cf_stars_at"))||0;
-  if(Date.now()-last<120000 && LS.getItem("cf_stars")){ cb&&cb(false); return; }
+  if(!force && Date.now()-last<120000 && LS.getItem("cf_stars")){ cb&&cb(false); return; }
+  if(starsInFlight){ cb&&cb(false); return; }
+  if(typeof fetch!=="function"){ cb&&cb(false); return; }   // 구형 브라우저: 카운터만 포기, 페이지는 산다
+  starsInFlight=true;
+  var gen=++starsGen;
+  var fin=function(grew){ starsInFlight=false; cb&&cb(grew); };
   fetch("https://api.github.com/repos/"+REPO,{headers:{Accept:"application/vnd.github+json"}})
     .then(function(r){ return r.ok?r.json():null; })
     .then(function(j){
+      if(gen!==starsGen){ starsInFlight=false; return; }   // 이미 지난 요청
       if(j&&typeof j.stargazers_count==="number"){
         var grew=j.stargazers_count>stars;
         stars=j.stargazers_count;
         starsEstimate=false;
         LS.setItem("cf_stars",String(stars)); LS.setItem("cf_stars_at",String(Date.now()));
-        paintStars(true); cb&&cb(grew);
-      } else cb&&cb(false);
+        paintStars(true); fin(grew);
+      } else fin(false);
     })
-    .catch(function(){ cb&&cb(false); });
+    .catch(function(){ fin(false); });
 }
 
 /* ---------- confetti ---------- */
@@ -547,40 +587,65 @@ function scroll(){
 function progress(){
   document.getElementById("progressBar").style.width=((idx+1)/STEPS.length*100)+"%";
 }
-function addBubble(key,em,showAvatar){
+// 단계마다 표정이 바뀐다: 별 부탁할 땐 간청하는 얼굴, 끝나면 환호하는 얼굴
+function faceFor(i){ return i===2?"plead":(i===4?"cheer":"idle"); }
+function avatarHTML(showAvatar,face){
+  return '<div class="avatar'+(showAvatar?"":" hide")+'">'+
+         '<img src="img/face-'+(face||"idle")+'.png" alt="" width="128" height="128" draggable="false"></div>';
+}
+function addBubble(key,em,showAvatar,face){
   var row=document.createElement("div"); row.className="row";
-  row.innerHTML='<div class="avatar'+(showAvatar?"":" hide")+'">🔨</div><div class="bubble'+(em?" em":"")+'"></div>';
+  row.innerHTML=avatarHTML(showAvatar,face)+'<div class="bubble'+(em?" em":"")+'"></div>';
   row.querySelector(".bubble").textContent=t(key);
   row.querySelector(".bubble").setAttribute("data-i18n",key);
   chat.appendChild(row); scroll();
 }
-function addTyping(showAvatar){
+function addTyping(showAvatar,face){
   var row=document.createElement("div"); row.className="row";
-  row.innerHTML='<div class="avatar'+(showAvatar?"":" hide")+'">🔨</div><div class="bubble typing"><i></i><i></i><i></i></div>';
+  row.innerHTML=avatarHTML(showAvatar,face)+'<div class="bubble typing"><i></i><i></i><i></i></div>';
   chat.appendChild(row); scroll(); return row;
 }
-function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
-
-async function runStep(i){
+// async/await은 구형 브라우저에서 "런타임 오류"가 아니라 "파싱 실패"라
+// 스크립트 블록 전체가 실행되지 않는다(= 빈 화면). 콜백 시퀀스로 간다.
+function runStep(i){
   if(busy) return; busy=true;
   idx=i; progress(); dock.innerHTML="";
   var st=STEPS[i];
   var reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  for(var b=0;b<st.bubbles.length;b++){
+  var face=faceFor(i), b=0;
+
+  function finish(){
+    if(st.panel){
+      var tpl=document.getElementById(st.panel);
+      var wrap=document.createElement("div"); wrap.className="panel";
+      wrap.appendChild(tpl.content.cloneNode(true));
+      chat.appendChild(wrap); translate(wrap); wirePanel(st.panel,wrap); scroll();
+    }
+    buildDock(st,i); busy=false; scroll();
+  }
+  if(i===0){
+    var hero=document.createElement("div"); hero.className="hero-mascot";
+    hero.innerHTML='<img src="img/forge-hero.png" alt="" width="420" height="493" draggable="false">';
+    chat.appendChild(hero);
+  }
+  function step(){
+    if(b>=st.bubbles.length){ finish(); return; }
     var first=(b===0);
-    if(!reduce){ var ty=addTyping(first); await sleep(first?380:520); ty.remove(); }
-    addBubble(st.bubbles[b], (first&&i===0), first);
-    if(!reduce) await sleep(140);
+    if(reduce){
+      addBubble(st.bubbles[b],(first&&i===0),first,face); b++; step(); return;
+    }
+    var ty=addTyping(first,face);
+    setTimeout(function(){
+      ty.remove();
+      addBubble(st.bubbles[b],(first&&i===0),first,face);
+      b++;
+      setTimeout(step,140);
+    }, first?380:520);
   }
-  if(st.panel){
-    var tpl=document.getElementById(st.panel);
-    var wrap=document.createElement("div"); wrap.className="panel";
-    wrap.appendChild(tpl.content.cloneNode(true));
-    chat.appendChild(wrap); translate(wrap); wirePanel(st.panel,wrap); scroll();
-  }
-  buildDock(st,i); busy=false; scroll();
+  step();
 }
 function buildDock(st,i){
+  dock.innerHTML="";   // 호출부가 비워주길 기대하지 않는다 (언어 전환 중 중복 생성 방지)
   if(st.star){
     var a=document.createElement("a");
     a.className="btn btn-star"; a.href=REPO_URL; a.target="_blank"; a.rel="noopener";
@@ -612,16 +677,21 @@ function next(){ if(idx<STEPS.length-1) runStep(idx+1); }
 
 /* ---------- panel wiring ---------- */
 function wirePanel(id,root){
-  root.querySelectorAll(".copy").forEach(function(btn){
+  each(root.querySelectorAll(".copy"),function(btn){
     btn.onclick=function(){
       var txt=btn.getAttribute("data-copy");
-      var done=function(){
-        btn.classList.add("done"); btn.textContent=t("btn_copied");
-        setTimeout(function(){ btn.classList.remove("done"); btn.textContent=t("btn_copy"); },1800);
+      var flash=function(ok){
+        btn.classList.add(ok?"done":"warn");
+        btn.textContent=t(ok?"btn_copied":"btn_copy_failed")||t("btn_copy");
+        setTimeout(function(){ btn.classList.remove("done"); btn.classList.remove("warn");
+          btn.textContent=t("btn_copy"); },2200);
+        // 복사가 막혔으면 최소한 손으로 집을 수 있게 선택해 준다
+        if(!ok){ var code=btn.parentNode.querySelector("code"); if(code) selectNode(code); }
       };
       if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(txt).then(done,function(){fallbackCopy(txt);done();});
-      } else { fallbackCopy(txt); done(); }
+        navigator.clipboard.writeText(txt).then(function(){ flash(true); },
+                                               function(){ flash(fallbackCopy(txt)); });
+      } else { flash(fallbackCopy(txt)); }
     };
   });
 
@@ -648,35 +718,52 @@ function wirePanel(id,root){
     rd.href="https://www.reddit.com/submit?url="+encodeURIComponent(REPO_URL)+"&title="+encodeURIComponent(txt);
     var cl=root.querySelector("#copyLink");
     cl.onclick=function(){
-      var d=function(){ cl.textContent=t("s5_link_copied");
-        setTimeout(function(){ cl.textContent=t("s5_btn_copy_link"); },1800); };
-      if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(PAGE_URL).then(d,d);
-      else { fallbackCopy(PAGE_URL); d(); }
+      var flash=function(ok){
+        cl.textContent=ok?t("s5_link_copied"):(t("btn_copy_failed")||t("s5_btn_copy_link"));
+        setTimeout(function(){ cl.textContent=t("s5_btn_copy_link"); },2200);
+      };
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(PAGE_URL).then(function(){ flash(true); },
+                                                    function(){ flash(fallbackCopy(PAGE_URL)); });
+      } else flash(fallbackCopy(PAGE_URL));
     };
   }
 }
 function fallbackCopy(txt){
   var ta=document.createElement("textarea"); ta.value=txt;
   ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
-  ta.select(); try{document.execCommand("copy");}catch(e){} ta.remove();
+  ta.select();
+  var ok=false;
+  try{ ok=document.execCommand("copy")===true; }catch(e){ ok=false; }
+  ta.remove();
+  return ok;
+}
+function selectNode(el){
+  try{
+    var r=document.createRange(); r.selectNodeContents(el);
+    var sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  }catch(e){}
 }
 function refreshDynamic(){
   translate(document);
   paintStars(false);
-  var st=STEPS[idx]; if(st){ dock.innerHTML=""; buildDock(st,idx); }
+  // reveal 진행 중이면 건드리지 않는다 — runStep이 끝나면서 어차피 다시 만든다
+  if(busy) return;
+  var st=STEPS[idx]; if(st) buildDock(st,idx);
 }
 
 /* welcome back after starring */
-window.addEventListener("focus",function(){
+// GitHub에서 돌아왔을 때: 실제로 카운트가 늘었을 때만 축하한다.
+// 예전엔 !starred가 첫 방문자에게 항상 참이라, 별을 누르지 않고 돌아와도
+// 컨페티가 터지고 "눌렀음"으로 영구 저장됐다. 안 누른 사람에겐 거짓말이다.
+function onReturnFromGitHub(){
   if(!awaitingReturn) return;
   awaitingReturn=false;
-  fetchStars(function(grew){ if(grew||!starred) markStarred(); });
-});
+  fetchStars(function(grew){ if(grew) markStarred(); }, true);  // 캐시 무시하고 재확인
+}
+window.addEventListener("focus",onReturnFromGitHub);
 document.addEventListener("visibilitychange",function(){
-  if(!document.hidden&&awaitingReturn){
-    awaitingReturn=false;
-    fetchStars(function(grew){ if(grew||!starred) markStarred(); });
-  }
+  if(!document.hidden) onReturnFromGitHub();
 });
 
 /* ---------- boot ---------- */
