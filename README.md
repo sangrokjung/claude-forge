@@ -137,7 +137,7 @@ Here is everything bundled in Claude Forge, explained in plain language:
 |:-----|:-----:|:--------------|
 | **Agents** (specialist colleagues) | 16 | Each one is an AI focused on a single job — planner, architect, security checker, test guide, database expert, adversarial reviewer, and more. Claude calls the right one automatically. |
 | **Commands** (shortcut buttons) | 35 | Type `/plan` and Claude creates a full implementation plan. Type `/tdd` and it writes tests first, then code. All 35 are pre-built shortcuts for common developer tasks. |
-| **Skills** (saved procedures) | 32 | Step-by-step playbooks Claude follows automatically — like a recipe it has memorized. `loop-forge` turns any repetitive task into a reusable slash command in seconds; `review-loop` runs the maker≠checker verification cycle. |
+| **Skills** (saved procedures) | 33 | Step-by-step playbooks Claude follows automatically — like a recipe it has memorized. `loop-forge` turns any repetitive task into a reusable slash command in seconds; `review-loop` runs the maker≠checker verification cycle. |
 | **Hooks** (silent safety checks) | 21 built-in + 9 opt-in examples | These run before and after every action Claude takes. They block leaked passwords, dangerous database commands, and unsafe remote scripts — and, new in v4.0, they auto-resume a session after a retryable API error and nudge you when you're stuck editing the same file. Covers 21 lifecycle events. |
 | **Rules** (behavior guidelines) | 14 | Written instructions Claude reads at the start of every session — coding style, security principles, git workflow conventions, when the verification loop is mandatory, and more. |
 | **MCP connections** (external tools) | 4 | Browser automation (Playwright), live library docs (context7), web page reader (jina-reader), and Chrome DevTools for performance audits. |
@@ -281,6 +281,7 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | **evaluating-llms-harness** | Benchmark LLMs across 60+ academic benchmarks. |
 | **extract-errors** | Extract and catalog error messages. |
 | **frontend-code-review** | Frontend file review (.tsx, .ts, .js) with checklist rules. |
+| **harness-diet** | Measure and shrink always-loaded context (CLAUDE.md + rules) back under budget: migrate narrative to references, path-scope or skill-ify rules, verify zero governance loss with deterministic preservation checks. |
 | **humanize-korean** | Strip translation-ese and AI idioms from Korean prose without changing facts, numbers, or register. |
 | **korean-character-count** | Count Korean characters/syllables for length-constrained copy (titles, SMS, ad copy). |
 | **korean-spell-check** | Check Korean spelling and spacing. Sends the text to the third-party service nara-speller.co.kr, so keep client names and personal data out of it. |
@@ -459,7 +460,7 @@ claude-forge/
   ├── rules/                     Auto-loaded rule files (14)
   ├── scripts/                   Utility scripts (incl. install-precommit.sh, api-error-resume-runner.sh)
   ├── setup/                     Installation guides + CLAUDE.md template
-  ├── skills/                    Multi-step skill workflows (32, hybrid policy)
+  ├── skills/                    Multi-step skill workflows (33, hybrid policy)
   ├── install.sh                 macOS/Linux installer (--upgrade supported)
   ├── install.ps1                Windows installer (--upgrade supported)
   ├── mcp-servers.json           MCP server defaults (4 minimal)
@@ -604,7 +605,7 @@ Claude Code is Anthropic's official AI coding assistant that runs in your termin
 <details>
 <summary><strong>How is Claude Forge different from other Claude Code plugins?</strong></summary>
 
-Most Claude Code plugins solve one problem at a time. Claude Forge is a complete development environment — 16 agents, 35 commands, 32 skills, 21 hooks, and 14 rules that work together as a cohesive system. Instead of assembling individual plugins, you get a pre-wired pipeline: `/plan` feeds into `/tdd`, which feeds into `/code-review`, which feeds into `/handoff-verify`, which feeds into `/commit-push-pr` — and, new in v4.0, an adversarial verification loop that a fresh reviewer must `APPROVE` before any behavioral change is considered done. The 6-layer security hook system also runs automatically without extra configuration.
+Most Claude Code plugins solve one problem at a time. Claude Forge is a complete development environment — 16 agents, 35 commands, 33 skills, 21 hooks, and 14 rules that work together as a cohesive system. Instead of assembling individual plugins, you get a pre-wired pipeline: `/plan` feeds into `/tdd`, which feeds into `/code-review`, which feeds into `/handoff-verify`, which feeds into `/commit-push-pr` — and, new in v4.0, an adversarial verification loop that a fresh reviewer must `APPROVE` before any behavioral change is considered done. The 6-layer security hook system also runs automatically without extra configuration.
 
 </details>
 

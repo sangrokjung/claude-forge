@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{
+  background:#0B0E14;
+  font-family:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,sans-serif;
+  color:#EAEFF7; position:relative;
+}
+.glow-a{position:absolute;left:-6%;bottom:-46%;width:78%;height:110%;
+  background:radial-gradient(circle at 50% 50%, rgba(255,122,24,.30), rgba(255,122,24,.07) 46%, transparent 70%)}
+.glow-b{position:absolute;right:-12%;top:-40%;width:62%;height:104%;
+  background:radial-gradient(circle at 50% 50%, rgba(139,123,255,.20), transparent 68%)}
+.wrap{position:relative;z-index:2;display:flex;align-items:center;height:100%;padding:0 72px;gap:36px}
+.left{flex:1;min-width:0}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:20px;font-weight:600;
+  color:#FFB627;letter-spacing:.01em;margin-bottom:20px;
+  border:1px solid #4A3A1A;background:rgba(255,180,40,.09);padding:8px 17px;border-radius:999px}
+h1{font-size:82px;line-height:1.02;font-weight:800;letter-spacing:-.035em;margin-bottom:20px}
+h1 em{font-style:normal;background:linear-gradient(120deg,#FFE27A,#FF7A18);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sub{font-size:29px;line-height:1.42;color:#B7C1D2;font-weight:450;max-width:600px}
+.sub b{color:#EAEFF7;font-weight:700}
+.chips{display:flex;gap:9px;margin-top:30px;flex-wrap:wrap}
+.chip{font-size:19px;font-weight:650;color:#C9D3E2;background:rgba(255,255,255,.055);
+  border:1px solid #2C3646;padding:9px 17px;border-radius:11px}
+.chip.gold{color:#FFD028;border-color:#4A3A1A;background:rgba(255,208,40,.10)}
+.right{flex:0 0 372px;display:flex;align-items:flex-end;justify-content:center;height:100%;padding-bottom:26px}
+.right img{width:372px;height:auto;filter:drop-shadow(0 26px 62px rgba(255,122,24,.42))}
+.url{position:absolute;left:72px;bottom:34px;font-size:20px;color:#7A8598;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;z-index:3}
+</style>
+</head>
+<body>
+  <div class="glow-a"></div><div class="glow-b"></div>
+  <div class="wrap">
+    <div class="left">
+      <div class="eyebrow">⭐ Free &amp; open source · MIT</div>
+      <h1>Claude Code,<br><em>fully equipped.</em></h1>
+      <p class="sub"><b>16 agents · 35 commands · 33 skills · 21 safety hooks</b> — in one install. No signup, no card.</p>
+      <div class="chips">
+        <span class="chip gold">60-second setup</span>
+        <span class="chip">13 languages</span>
+        <span class="chip">macOS · Linux · Windows</span>
+      </div>
+    </div>
+    <div class="right"><img src="img/forge-hero.png" alt=""></div>
+  </div>
+  <div class="url">sangrokjung.github.io/claude-forge</div>
+</body>
+</html>
