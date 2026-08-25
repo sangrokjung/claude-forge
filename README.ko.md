@@ -639,7 +639,7 @@ You are an expert [역할]. Your mission is to [목표].
 | `evaluating-llms-harness` | LLM 하네스 평가 |
 | `extract-errors` | 오류 추출 및 분석 |
 | `frontend-code-review` | 프론트엔드 코드 리뷰 |
-| `harness-diet` | 매 세션 자동 로드되는 컨텍스트(CLAUDE.md+rules)를 측정하고 예산 안으로 다이어트 — 서사는 reference로 이관, 결정론 보존 검사로 거버넌스 무손실 검증 |
+| `harness-diet` | 매 세션 자동 로드되는 컨텍스트(CLAUDE.md+rules)를 측정하고 예산 안으로 다이어트한다. 서사는 reference로 이관하고, 결정론 보존 검사로 거버넌스 무손실을 검증 |
 | `humanize-korean` | 사실·수치·격식은 그대로 두고 한국어 산문에서 번역투·AI 관용구만 걷어냄 |
 | `korean-character-count` | 글자 수 제한이 있는 카피(제목·문자·광고 문구)용 한글 글자/음절 카운트 |
 | `korean-spell-check` | 한국어 맞춤법·띄어쓰기 검사. 외부 서비스 nara-speller.co.kr로 텍스트를 전송하니 고객 실명·개인정보는 넣지 마세요 |
@@ -716,7 +716,7 @@ graph TB
 
 ```
 claude-forge/
-  ├── .claude-plugin/            플러그인 매니페스트 (4.0.0)
+  ├── .claude-plugin/            플러그인 매니페스트 (4.1.0)
   ├── .github/workflows/         CI 검증
   ├── agents/                    에이전트 정의 (16 .md, frontmatter v2)
   ├── cc-chips/                  상태바 서브모듈

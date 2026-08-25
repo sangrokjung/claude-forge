@@ -18,7 +18,7 @@
 | Public repository | <https://github.com/sangrokjung/claude-forge> |
 | Homepage | <https://github.com/sangrokjung/claude-forge> |
 | License | MIT |
-| Current version | `4.0.0` |
+| Current version | `4.1.0` |
 | Manifest file | `.claude-plugin/plugin.json` |
 | Marketplace manifest | `.claude-plugin/marketplace.json` |
 | Category | development |
