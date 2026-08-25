@@ -27,7 +27,7 @@
 ## 2. One-paragraph pitch
 
 claude-forge is an "oh-my-zsh for Claude Code" — a cohesive distribution of 16 specialized
-agents, 35 slash commands, 32 skills, 21 automation hooks (plus 9 opt-in examples covering
+agents, 35 slash commands, 33 skills, 21 automation hooks (plus 9 opt-in examples covering
 21 lifecycle events), 14 rule files, and a minimal 4-server MCP set (playwright, context7,
 jina-reader, chrome-devtools pinned at `@0.23.0`). v4.0 adds an adversarial verification
 loop (maker≠checker, dispatched until an independent reviewer issues APPROVE), unattended
@@ -46,7 +46,7 @@ preview.
   rca-debugger, escalation-fixer)
 - **35 commands** (`/auto-ship`, `/plan`, `/review`, `/e2e`, `/worktree-start`,
   `/workflow-classify`, ...)
-- **32 skills** under `skills/<name>/SKILL.md`
+- **33 skills** under `skills/<name>/SKILL.md`
 - **21 hooks + 9 opt-in examples** covering 21 of the 27 official hook events
 - **14 rules** (Golden Principles, interaction, coding-style, verification, security,
   testing, git-workflow, date-calculation, agents-v2, adversarial-review,
