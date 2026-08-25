@@ -460,7 +460,7 @@ claude-forge/
   ├── rules/                     Auto-loaded rule files (14)
   ├── scripts/                   Utility scripts (incl. install-precommit.sh, api-error-resume-runner.sh)
   ├── setup/                     Installation guides + CLAUDE.md template
-  ├── skills/                    Multi-step skill workflows (32, hybrid policy)
+  ├── skills/                    Multi-step skill workflows (33, hybrid policy)
   ├── install.sh                 macOS/Linux installer (--upgrade supported)
   ├── install.ps1                Windows installer (--upgrade supported)
   ├── mcp-servers.json           MCP server defaults (4 minimal)

@@ -7,7 +7,7 @@ window.__I18N__.de = {
   "btn_lets_go": "Los geht's",
   "btn_next": "Weiter",
   "lang_name": "Deutsch",
-  "page_desc": "Claude Code kommt nackt. Claude Forge gibt ihm 16 Agenten, 35 Befehle, 32 Skills und mehr – kostenlos, Open Source, in Minuten installiert.",
+  "page_desc": "Claude Code kommt nackt. Claude Forge gibt ihm 16 Agenten, 35 Befehle, 33 Skills und mehr – kostenlos, Open Source, in Minuten installiert.",
   "page_title": "Claude Forge — Rüste deinen Claude Code aus",
   "s1_bubble1": "Hey, ich bin Forge. Ich baue Werkzeuge für Claude Code.",
   "s1_bubble2": "Gerade ist dein Claude Code im Grunde ein Ritter ohne Rüstung. Nur Vibes und eine Tastatur.",
@@ -67,7 +67,7 @@ window.__I18N__.de = {
   "s5_docs": "Doku lesen",
   "s5_issues": "Bug melden / Frage stellen",
   "s5_link_copied": "Link kopiert!",
-  "s5_share_text": "Ich habe meinen Claude Code gerade mit Claude Forge ausgerüstet – 16 Agenten, 35 Befehle, 32 Skills, alles kostenlos und Open Source. Mein Terminal fühlt sich jetzt overpowered an.",
+  "s5_share_text": "Ich habe meinen Claude Code gerade mit Claude Forge ausgerüstet – 16 Agenten, 35 Befehle, 33 Skills, alles kostenlos und Open Source. Mein Terminal fühlt sich jetzt overpowered an.",
   "s5_share_title": "Sag's einem Freund?",
   "s5_star_reminder": "Vorhin nicht gestarred? Kein Druck, der Button ist immer noch oben.",
   "s5_docs_classic": "Entwicklerseite"

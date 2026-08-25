@@ -29,12 +29,18 @@ trigger keyword, and canonical command verified present after the diet.
 | Per always-loaded rule file | 8,192 B | Keeps any single rule scannable; forces narrative out |
 | Total always-loaded rules | 102,400 B | Attention-budget ceiling; beyond this, adherence drops |
 
+> **Bundled script paths**: commands below use `$HOME/.claude/skills/harness-diet/…` (the
+> `install.sh` layout). For marketplace (`/plugin install`) installs, resolve under
+> `${CLAUDE_PLUGIN_ROOT}/skills/harness-diet/…` instead. The scripts are stdlib-only Python;
+> if unavailable, perform the step manually from the described contract.
+
 ## Phase 0 — Measure
 
 ```bash
-python3 skills/harness-diet/scripts/harness_diet_audit.py            # human summary
-python3 skills/harness-diet/scripts/harness_diet_audit.py --json     # machine output
-python3 skills/harness-diet/scripts/harness_diet_audit.py --strict   # exit 2 if over budget (CI/ratchet)
+DIET="$HOME/.claude/skills/harness-diet"   # or "${CLAUDE_PLUGIN_ROOT}/skills/harness-diet"
+python3 "$DIET/scripts/harness_diet_audit.py"            # human summary
+python3 "$DIET/scripts/harness_diet_audit.py" --json     # machine output
+python3 "$DIET/scripts/harness_diet_audit.py" --strict   # exit 2 if over budget (CI/ratchet)
 ```
 
 Auto-discovers `./.claude/rules`, `~/.claude/rules`, and CLAUDE.md files at project/user level.
@@ -61,7 +67,7 @@ For each oversized file:
 
 1. **Extract a preservation manifest first** (before touching anything):
    ```bash
-   python3 skills/harness-diet/scripts/preservation_check.py extract rules/big-rule.md > /tmp/big-rule.manifest.json
+   python3 "$DIET/scripts/preservation_check.py" extract rules/big-rule.md > /tmp/big-rule.manifest.json
    ```
 2. **Append** the outgoing blocks to `references/<name>-ref.md` (or your repo's reference dir),
    verbatim under a dated section header. Append *before* rewriting the rule body, and commit
@@ -81,7 +87,7 @@ the same point, long example blocks, anything already present in the reference f
 
 1. **Loss lens (deterministic)**:
    ```bash
-   python3 skills/harness-diet/scripts/preservation_check.py verify rules/big-rule.md /tmp/big-rule.manifest.json
+   python3 "$DIET/scripts/preservation_check.py" verify rules/big-rule.md /tmp/big-rule.manifest.json
    ```
    Exit 2 = something load-bearing got migrated. Restore it before proceeding. Review the
    manifest by hand first — prune entries that were *intended* to move.
@@ -94,7 +100,7 @@ the same point, long example blocks, anything already present in the reference f
 
 ## Phase 4 — Guard (keep it off)
 
-A diet without a guard regrows. Ship-with options in `skills/harness-diet/hooks/`:
+A diet without a guard regrows. Ship-with options in `$DIET/hooks/`:
 
 - `rules-budget-guard.sh` — PostToolUse (`Edit|Write`) advisory: the moment a rule edit pushes a
   file past budget, the editing session gets a context note telling it to migrate, not append.
