@@ -66,7 +66,7 @@ function Write-UpgradeSummary {
     Write-Host "=========================================="
     Write-Host "  Upgrade Summary"
     Write-Host "=========================================="
-    Write-Host "  Version       : v4.0.0"
+    Write-Host "  Version       : v4.1.0"
     $modeLabel = if ($DryRun) { 'dry-run' } else { 'applied' }
     Write-Host "  Mode          : $modeLabel"
     Write-Host "  Repo          : $RepoDir"

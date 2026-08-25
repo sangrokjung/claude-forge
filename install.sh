@@ -163,7 +163,7 @@ print_upgrade_summary() {
     echo "=========================================="
     echo "  Upgrade Summary"
     echo "=========================================="
-    echo "  Version       : v4.0.0"
+    echo "  Version       : v4.1.0"
     echo "  Mode          : $([ "$DRY_RUN" -eq 1 ] && echo 'dry-run' || echo 'applied')"
     echo "  Repo          : $REPO_DIR"
     echo "  Target        : $CLAUDE_DIR"
