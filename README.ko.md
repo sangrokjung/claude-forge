@@ -60,7 +60,7 @@
 |:-----|:----:|:------------|
 | **에이전트**(agents) | 16개 | 분야별 전문 비서. 기획, 테스트, 보안검토, 아키텍처(시스템 설계), 적대적 검증 등 |
 | **커맨드**(commands) | 35개 | 자주 쓰는 작업 단축버튼. `/plan`(계획), `/tdd`(테스트) 등 |
-| **스킬**(skills) | 32개 | AI가 익혀둔 작업 절차. 루프 자동화, 팀 오케스트레이션, 적대적 검증 루프 등 |
+| **스킬**(skills) | 33개 | AI가 익혀둔 작업 절차. 루프 자동화, 팀 오케스트레이션, 적대적 검증 루프 등 |
 | **훅**(hooks) | 21 + 예제 9개 | 자동 안전점검. 위험한 명령 차단, API 키 유출 방지, API 오류 자동 복구 등 |
 | **규칙**(rules) | 14개 | AI가 따르는 행동 지침. 코딩 스타일, 보안, 깃 워크플로우, 검증 루프 발동 조건 등 |
 | **MCP**(외부 도구 연결) | 4개 | 브라우저 자동화, 문서 검색, 웹 읽기, 크롬 개발자 도구 |
@@ -112,7 +112,7 @@ Claude Code 세션 안에서 두 줄 입력:
 | 구성 요소 | 방법 A (`/plugin install`) | 방법 B (`./install.sh`) |
 |--------|:--------------------------:|:------------------------:|
 | 커맨드 (35개)          | ✅ | ✅ |
-| 스킬 (32개)            | ⚠️ 일부만                  | ✅ |
+| 스킬 (33개)            | ⚠️ 일부만                  | ✅ |
 | 에이전트 (16개)        | ❌ | ✅ |
 | 훅 (21개 + 예제 9개)   | ❌ | ✅ |
 | 규칙 (14개)             | ❌ | ✅ |
@@ -623,7 +623,7 @@ You are an expert [역할]. Your mission is to [목표].
 </details>
 
 <details>
-<summary><strong>전체 스킬 목록 (32개)</strong></summary>
+<summary><strong>전체 스킬 목록 (33개)</strong></summary>
 
 | 스킬 | 설명 |
 |:-----|:-----|
@@ -639,6 +639,7 @@ You are an expert [역할]. Your mission is to [목표].
 | `evaluating-llms-harness` | LLM 하네스 평가 |
 | `extract-errors` | 오류 추출 및 분석 |
 | `frontend-code-review` | 프론트엔드 코드 리뷰 |
+| `harness-diet` | 매 세션 자동 로드되는 컨텍스트(CLAUDE.md+rules)를 측정하고 예산 안으로 다이어트 — 서사는 reference로 이관, 결정론 보존 검사로 거버넌스 무손실 검증 |
 | `humanize-korean` | 사실·수치·격식은 그대로 두고 한국어 산문에서 번역투·AI 관용구만 걷어냄 |
 | `korean-character-count` | 글자 수 제한이 있는 카피(제목·문자·광고 문구)용 한글 글자/음절 카운트 |
 | `korean-spell-check` | 한국어 맞춤법·띄어쓰기 검사. 외부 서비스 nara-speller.co.kr로 텍스트를 전송하니 고객 실명·개인정보는 넣지 마세요 |
@@ -730,7 +731,7 @@ claude-forge/
   ├── rules/                     자동 로드 규칙 파일 (14)
   ├── scripts/                   유틸리티 스크립트 (install-precommit.sh 포함)
   ├── setup/                     설치 가이드 + CLAUDE.md 템플릿
-  ├── skills/                    다단계 스킬 워크플로우 (32, 하이브리드 정책)
+  ├── skills/                    다단계 스킬 워크플로우 (33, 하이브리드 정책)
   ├── install.sh                 macOS/Linux 설치 (--upgrade 지원)
   ├── install.ps1                Windows 설치 (--upgrade 지원)
   ├── mcp-servers.json           MCP 기본 설정 (4 minimal)

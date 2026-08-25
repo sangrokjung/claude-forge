@@ -265,7 +265,7 @@ Here is everything bundled in Claude Forge, explained in plain language:
 > `commands/` for them.
 
 <details>
-<summary><strong>Full list: 32 Skills</strong></summary>
+<summary><strong>Full list: 33 Skills</strong></summary>
 
 | Skill | What it does |
 |:------|:------------|
