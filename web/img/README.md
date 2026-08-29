@@ -51,3 +51,10 @@ because image models do not draw reliable text. Serve `web/` and screenshot that
 at 1200×630.
 
 Archived sources: `~/.claude/artifacts/claude-forge-mascot-20260822/`
+
+## Deploying to GitHub Pages
+
+`cutout.py`, `facecrop.py`, and any `__pycache__/` here are build tooling, not site
+assets. When publishing `web/` to the `gh-pages` branch, copy only the HTML, `i18n/`,
+and image files — exclude `*.py` and `__pycache__/` (the current `gh-pages` branch
+already follows this).

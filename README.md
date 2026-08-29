@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md"><b>English</b></a> · <a href="README.ko.md">한국어</a> · <a href="README.zh.md">中文</a>
+  <a href="README.md"><b>English</b></a> · <a href="README.ko.md">한국어</a> · <a href="README.zh.md">中文</a> · <a href="https://sangrokjung.github.io/claude-forge/">setup guide in 13 languages</a>
 </p>
 
 <p align="center">
@@ -36,11 +36,13 @@
   <a href="README.ko.md">한국어</a>
 </p>
 
-> **v4.0.0 (August 2026)** — Leads with the **adversarial verification loop**: every behavioral change is checked by a fresh, independent reviewer (`adversarial-reviewer`) that did not write the code and does not see the maker's reasoning — maker≠checker until the checker issues `APPROVE`. This is not theoretical: building v4.0 itself, the loop caught three real defects in the maintainer's own PRs (#58, #61) — a CI parity guard that passed on its own regression, the same guard's fix carrying an identical hole one level down, and a dependency ceiling that silently pinned a year-old release. Full worked example with the actual envelopes: [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md). Also ships a **reliability pack** (unattended API-error auto-resume, session relay across `/compact`, doom-loop + edit-time verify hooks, an opt-in pre-commit secret guard, and the shared `libs/hook-guard.sh` they build on — wiring guide: [`docs/RELIABILITY.md`](docs/RELIABILITY.md)), a **debugging escalation chain** (`systematic-debugger` → `rca-debugger` → `escalation-fixer`), **task-grade routing** (`/workflow-classify` sizes work S/M/L/XL and routes documentation + verification depth accordingly), and **Korean prose quality guardrails** (translation-ese/AI-idiom avoidance at generation time, not just cleanup). 16 agents, 35 commands, 32 skills, 21 hooks, 14 rules. See [MIGRATION.md](MIGRATION.md).
+> **v4.1.0 (August 2026, latest)** — Adds **harness-diet** (33rd skill): measure your always-loaded context (CLAUDE.md + rules) and shrink it back under budget without losing governance.
 >
-> **v3.1.1 (hotfix, August 2026)** — Fixes plugin install failing to load entirely (`Hook load failed: expected record, received undefined`). If `/plugin install claude-forge` showed `✘ failed to load` and none of the skills, agents or commands appeared, upgrade to 3.1.1. Also restores Windows `install.ps1` parity (statusLine and `scripts/` were never copied). See [#52](https://github.com/sangrokjung/claude-forge/issues/52), [#57](https://github.com/sangrokjung/claude-forge/issues/57), [#50](https://github.com/sangrokjung/claude-forge/issues/50).
+> **v4.0.0 (August 2026)** — Introduces the **adversarial verification loop**: every behavioral change is checked by a second, independent agent that did not write the code and never sees the first agent's reasoning — maker≠checker until it issues `APPROVE`. Building v4.0 itself, the loop caught three real defects in the maintainer's own PRs (#58, #61); worked example: [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md). Also ships a reliability pack (API-error auto-resume, session relay across `/compact`, doom-loop guard — [`docs/RELIABILITY.md`](docs/RELIABILITY.md)), a debugging escalation chain, task-grade routing, and Korean prose quality guardrails. Details: [What's New in v4.0](#-whats-new-in-v40) · [MIGRATION.md](MIGRATION.md).
+>
+> If `/plugin install claude-forge` ever showed `✘ failed to load` (`Hook load failed: expected record, received undefined`), that bug is fixed as of v4.0.0 — see [#52](https://github.com/sangrokjung/claude-forge/issues/52), [#57](https://github.com/sangrokjung/claude-forge/issues/57).
 
-> **v3.1.0 released (June 2026)** — Adds **loop-forge** (turn a repetitive task into a reusable, self-guarding slash command) and a full beginner-friendly rewrite of this README with diagrams. Built on v3.0.2 (LLM-readable install) and v3.0.1 (Anthropic 2026 standard alignment: Hooks 21+ events, Subagent frontmatter v2, Skills/Commands hybrid policy, 4-server MCP minimum). See [MIGRATION.md](MIGRATION.md).
+> **v3.1.0 (June 2026)** — Adds **loop-forge** (turn a repetitive task into a reusable, self-guarding slash command) and a full beginner-friendly rewrite of this README with diagrams. Built on v3.0.2 (LLM-readable install) and v3.0.1 (Anthropic 2026 standard alignment: Hooks 21+ events, Subagent frontmatter v2, Skills/Commands hybrid policy, 4-server MCP minimum). See [MIGRATION.md](MIGRATION.md).
 
 ---
 
@@ -52,7 +54,7 @@ Claude Forge is the **equipment pack** for that assistant. One install gives it:
 
 - 16 specialist "colleagues" (agents) it can delegate to — planner, security reviewer, TDD guide, adversarial reviewer, and more
 - 35 one-word shortcuts (commands like `/plan`, `/tdd`, `/code-review`) that trigger full workflows
-- 32 saved procedures (skills) it follows automatically
+- 33 saved procedures (skills) it follows automatically
 - 21 safety checks (hooks) that run silently in the background every time it touches your code — including an unattended API-error auto-resume and a doom-loop guard
 - 14 rule files that define how it should behave
 - 4 external tool connections (browser automation, live docs search, and more)
@@ -115,7 +117,7 @@ cd claude-forge
 | What you get | Option A (`/plugin install`) | Option B (`./install.sh`) |
 |:-------------|:----------------------------:|:-------------------------:|
 | Commands (35 shortcuts)        | ✅ | ✅ |
-| Skills (32 saved procedures)   | ⚠️ partial | ✅ |
+| Skills (33 saved procedures)   | ⚠️ partial | ✅ |
 | Agents (16 specialists)        | ❌ | ✅ |
 | Hooks (21 safety checks)       | ❌ | ✅ |
 | Rules (14 behavior guidelines)  | ❌ | ✅ |
@@ -575,7 +577,7 @@ cp setup/settings.local.template.json ~/.claude/settings.local.json
 |:--------|:-----------:|:----------------------:|:------------------:|
 | Specialist agents | 16 ready | Manual setup | Varies |
 | Slash commands | 35 ready | None | Per-plugin |
-| Skill workflows | 32 ready | None | Per-plugin |
+| Skill workflows | 33 ready | None | Per-plugin |
 | Safety hooks | 21 + 9 examples | None by default | Per-plugin |
 | External tool connections | 4 default (8+ optional) | None | Per-plugin |
 | Setup time | ~5 minutes | Hours | Per-plugin install |
@@ -666,6 +668,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on adding agents, commands
 ```
 
 Add this badge to your project's README to let others know you use Claude Forge.
+
+---
+
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=sangrokjung/claude-forge&type=Date)](https://www.star-history.com/#sangrokjung/claude-forge&Date)
 
 ---
 
