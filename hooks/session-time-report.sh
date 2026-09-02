@@ -22,10 +22,11 @@
 #               report mode  - stdout, the standard SessionStart channel
 # Log:          ~/.claude/work-log/session-time-<session_id>.json   (snapshot, 600)
 #               ~/.claude/work-log/session-times.jsonl              (history, 600)
-# State:        ~/.claude/work-log/.session-time-pending.json       (drained once, 600)
+# State:        ~/.claude/work-log/.session-time-pending.jsonl      (queue, drained once, 600)
 # Environment:  FORGE_SESSION_TIME_REPORT=0  kill switch (both modes)
 #               FORGE_SESSION_GAP_MIN        idle minutes that start a new stretch (default 60)
-#               FORGE_SESSION_MAX_MB         transcript scan budget in MB (default 128)
+#               FORGE_SESSION_MAX_MB         transcript scan budget in MB (default 128, max 512)
+#               FORGE_SESSION_MAX_SEC        wall-clock budget for the scan (default 4, max 30)
 #               FORGE_SESSION_REPORT_LANG    en | ko (default: auto-detect from LANG/LC_ALL)
 #
 # Elapsed time is resume-aware (CRITICAL). Do NOT report last-minus-first over the
@@ -34,7 +35,12 @@
 # exceeds FORGE_SESSION_GAP_MIN, and the headline always describes the LATEST
 # stretch. Cumulative totals are appended only when they are trustworthy.
 #
-# Reads the transcript only. No network call, no dependency beyond python3.
+# Reads the transcript only. No network call, no dependency beyond python3. Log
+# files are created 0600 with O_NOFOLLOW, so a symlink planted at one of the log
+# paths is refused rather than followed, and nothing is ever written outside
+# ~/.claude/work-log/. If either budget above runs out the report is dropped
+# entirely: a partial tail scan would omit the newest events, which are the ones
+# the headline is about.
 # exit 0 required (never disturb session start or teardown)
 
 [ "${FORGE_SESSION_TIME_REPORT:-1}" = "0" ] && exit 0
@@ -59,7 +65,8 @@ import json
 import os
 import re
 import sys
-from datetime import datetime
+import time
+from datetime import datetime, timezone
 
 EDIT_TOOLS = {"Edit", "Write", "NotebookEdit", "MultiEdit"}
 
@@ -73,12 +80,15 @@ def env_int(name, default, low, high):
 
 
 def parse_ts(raw):
+    """Always returns an aware datetime. A transcript that mixes naive and aware
+    stamps would otherwise make the sort raise, and the report would vanish."""
     if not isinstance(raw, str) or not raw:
         return None
     try:
-        return datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        stamp = datetime.fromisoformat(raw.replace("Z", "+00:00"))
     except ValueError:
         return None
+    return stamp if stamp.tzinfo else stamp.replace(tzinfo=timezone.utc)
 
 
 def open_budgeted(path, max_bytes):
@@ -93,15 +103,36 @@ def open_budgeted(path, max_bytes):
     return handle, True
 
 
-def collect(path, max_bytes):
-    """Turn transcript lines into (timestamp, prompt, tool_calls, files, sidechain)."""
+def open_private(path, append):
+    """Create at 0600 in one step and refuse to follow a symlink.
+
+    open() + chmod() leaves the file at the umask default while it already holds
+    content, and both calls follow symlinks, so a link planted at the target path
+    gets its contents replaced and its mode narrowed. O_NOFOLLOW plus a creation
+    mode closes both."""
+    flags = os.O_WRONLY | os.O_CREAT | os.O_NOFOLLOW
+    flags |= os.O_APPEND if append else os.O_TRUNC
+    return os.fdopen(os.open(path, flags, 0o600), "a" if append else "w",
+                     encoding="utf-8")
+
+
+def collect(path, max_bytes, deadline):
+    """Turn transcript lines into (timestamp, prompt, tool_calls, files, sidechain).
+
+    Abandons the whole report if the deadline passes. Stopping early would drop
+    the newest events, which are exactly the ones the headline describes, so a
+    partial scan is worth less than no report at all."""
     try:
         handle, truncated = open_budgeted(path, max_bytes)
     except OSError:
         return None
     events = []
+    scanned = 0
     with handle:
         for line in handle:
+            scanned += 1
+            if scanned % 2000 == 0 and time.monotonic() > deadline:
+                return None
             line = line.strip()
             if not line:
                 continue
@@ -198,63 +229,109 @@ def pick_lang():
     return "ko" if locale.lower().startswith("ko") else "en"
 
 
-def write_log(record, session_id):
-    log_dir = os.path.expanduser("~/.claude/work-log")
+def log_dir():
+    """~/.claude/work-log, created private. A directory that already exists is
+    left as the user set it: this path is shared with the work-tracker hooks."""
+    path = os.path.expanduser("~/.claude/work-log")
     try:
-        os.makedirs(log_dir, exist_ok=True)
+        os.makedirs(path, mode=0o700, exist_ok=True)
     except OSError:
         return None
+    return path
+
+
+def write_line(path, line, append):
+    # OSError here covers the ordinary cases (read-only mount, full disk) and the
+    # interesting one: ELOOP, meaning something planted a symlink at our path. Both
+    # end the same way. This hook may not stand between the user and their session
+    # over a log line, so it gives up quietly.
+    try:
+        with open_private(path, append) as handle:
+            handle.write(line + "\n")
+        return True
+    except OSError:
+        return False
+
+
+HISTORY_MAX_BYTES = 1024 * 1024
+
+
+def rotate(path):
+    """Keep the newest half once the history crosses its ceiling."""
+    try:
+        if os.path.getsize(path) <= HISTORY_MAX_BYTES:
+            return
+        with open(path, encoding="utf-8", errors="replace") as handle:
+            handle.seek(os.path.getsize(path) - HISTORY_MAX_BYTES // 2)
+            handle.readline()
+            kept = handle.read()
+        with open_private(path, append=False) as handle:
+            handle.write(kept)
+    except OSError:
+        pass
+
+
+def write_log(record, session_id):
+    directory = log_dir()
+    if not directory:
+        return None
     line = json.dumps(record, ensure_ascii=False)
-    snapshot = os.path.join(log_dir, "session-time-%s.json" % session_id)
-    history = os.path.join(log_dir, "session-times.jsonl")
-    written = None
-    try:
-        with open(snapshot, "w", encoding="utf-8") as handle:
-            handle.write(line + "\n")
-        os.chmod(snapshot, 0o600)
-        written = snapshot
-    except OSError:
-        pass
-    try:
-        with open(history, "a", encoding="utf-8") as handle:
-            handle.write(line + "\n")
-        os.chmod(history, 0o600)
-    except OSError:
-        pass
-    return written
+    snapshot = os.path.join(directory, "session-time-%s.json" % session_id)
+    history = os.path.join(directory, "session-times.jsonl")
+    if write_line(history, line, append=True):
+        rotate(history)
+    return snapshot if write_line(snapshot, line, append=False) else None
 
 
 def pending_path():
-    return os.path.expanduser("~/.claude/work-log/.session-time-pending.json")
+    return os.path.expanduser("~/.claude/work-log/.session-time-pending.jsonl")
 
 
 def stash(record):
-    """Leave the report where the next SessionStart will find it."""
-    path = pending_path()
-    try:
-        with open(path, "w", encoding="utf-8") as handle:
-            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
-        os.chmod(path, 0o600)
-    except OSError:
-        pass
+    """Queue the report for the next SessionStart.
+
+    Appended, not overwritten: several sessions can end before any new one starts,
+    and a plain write would drop every announcement but the last."""
+    if log_dir():
+        write_line(pending_path(), json.dumps(record, ensure_ascii=False), append=True)
 
 
 def drain():
-    """Take the pending report and clear it, so it is shown exactly once."""
+    """Claim the queue and return everything in it, oldest first.
+
+    The rename is the claim: it is atomic, so two sessions starting at once cannot
+    both read the same entries, and nothing is rendered from a file we failed to
+    take. Reading first and deleting after would replay the report on a delete
+    failure, and lose entries appended in between."""
     path = pending_path()
+    claimed = "%s.claimed-%d" % (path, os.getpid())
     try:
-        with open(path, encoding="utf-8") as handle:
-            record = json.load(handle)
-    except (OSError, ValueError):
-        return None
+        os.rename(path, claimed)
+    except OSError:
+        return []
+    records = []
     try:
-        os.remove(path)
+        with open(claimed, encoding="utf-8") as handle:
+            for line in handle:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except ValueError:
+                    continue
+                if isinstance(entry, dict):
+                    records.append(entry)
     except OSError:
         pass
-    return record if isinstance(record, dict) else None
+    try:
+        os.remove(claimed)
+    except OSError:
+        pass
+    return records
 
 
-def render(record, previous):
+def render(record, previous, also=0):
     lang = pick_lang()
     stamp = record.get("ended_label") or "?"
     span = record.get("stretch_seconds") or 0
@@ -292,6 +369,10 @@ def render(record, previous):
             body += " (resumed %dx, %s total)" % (resumed, human(active))
         tail = "Log: %s"
 
+    if also:
+        body += (" · 그 전 세션 %d건은 로그에" % also) if lang == "ko" else (
+            " · %d earlier %s in the log" % (also, "session" if also == 1 else "sessions"))
+
     lines = [head, body]
     if snapshot:
         home = os.path.expanduser("~")
@@ -312,9 +393,10 @@ def measure(payload):
         return None
 
     gap_seconds = env_int("FORGE_SESSION_GAP_MIN", 60, 1, 1440) * 60
-    max_bytes = env_int("FORGE_SESSION_MAX_MB", 128, 1, 4096) * 1024 * 1024
+    max_bytes = env_int("FORGE_SESSION_MAX_MB", 128, 1, 512) * 1024 * 1024
 
-    scanned = collect(transcript, max_bytes)
+    deadline = time.monotonic() + env_int("FORGE_SESSION_MAX_SEC", 4, 1, 30)
+    scanned = collect(transcript, max_bytes, deadline)
     if not scanned:
         return None
     events, truncated = scanned
@@ -350,8 +432,9 @@ def measure(payload):
 
 try:
     if os.environ.get("FORGE_SESSION_MODE") == "report":
-        stashed = drain()
-        text = render(stashed, previous=True) if stashed else None
+        queued = drain()
+        # Newest first: the session you just left is the one you want to read about.
+        text = render(queued[-1], previous=True, also=len(queued) - 1) if queued else None
     else:
         incoming = json.loads(os.environ.get("FORGE_HOOK_INPUT") or "{}")
         measured = measure(incoming) if isinstance(incoming, dict) else None

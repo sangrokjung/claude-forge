@@ -502,10 +502,14 @@ jobs:
           errors = checked = 0
           for command in commands:
               # settings.json addresses hooks by their installed location;
-              # ~/.claude/<x> is the repo's <x>.
-              if not command.startswith("~/.claude/"):
+              # ~/.claude/<x> is the repo's <x>. Strip any inline NAME=value
+              # prefix and trailing arguments first: reading the raw string as a
+              # path made every env-prefixed entry skip this check silently.
+              words = command.split()
+              script = next((w for w in words if "=" not in w.split("/")[0]), "")
+              if not script.startswith("~/.claude/"):
                   continue
-              path = command[len("~/.claude/"):]
+              path = script[len("~/.claude/"):]
               mode = modes.get(path)
               if mode is None:
                   print(f"::error file=settings.json::wired hook not tracked in this repo: {path}")

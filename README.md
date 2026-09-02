@@ -377,10 +377,11 @@ It reads only the session transcript, so there is no network call and no extra d
 |:---------------------|:--------|:-------|
 | `FORGE_SESSION_TIME_REPORT` | `1` | Set to `0` to turn the hook off |
 | `FORGE_SESSION_GAP_MIN` | `60` | Idle minutes that start a new stretch |
-| `FORGE_SESSION_MAX_MB` | `128` | Transcript bytes to scan; larger files are read from the tail |
+| `FORGE_SESSION_MAX_MB` | `128` | Transcript megabytes to scan, up to 512; larger files are read from the tail |
+| `FORGE_SESSION_MAX_SEC` | `4` | Wall-clock budget for the scan. Past it the report is dropped rather than reported half-read |
 | `FORGE_SESSION_REPORT_LANG` | auto | `en` or `ko`; auto-detects from `LANG` / `LC_ALL` |
 
-Every run also appends to `~/.claude/work-log/session-times.jsonl` (mode `600`), so you can chart your own sessions later. The pending report waits in `~/.claude/work-log/.session-time-pending.json` until the next session drains it.
+Every run also appends to `~/.claude/work-log/session-times.jsonl` (mode `600`, rotated at 1 MB), so you can chart your own sessions later. Reports queue in `~/.claude/work-log/.session-time-pending.jsonl` until a session drains them, so ending several sessions before starting a new one does not lose any of them. Log files are created `0600` and the hook refuses to follow a symlink planted at one of those paths.
 
 #### Opt-in Examples (9 extra, v3.0+)
 

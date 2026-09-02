@@ -285,7 +285,9 @@ cd claude-forge && ./install.sh
 
 소요 시간은 재개를 감안해서 계산해요. `--continue`로 며칠 뒤에 다시 연 세션은 처음부터 끝까지 재면 수백 시간이 나오는데, 그건 실제로 일한 시간이 아니죠. 그래서 오래 비어 있던 구간을 기준으로 타임라인을 끊고 마지막 구간만 헤드라인에 씁니다. 재개한 세션이면 뒤에 `(재개 3회, 누적 9h 40m)`을 덧붙여요.
 
-끄고 싶으면 `FORGE_SESSION_TIME_REPORT=0`, 구간을 나누는 공백 기준은 `FORGE_SESSION_GAP_MIN`(기본 60분), 표시 언어는 `FORGE_SESSION_REPORT_LANG`(`en`/`ko`, 기본은 `LANG` 자동 감지)으로 조정합니다. 매 세션 기록이 `~/.claude/work-log/session-times.jsonl`에도 쌓이고, 아직 안 보여준 리포트는 `~/.claude/work-log/.session-time-pending.json`에서 다음 세션을 기다려요.
+끄고 싶으면 `FORGE_SESSION_TIME_REPORT=0`, 구간을 나누는 공백 기준은 `FORGE_SESSION_GAP_MIN`(기본 60분), 훑는 양은 `FORGE_SESSION_MAX_MB`(기본 128, 최대 512), 훑는 시간은 `FORGE_SESSION_MAX_SEC`(기본 4초), 표시 언어는 `FORGE_SESSION_REPORT_LANG`(`en`/`ko`, 기본은 `LANG` 자동 감지)으로 조정합니다.
+
+매 세션 기록은 `~/.claude/work-log/session-times.jsonl`에 쌓이고(1MB에서 오래된 쪽부터 잘라냄), 아직 안 보여준 리포트는 `~/.claude/work-log/.session-time-pending.jsonl`에 줄 단위로 쌓여서 다음 세션을 기다려요. 세션을 여러 개 닫아두고 하나만 새로 열어도 빠지는 것 없이 다 세어줍니다. 로그 파일은 만들 때부터 `0600`이고, 그 경로에 심볼릭 링크가 놓여 있으면 따라가지 않고 그냥 건너뜁니다.
 
 **Opt-in 예제 (직접 활성화 가능)**:
 

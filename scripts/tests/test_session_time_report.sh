@@ -135,7 +135,7 @@ assert d["prompts"] == 2 and d["tool_calls"] == 3 and d["files_changed"] == 1, d
 PY
 
 # --- report mode: SessionStart replays the last session exactly once ---------
-PENDING="$HOME/.claude/work-log/.session-time-pending.json"
+PENDING="$HOME/.claude/work-log/.session-time-pending.jsonl"
 run sess-p "$TRANSCRIPT" >/dev/null 2>&1
 [ -f "$PENDING" ] && ok "record mode leaves a pending report" || no "record mode leaves a pending report"
 
@@ -182,6 +182,81 @@ PYCHK
 payload "../../escaped" "$TRANSCRIPT" | "$HOOK" >/dev/null 2>&1
 [ -e "$HOME/.claude/escaped.json" ] && no "session_id traversal blocked" \
   || ok "session_id traversal blocked"
+
+# --- concurrent sessions: no announcement is silently dropped ----------------
+# A single overwritten pending file loses every session but the last, which is a
+# normal pattern for anyone running several terminals or worktrees at once.
+CONC="$WORK/conc"
+mkdir -p "$CONC"
+payload conc-a "$TRANSCRIPT" | HOME="$CONC" "$HOOK" >/dev/null 2>&1
+payload conc-b "$TRANSCRIPT" | HOME="$CONC" "$HOOK" >/dev/null 2>&1
+QUEUED=$(printf '{"session_id":"new"}' | HOME="$CONC" FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>/dev/null)
+case "$QUEUED" in *"1 earlier session in the log"*) ok "queued sessions are all accounted for";;
+  *) no "queued sessions are all accounted for (got '$QUEUED')";; esac
+[ -f "$CONC/.claude/work-log/.session-time-pending.jsonl" ] && no "queue is claimed on drain" \
+  || ok "queue is claimed on drain"
+LEFT=0
+for stray in "$CONC/.claude/work-log/"*.claimed-*; do
+  [ -e "$stray" ] && LEFT=$((LEFT+1))
+done
+[ "$LEFT" = "0" ] && ok "no claimed leftovers" || no "no claimed leftovers ($LEFT)"
+
+# --- a transcript mixing naive and aware timestamps still reports -------------
+MIXED="$WORK/mixed.jsonl"
+python3 - "$MIXED" <<'PYMIX'
+import json, sys
+rows = [
+    {"type": "user", "timestamp": "2026-09-01T01:00:00", "message": {"content": "hi"}},
+    {"type": "assistant", "timestamp": "2026-09-01T01:10:00Z",
+     "message": {"content": [{"type": "tool_use", "name": "Bash", "input": {}}]}},
+]
+with open(sys.argv[1], "w") as fh:
+    for row in rows:
+        fh.write(json.dumps(row) + "\n")
+PYMIX
+MIX=$(payload sess-mx "$MIXED" | FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
+case "$MIX" in "[Claude Forge] Session ended"*) ok "naive and aware timestamps mix cleanly";;
+  *) no "naive and aware timestamps mix cleanly (got '$MIX')";; esac
+
+# --- the history file has a ceiling -----------------------------------------
+BIG="$WORK/big"
+mkdir -p "$BIG/.claude/work-log"
+python3 - "$BIG/.claude/work-log/session-times.jsonl" <<'PYBIG'
+import sys
+with open(sys.argv[1], "w") as fh:
+    fh.write(('{"filler":"%s"}\n' % ("x" * 400)) * 6000)   # ~2.4 MB
+PYBIG
+payload sess-rot "$TRANSCRIPT" | HOME="$BIG" "$HOOK" >/dev/null 2>&1
+SIZE=$(wc -c < "$BIG/.claude/work-log/session-times.jsonl")
+[ "$SIZE" -lt 1048576 ] && ok "history rotates under its cap" || no "history rotates under its cap ($SIZE bytes)"
+tail -1 "$BIG/.claude/work-log/session-times.jsonl" | grep -q session_time_report \
+  && ok "rotation keeps the newest record" || no "rotation keeps the newest record"
+
+# --- writes are private and never follow a symlink ---------------------------
+FRESH="$WORK/fresh"
+mkdir -p "$FRESH"
+payload sess-f "$TRANSCRIPT" | HOME="$FRESH" "$HOOK" >/dev/null 2>&1
+DIRPERM=$(ls -ld "$FRESH/.claude/work-log" 2>/dev/null | cut -c1-10)
+[ "$DIRPERM" = "drwx------" ] && ok "log directory created private" \
+  || no "log directory created private (got '$DIRPERM')"
+for f in "session-time-sess-f.json" "session-times.jsonl" ".session-time-pending.jsonl"; do
+  M=$(ls -l "$FRESH/.claude/work-log/$f" 2>/dev/null | cut -c1-10)
+  [ "$M" = "-rw-------" ] && ok "$f created 600" || no "$f created 600 (got '$M')"
+done
+
+CANARY="$WORK/canary"
+printf 'PRISTINE\n' > "$CANARY"; chmod 644 "$CANARY"
+ln -s "$CANARY" "$FRESH/.claude/work-log/session-time-symsess.json"
+payload symsess "$TRANSCRIPT" | HOME="$FRESH" "$HOOK" >/dev/null 2>&1
+[ "$(cat "$CANARY")" = "PRISTINE" ] && ok "symlinked log path is not followed" \
+  || no "symlinked log path is not followed (canary was overwritten)"
+CM=$(ls -l "$CANARY" | cut -c1-10)
+[ "$CM" = "-rw-r--r--" ] && ok "symlink target keeps its mode" || no "symlink target keeps its mode (got '$CM')"
+
+# --- the scan gives up rather than reporting a partial tail ------------------
+TIMEBOX=$(payload sess-t "$TRANSCRIPT" | FORGE_SESSION_MAX_SEC=1 FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
+case "$TIMEBOX" in "[Claude Forge]"*) ok "a small transcript still fits the time budget";;
+  *) no "a small transcript still fits the time budget (got '$TIMEBOX')";; esac
 
 # --- defensive paths: never break teardown -----------------------------------
 quiet(){ # command must exit 0 and print nothing on either stream
