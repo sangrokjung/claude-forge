@@ -360,6 +360,25 @@ LIVE=$(printf '{"session_id":"n"}' | HOME="$ORPH" FORGE_SESSION_REPORT_LANG=en "
 [ -z "$LIVE" ] && ok "a live owner keeps its claim however old it looks" \
   || no "a live owner keeps its claim however old it looks (got '$LIVE')"
 
+# A planted claim whose suffix is not a usable pid must not be able to silence
+# every future drain. os.kill raises OverflowError past 2**31, which is neither
+# OSError nor ValueError.
+POIS="$WORK/pidpoison"
+mkdir -p "$POIS/.claude/work-log"
+: > "$POIS/.claude/work-log/.session-time-pending.jsonl.claimed-99999999999999999999"
+payload pp-1 "$TRANSCRIPT" | HOME="$POIS" "$HOOK" >/dev/null 2>&1
+PIDPOISON=$(printf '{"session_id":"n"}' | HOME="$POIS" FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>/dev/null)
+case "$PIDPOISON" in "[Claude Forge] Previous session ended"*) ok "an unusable pid suffix cannot silence the drain";;
+  *) no "an unusable pid suffix cannot silence the drain (got '$PIDPOISON')";; esac
+
+for SUFFIX in 0 -1 abc 1e9 ""; do
+  : > "$POIS/.claude/work-log/.session-time-pending.jsonl.claimed-$SUFFIX"
+done
+payload pp-2 "$TRANSCRIPT" | HOME="$POIS" "$HOOK" >/dev/null 2>&1
+ODD=$(printf '{"session_id":"n"}' | HOME="$POIS" FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>/dev/null)
+case "$ODD" in "[Claude Forge] Previous session ended"*) ok "odd pid suffixes are survivable";;
+  *) no "odd pid suffixes are survivable (got '$ODD')";; esac
+
 # --- a named pipe planted at a log path must not stall the session ----------
 # O_NOFOLLOW only refuses symlinks. A FIFO is a different file type, and opening
 # one blocks until a reader appears, which would hang every close and open.

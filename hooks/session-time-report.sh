@@ -404,14 +404,16 @@ def owner_gone(name, prefix):
     report twice. A recycled pid reads as alive, which only delays recovery to a
     later start."""
     suffix = name[len(prefix):]
-    if not suffix.isdigit():
-        return True          # not ours to reason about, fall back to age
+    # No real pid is this large, and os.kill raises OverflowError rather than
+    # OSError on one, which would escape every guard below it.
+    if not suffix.isdigit() or len(suffix) > 7:
+        return True          # not a pid we wrote, fall back to age
     try:
         os.kill(int(suffix), 0)
     except ProcessLookupError:
         return True
-    except (OSError, ValueError):
-        return False         # alive, or owned by someone else
+    except Exception:
+        return False         # alive, owned by someone else, or unjudgeable
     return False
 
 
@@ -425,13 +427,14 @@ def stale_claims(path):
     except OSError:
         return found
     for name in names:
-        if not name.startswith(prefix) or not owner_gone(name, prefix):
-            continue
-        candidate = os.path.join(directory, name)
+        # One unreadable entry must not cost the rest of the sweep.
         try:
+            if not name.startswith(prefix) or not owner_gone(name, prefix):
+                continue
+            candidate = os.path.join(directory, name)
             if os.path.getmtime(candidate) < cutoff:
                 found.append(candidate)
-        except OSError:
+        except Exception:
             continue
     return sorted(found)
 
@@ -445,8 +448,13 @@ def drain():
     failure, and lose entries appended in between."""
     path = pending_path()
     records = []
-    for orphan in stale_claims(path):
-        records.extend(read_claim(orphan))
+    # Recovering someone else's leftovers is a courtesy. It must never be able to
+    # stop this session from claiming and reporting its own queue.
+    try:
+        for orphan in stale_claims(path):
+            records.extend(read_claim(orphan))
+    except Exception:
+        records = []
     claimed = "%s.claimed-%d" % (path, os.getpid())
     try:
         os.rename(path, claimed)
