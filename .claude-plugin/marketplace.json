@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "claude-forge",
-  "version": "4.1.0",
-  "description": "oh-my-zsh for Claude Code — 16 agents, 35 commands, 33 skills, 21 hooks + 9 opt-in examples (21 events), 14 rules, 4 MCP in one install",
+  "version": "4.2.0",
+  "description": "oh-my-zsh for Claude Code — 16 agents, 35 commands, 33 skills, 22 hooks + 9 opt-in examples (21 events), 14 rules, 4 MCP in one install",
   "owner": {
     "name": "Sangrok Jung",
     "url": "https://github.com/sangrokjung"
@@ -10,8 +10,8 @@
   "plugins": [
     {
       "name": "claude-forge",
-      "description": "Production-grade development environment for Claude Code with 16 specialized agents, 35 slash commands, 33 skills, 21 hooks + 9 opt-in examples (21 events), 14 rules, and 4 MCP servers (playwright, context7, jina-reader, chrome-devtools pinned at 0.23.0). Includes TDD workflow, security review, code review, architecture analysis, build error resolution, Chrome DevTools Lighthouse / Core Web Vitals audits, and an adversarial verification loop (maker≠checker) with unattended API-error auto-resume, session relay, and Korean prose quality guardrails.",
-      "version": "4.1.0",
+      "description": "Production-grade development environment for Claude Code with 16 specialized agents, 35 slash commands, 33 skills, 22 hooks + 9 opt-in examples (21 events), 14 rules, and 4 MCP servers (playwright, context7, jina-reader, chrome-devtools pinned at 0.23.0). Includes TDD workflow, security review, code review, architecture analysis, build error resolution, Chrome DevTools Lighthouse / Core Web Vitals audits, and an adversarial verification loop (maker≠checker) with unattended API-error auto-resume, session relay, and Korean prose quality guardrails.",
+      "version": "4.2.0",
       "author": {
         "name": "Sangrok Jung",
         "url": "https://github.com/sangrokjung"

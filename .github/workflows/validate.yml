@@ -569,7 +569,8 @@ jobs:
           for suite in \
               scripts/tests/test_hook_guard.sh \
               scripts/tests/test_auto_resume_classify.sh \
-              scripts/tests/test_s5_hooks.sh; do
+              scripts/tests/test_s5_hooks.sh \
+              scripts/tests/test_session_time_report.sh; do
             echo "::group::${suite}"
             bash "$suite"
             echo "::endgroup::"

@@ -34,6 +34,10 @@
   <a href="README.md">English</a>
 </p>
 
+> ⏱️ **v4.2.0 (2026년 9월, 최신)**: **session-time-report**(22번째 훅)를 추가했어요. 세션이 닫힐 때 시간을 재두고, 다음에 세션을 열면 몇 시에 끝났는지, 실제로 얼마나 걸렸는지, 프롬프트와 도구를 얼마나 썼고 파일을 몇 개 고쳤는지 한 줄로 알려줘요. 며칠 뒤에 이어서 연 세션이라도 전체 경과가 아니라 이번에 앉아 있던 시간만 보여줍니다. 기록은 `~/.claude/work-log/`에 남아요.
+>
+> 📉 **v4.1.0 (2026년 8월)**: **harness-diet**(33번째 스킬) 추가. 항상 로딩되는 컨텍스트(CLAUDE.md + rules)를 실측하고, 거버넌스를 잃지 않으면서 예산 안으로 줄여줘요.
+>
 > 🛡️ **v4.0.0 (2026년 8월)**: 가장 큰 변화는 **적대적 검증 루프(adversarial verification loop)**예요. 코드를 바꿀 때마다, 그 코드를 짜지 않았고 짠 사람의 생각 흐름도 모르는 독립 리뷰어(`adversarial-reviewer`)가 따로 검증해요. "작성자와 검증자는 다른 사람이어야 한다"(maker≠checker)는 원칙이고, 검증자가 `APPROVE`를 낼 때까지 반복해요. 이론이 아니라 실제로 v4.0을 만드는 동안 이 루프가 대표 유지자 본인의 PR(#58, #61)에서 진짜 결함 3건을 잡아냈어요. 자기 자신의 회귀를 통과시키던 CI 검사 하나, 그 검사를 고친 수정본에 똑같은 구멍이 한 단계 더 숨어 있던 것 하나, 그리고 1년 전 릴리스에 조용히 묶여있던 의존성 상한 하나였죠. 실제 검증 기록은 [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md)에 있어요. 그 외에 **신뢰성 패키지**도 넣었어요. API 오류가 나면 세션을 스스로 재개하는 무인 자동 복구, `/compact` 이후에도 이어지는 세션 릴레이, 같은 파일을 계속 고치는 걸 감지하는 무한루프 가드, 옵트인 pre-commit 시크릿 가드가 들어있고, 배선 가이드는 [`docs/RELIABILITY.md`](docs/RELIABILITY.md)에 있어요. **디버깅 에스컬레이션 체인**(`systematic-debugger` → `rca-debugger` → `escalation-fixer`), **작업 난이도 자동 분류**(`/workflow-classify`가 S/M/L/XL로 작업 크기를 매기고 문서화·검증 강도를 그에 맞춰요), **한국어 산문 품질 가드레일**(사후 윤문이 아니라 처음 쓸 때부터 번역투·AI 관용구를 피해요. 아래 별도 섹션 참고)도 함께 담았어요. 에이전트 16개, 커맨드 35개, 스킬 32개, 훅 21개, 규칙 14개. 상세: [MIGRATION.ko.md](MIGRATION.ko.md)
 >
 > 🔧 **v3.1.1 핫픽스 (2026년 8월)**: 플러그인 설치 시 아무것도 안 뜨던 문제를 고쳤어요(`Hook load failed: expected record, received undefined`). `/plugin install claude-forge` 후 `✘ failed to load`가 뜨고 스킬·에이전트·커맨드가 하나도 안 보였다면 3.1.1로 올리시면 됩니다. 윈도우 `install.ps1`이 statusLine과 `scripts/`를 복사하지 않던 문제도 함께 해결했어요. 관련: [#52](https://github.com/sangrokjung/claude-forge/issues/52) · [#57](https://github.com/sangrokjung/claude-forge/issues/57) · [#50](https://github.com/sangrokjung/claude-forge/issues/50)
@@ -50,7 +54,7 @@
 
 ## 이게 뭔가요?
 
-**Claude Code**(AI 코딩 조수)를 혼자 쓰면 기본기만 할 줄 아는 신입 직원과 같아요. **Claude Forge**는 그 신입에게 장비 풀세트(전문 비서 16명, 단축버튼 35개, 안전장치 21개 등)를 한 번에 장착해 줘요.
+**Claude Code**(AI 코딩 조수)를 혼자 쓰면 기본기만 할 줄 아는 신입 직원과 같아요. **Claude Forge**는 그 신입에게 장비 풀세트(전문 비서 16명, 단축버튼 35개, 안전장치 22개 등)를 한 번에 장착해 줘요.
 
 > 마치 터미널(명령창)을 꾸며주는 oh-my-zsh처럼, Claude Forge는 AI 코딩 조수를 파워 유저 도구로 업그레이드해요.
 
@@ -61,7 +65,7 @@
 | **에이전트**(agents) | 16개 | 분야별 전문 비서. 기획, 테스트, 보안검토, 아키텍처(시스템 설계), 적대적 검증 등 |
 | **커맨드**(commands) | 35개 | 자주 쓰는 작업 단축버튼. `/plan`(계획), `/tdd`(테스트) 등 |
 | **스킬**(skills) | 33개 | AI가 익혀둔 작업 절차. 루프 자동화, 팀 오케스트레이션, 적대적 검증 루프 등 |
-| **훅**(hooks) | 21 + 예제 9개 | 자동 안전점검. 위험한 명령 차단, API 키 유출 방지, API 오류 자동 복구 등 |
+| **훅**(hooks) | 22 + 예제 9개 | 자동 안전점검. 위험한 명령 차단, API 키 유출 방지, API 오류 자동 복구, 세션 종료 리포트 등 |
 | **규칙**(rules) | 14개 | AI가 따르는 행동 지침. 코딩 스타일, 보안, 깃 워크플로우, 검증 루프 발동 조건 등 |
 | **MCP**(외부 도구 연결) | 4개 | 브라우저 자동화, 문서 검색, 웹 읽기, 크롬 개발자 도구 |
 
@@ -114,7 +118,7 @@ Claude Code 세션 안에서 두 줄 입력:
 | 커맨드 (35개)          | ✅ | ✅ |
 | 스킬 (33개)            | ⚠️ 일부만                  | ✅ |
 | 에이전트 (16개)        | ❌ | ✅ |
-| 훅 (21개 + 예제 9개)   | ❌ | ✅ |
+| 훅 (22개 + 예제 9개)   | ❌ | ✅ |
 | 규칙 (14개)             | ❌ | ✅ |
 | MCP 서버 (4개)         | ❌ | ✅ |
 | 상태바 (CC CHIPS)      | ❌ | ✅ (선택) |
@@ -223,7 +227,7 @@ cd claude-forge && ./install.sh
 
 ---
 
-### 훅(hooks): 자동 안전점검 21개
+### 훅(hooks): 자동 안전점검 22개
 
 항상 켜져 있는 보안 6겹:
 
@@ -252,7 +256,7 @@ cd claude-forge && ./install.sh
 지정한 git 저장소의 커밋을 보호하는 독립 설치형 스크립트예요.
 
 <details>
-<summary>유틸리티 훅 9개 + Opt-in 예제 9개</summary>
+<summary>유틸리티 훅 10개 + Opt-in 예제 9개</summary>
 
 **유틸리티 훅 (항상 켜짐)**:
 
@@ -267,6 +271,21 @@ cd claude-forge && ./install.sh
 | `work-tracker-prompt.sh` | 작업 추적 프롬프트 |
 | `work-tracker-stop.sh` | 작업 추적 종료 |
 | `work-tracker-tool.sh` | 작업 추적 도구 |
+| `session-time-report.sh` | 세션 종료 시각·소요 시간·프롬프트/도구/변경 파일 수를 재고, 다음 세션 시작 때 알려줌 |
+
+**세션 종료 리포트**: `session-time-report.sh`는 세션이 닫힐 때 시간을 재두고, 다음에 세션을 열 때 이렇게 알려줘요.
+
+```
+[Claude Forge] 직전 세션 종료 21:34 KST
+소요 2h 17m · 프롬프트 18 · 도구 143 · 변경 파일 9
+로그: ~/.claude/work-log/session-time-<session_id>.json
+```
+
+왜 두 이벤트에 걸어뒀냐면, 숫자가 만들어지는 곳과 말을 걸 수 있는 곳이 달라서예요. Claude Code는 `SessionEnd` 훅의 출력을 그 훅이 **실패했을 때만** 전달하기 때문에, 정상적으로 끝난 리포트는 그냥 버려집니다. 반면 `SessionStart`는 화면에 닿는 통로죠. 그래서 같은 스크립트가 나갈 때 재고 들어올 때 한 번 알려주는 구조로 배선했어요.
+
+소요 시간은 재개를 감안해서 계산해요. `--continue`로 며칠 뒤에 다시 연 세션은 처음부터 끝까지 재면 수백 시간이 나오는데, 그건 실제로 일한 시간이 아니죠. 그래서 오래 비어 있던 구간을 기준으로 타임라인을 끊고 마지막 구간만 헤드라인에 씁니다. 재개한 세션이면 뒤에 `(재개 3회, 누적 9h 40m)`을 덧붙여요.
+
+끄고 싶으면 `FORGE_SESSION_TIME_REPORT=0`, 구간을 나누는 공백 기준은 `FORGE_SESSION_GAP_MIN`(기본 60분), 표시 언어는 `FORGE_SESSION_REPORT_LANG`(`en`/`ko`, 기본은 `LANG` 자동 감지)으로 조정합니다. 매 세션 기록이 `~/.claude/work-log/session-times.jsonl`에도 쌓이고, 아직 안 보여준 리포트는 `~/.claude/work-log/.session-time-pending.json`에서 다음 세션을 기다려요.
 
 **Opt-in 예제 (직접 활성화 가능)**:
 
@@ -716,14 +735,14 @@ graph TB
 
 ```
 claude-forge/
-  ├── .claude-plugin/            플러그인 매니페스트 (4.1.0)
+  ├── .claude-plugin/            플러그인 매니페스트 (4.2.0)
   ├── .github/workflows/         CI 검증
   ├── agents/                    에이전트 정의 (16 .md, frontmatter v2)
   ├── cc-chips/                  상태바 서브모듈
   ├── cc-chips-custom/           커스텀 상태바 오버레이
   ├── commands/                  슬래시 커맨드 (35 .md, 8개는 skills/로 이동)
   ├── docs/                      스크린샷, 다이어그램, 정책 문서 (RELIABILITY.md·VERIFICATION-LOOP.md 포함)
-  ├── hooks/                     이벤트 기반 스크립트 (21)
+  ├── hooks/                     이벤트 기반 스크립트 (22)
   │   └── examples/              21 lifecycle 이벤트 샘플 opt-in (9)
   ├── knowledge/                 지식 베이스
   ├── libs/                      훅이 공유하는 쉘 라이브러리 (hook-guard.sh)

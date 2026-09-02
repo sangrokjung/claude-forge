@@ -36,7 +36,9 @@
   <a href="README.ko.md">한국어</a>
 </p>
 
-> **v4.1.0 (August 2026, latest)** — Adds **harness-diet** (33rd skill): measure your always-loaded context (CLAUDE.md + rules) and shrink it back under budget without losing governance.
+> **v4.2.0 (September 2026, latest)** — Adds **session-time-report** (22nd hook): measures each session as it closes and tells you at your next start what time it ended, how long it actually ran, and how much you got through. Resume-aware, so a session you picked back up days later reports that sitting rather than a bogus 400-hour total.
+>
+> **v4.1.0 (August 2026)** — Adds **harness-diet** (33rd skill): measure your always-loaded context (CLAUDE.md + rules) and shrink it back under budget without losing governance.
 >
 > **v4.0.0 (August 2026)** — Introduces the **adversarial verification loop**: every behavioral change is checked by a second, independent agent that did not write the code and never sees the first agent's reasoning — maker≠checker until it issues `APPROVE`. Building v4.0 itself, the loop caught three real defects in the maintainer's own PRs (#58, #61); worked example: [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md). Also ships a reliability pack (API-error auto-resume, session relay across `/compact`, doom-loop guard — [`docs/RELIABILITY.md`](docs/RELIABILITY.md)), a debugging escalation chain, task-grade routing, and Korean prose quality guardrails. Details: [What's New in v4.0](#-whats-new-in-v40) · [MIGRATION.md](MIGRATION.md).
 >
@@ -55,7 +57,7 @@ Claude Forge is the **equipment pack** for that assistant. One install gives it:
 - 16 specialist "colleagues" (agents) it can delegate to — planner, security reviewer, TDD guide, adversarial reviewer, and more
 - 35 one-word shortcuts (commands like `/plan`, `/tdd`, `/code-review`) that trigger full workflows
 - 33 saved procedures (skills) it follows automatically
-- 21 safety checks (hooks) that run silently in the background every time it touches your code — including an unattended API-error auto-resume and a doom-loop guard
+- 22 safety checks (hooks) that run silently in the background every time it touches your code — including an unattended API-error auto-resume, a doom-loop guard, and an end-of-session time report
 - 14 rule files that define how it should behave
 - 4 external tool connections (browser automation, live docs search, and more)
 
@@ -119,7 +121,7 @@ cd claude-forge
 | Commands (35 shortcuts)        | ✅ | ✅ |
 | Skills (33 saved procedures)   | ⚠️ partial | ✅ |
 | Agents (16 specialists)        | ❌ | ✅ |
-| Hooks (21 safety checks)       | ❌ | ✅ |
+| Hooks (22 safety checks)       | ❌ | ✅ |
 | Rules (14 behavior guidelines)  | ❌ | ✅ |
 | MCP connections (4 tools)      | ❌ | ✅ |
 
@@ -140,7 +142,7 @@ Here is everything bundled in Claude Forge, explained in plain language:
 | **Agents** (specialist colleagues) | 16 | Each one is an AI focused on a single job — planner, architect, security checker, test guide, database expert, adversarial reviewer, and more. Claude calls the right one automatically. |
 | **Commands** (shortcut buttons) | 35 | Type `/plan` and Claude creates a full implementation plan. Type `/tdd` and it writes tests first, then code. All 35 are pre-built shortcuts for common developer tasks. |
 | **Skills** (saved procedures) | 33 | Step-by-step playbooks Claude follows automatically — like a recipe it has memorized. `loop-forge` turns any repetitive task into a reusable slash command in seconds; `review-loop` runs the maker≠checker verification cycle. |
-| **Hooks** (silent safety checks) | 21 built-in + 9 opt-in examples | These run before and after every action Claude takes. They block leaked passwords, dangerous database commands, and unsafe remote scripts — and, new in v4.0, they auto-resume a session after a retryable API error and nudge you when you're stuck editing the same file. Covers 21 lifecycle events. |
+| **Hooks** (silent safety checks) | 22 built-in + 9 opt-in examples | These run before and after every action Claude takes. They block leaked passwords, dangerous database commands, and unsafe remote scripts — and, new in v4.0, they auto-resume a session after a retryable API error and nudge you when you're stuck editing the same file. Covers 21 lifecycle events. |
 | **Rules** (behavior guidelines) | 14 | Written instructions Claude reads at the start of every session — coding style, security principles, git workflow conventions, when the verification loop is mandatory, and more. |
 | **MCP connections** (external tools) | 4 | Browser automation (Playwright), live library docs (context7), web page reader (jina-reader), and Chrome DevTools for performance audits. |
 
@@ -308,7 +310,7 @@ Here is everything bundled in Claude Forge, explained in plain language:
 </details>
 
 <details>
-<summary><strong>Full list: 21 Hooks (safety checks)</strong></summary>
+<summary><strong>Full list: 22 Hooks (safety checks)</strong></summary>
 
 #### Security Hooks — block dangerous actions automatically
 
@@ -342,7 +344,9 @@ Here is everything bundled in Claude Forge, explained in plain language:
 |:-----|:------------|:-------------|
 | `code-quality-reminder.sh` | After file edits | Reminds about immutability, small files, error handling |
 | `context-sync-suggest.sh` | Session start | Suggests syncing docs at session start |
+| `forge-update-check.sh` | Session start | Tells you when a newer claude-forge release is available |
 | `session-wrap-suggest.sh` | Before session end | Suggests session wrap-up before ending |
+| `session-time-report.sh` | Session ends, replayed at your next session start | Reports end time, how long it ran, and prompt/tool/file-change counts — see [End-of-session report](#end-of-session-report) |
 | `work-tracker-prompt.sh` | When you submit a prompt | Tracks work for analytics |
 | `work-tracker-tool.sh` | After tool use | Tracks tool usage for analytics |
 | `work-tracker-stop.sh` | On stop | Finalizes work tracking data |
@@ -352,6 +356,31 @@ Here is everything bundled in Claude Forge, explained in plain language:
 An opt-in **pre-commit secret guard** (`scripts/install-precommit.sh`) also ships as of v4.0
 — it protects git commits in any repo you point it at, separately from the hooks above.
 See [`docs/RELIABILITY.md`](docs/RELIABILITY.md).
+
+#### End-of-session report
+
+`session-time-report.sh` measures a session as it closes and hands you the summary the next time you open one:
+
+```
+[Claude Forge] Previous session ended 21:34 KST
+2h 17m elapsed · 18 prompts · 143 tool calls · 9 files changed
+Log: ~/.claude/work-log/session-time-<session_id>.json
+```
+
+**Why it is wired to two events.** `SessionEnd` is where the numbers are, but it cannot talk to you: Claude Code forwards a SessionEnd hook's output only when that hook *failed*, so a successful report is thrown away. `SessionStart` is a channel that does reach you. So the same script records on the way out and reports on the way in, exactly once per session.
+
+It reads only the session transcript, so there is no network call and no extra dependency beyond `python3`.
+
+**Elapsed time is resume-aware.** A transcript you reopened days later spans hundreds of hours of wall clock, which is not what you worked. The hook splits the timeline wherever there is a long idle gap and reports the *latest stretch*; if the session was resumed, it appends `(resumed 3x, 9h 40m total)`.
+
+| Environment variable | Default | Effect |
+|:---------------------|:--------|:-------|
+| `FORGE_SESSION_TIME_REPORT` | `1` | Set to `0` to turn the hook off |
+| `FORGE_SESSION_GAP_MIN` | `60` | Idle minutes that start a new stretch |
+| `FORGE_SESSION_MAX_MB` | `128` | Transcript bytes to scan; larger files are read from the tail |
+| `FORGE_SESSION_REPORT_LANG` | auto | `en` or `ko`; auto-detects from `LANG` / `LC_ALL` |
+
+Every run also appends to `~/.claude/work-log/session-times.jsonl` (mode `600`), so you can chart your own sessions later. The pending report waits in `~/.claude/work-log/.session-time-pending.json` until the next session drains it.
 
 #### Opt-in Examples (9 extra, v3.0+)
 
@@ -454,7 +483,7 @@ claude-forge/
   ├── cc-chips-custom/           Custom status bar overlay
   ├── commands/                  Slash commands (35 .md, 8 dirs moved to skills/)
   ├── docs/                      Screenshots, diagrams, policy docs (v3.0+ guides, incl. RELIABILITY.md / VERIFICATION-LOOP.md)
-  ├── hooks/                     Event-driven shell scripts (21)
+  ├── hooks/                     Event-driven shell scripts (22)
   │   └── examples/              Opt-in .example samples for 21 lifecycle events (9)
   ├── knowledge/                 Knowledge base entries
   ├── libs/                      Shared shell libraries hooks source (hook-guard.sh)
@@ -467,8 +496,8 @@ claude-forge/
   ├── install.ps1                Windows installer (--upgrade supported)
   ├── mcp-servers.json           MCP server defaults (4 minimal)
   ├── mcp-servers.optional.json  Optional MCP servers (memory/exa/github/fetch/time/...)
-  ├── .claude-plugin/plugin.json Plugin manifest (4.1.0)
-  ├── .claude-plugin/marketplace.json  Marketplace entry (4.1.0)
+  ├── .claude-plugin/plugin.json Plugin manifest (4.2.0)
+  ├── .claude-plugin/marketplace.json  Marketplace entry (4.2.0)
   ├── settings.json              Claude Code settings (2026 fields)
   ├── MIGRATION.md               v2.1 → v4.0 migration guide (EN)
   ├── MIGRATION.ko.md            v2.1 → v4.0 migration guide (KO)
@@ -578,7 +607,7 @@ cp setup/settings.local.template.json ~/.claude/settings.local.json
 | Specialist agents | 16 ready | Manual setup | Varies |
 | Slash commands | 35 ready | None | Per-plugin |
 | Skill workflows | 33 ready | None | Per-plugin |
-| Safety hooks | 21 + 9 examples | None by default | Per-plugin |
+| Safety hooks | 22 + 9 examples | None by default | Per-plugin |
 | External tool connections | 4 default (8+ optional) | None | Per-plugin |
 | Setup time | ~5 minutes | Hours | Per-plugin install |
 | Updates | `git pull` | Manual per-file | Per-plugin update |
@@ -607,7 +636,7 @@ Claude Code is Anthropic's official AI coding assistant that runs in your termin
 <details>
 <summary><strong>How is Claude Forge different from other Claude Code plugins?</strong></summary>
 
-Most Claude Code plugins solve one problem at a time. Claude Forge is a complete development environment — 16 agents, 35 commands, 33 skills, 21 hooks, and 14 rules that work together as a cohesive system. Instead of assembling individual plugins, you get a pre-wired pipeline: `/plan` feeds into `/tdd`, which feeds into `/code-review`, which feeds into `/handoff-verify`, which feeds into `/commit-push-pr` — and, new in v4.0, an adversarial verification loop that a fresh reviewer must `APPROVE` before any behavioral change is considered done. The 6-layer security hook system also runs automatically without extra configuration.
+Most Claude Code plugins solve one problem at a time. Claude Forge is a complete development environment — 16 agents, 35 commands, 33 skills, 22 hooks, and 14 rules that work together as a cohesive system. Instead of assembling individual plugins, you get a pre-wired pipeline: `/plan` feeds into `/tdd`, which feeds into `/code-review`, which feeds into `/handoff-verify`, which feeds into `/commit-push-pr` — and, new in v4.0, an adversarial verification loop that a fresh reviewer must `APPROVE` before any behavioral change is considered done. The 6-layer security hook system also runs automatically without extra configuration.
 
 </details>
 

@@ -146,11 +146,31 @@
         ]
       },
       {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FORGE_SESSION_MODE=report ~/.claude/hooks/session-time-report.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
         "matcher": "compact",
         "hooks": [
           {
             "type": "command",
             "command": "~/.claude/hooks/post-compact-restore.sh"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/session-time-report.sh",
+            "timeout": 10
           }
         ]
       }
