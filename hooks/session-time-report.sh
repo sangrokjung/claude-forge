@@ -396,11 +396,27 @@ def read_claim(path):
     return records
 
 
-def stale_claims(path):
-    """Claims left behind by a run that died mid-drain.
+def owner_gone(name, prefix):
+    """True when the process that made this claim is no longer running.
 
-    Only old ones: a drain running right now holds a fresh claim, and stealing it
-    would render the same report twice."""
+    Age alone is not enough. mtime is settable by the same user, and a drain that
+    stalls past the cutoff still owns its claim; taking it would show the same
+    report twice. A recycled pid reads as alive, which only delays recovery to a
+    later start."""
+    suffix = name[len(prefix):]
+    if not suffix.isdigit():
+        return True          # not ours to reason about, fall back to age
+    try:
+        os.kill(int(suffix), 0)
+    except ProcessLookupError:
+        return True
+    except (OSError, ValueError):
+        return False         # alive, or owned by someone else
+    return False
+
+
+def stale_claims(path):
+    """Claims left behind by a run that died mid-drain."""
     directory, prefix = os.path.dirname(path), os.path.basename(path) + ".claimed-"
     cutoff = time.time() - STALE_CLAIM_SEC
     found = []
@@ -409,7 +425,7 @@ def stale_claims(path):
     except OSError:
         return found
     for name in names:
-        if not name.startswith(prefix):
+        if not name.startswith(prefix) or not owner_gone(name, prefix):
             continue
         candidate = os.path.join(directory, name)
         try:

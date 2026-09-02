@@ -351,6 +351,15 @@ FRESH=$(printf '{"session_id":"n"}' | HOME="$ORPH" FORGE_SESSION_REPORT_LANG=en 
 [ -z "$FRESH" ] && ok "a fresh claim is left to its owner" \
   || no "a fresh claim is left to its owner (got '$FRESH')"
 
+# Age alone is settable by the same user, so a live drain must be identified by
+# its pid, not by how old its claim looks.
+payload or-3 "$TRANSCRIPT" | HOME="$ORPH" "$HOOK" >/dev/null 2>&1
+mv "$OWL/.session-time-pending.jsonl" "$OWL/.session-time-pending.jsonl.claimed-$$"
+touch -t 202601010000 "$OWL/.session-time-pending.jsonl.claimed-$$"
+LIVE=$(printf '{"session_id":"n"}' | HOME="$ORPH" FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>&1)
+[ -z "$LIVE" ] && ok "a live owner keeps its claim however old it looks" \
+  || no "a live owner keeps its claim however old it looks (got '$LIVE')"
+
 # --- a named pipe planted at a log path must not stall the session ----------
 # O_NOFOLLOW only refuses symlinks. A FIFO is a different file type, and opening
 # one blocks until a reader appears, which would hang every close and open.
