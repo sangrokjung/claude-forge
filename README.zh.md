@@ -34,6 +34,10 @@
   <a href="#-常见问题">常见问题</a>
 </p>
 
+> **v4.2.0（2026 年 9 月，最新）** — 新增 **session-time-report**（第 22 个钩子）：会话结束时记下几点结束、实际用了多久、期间提交了多少提示词、调用了多少次工具、改动了几个文件，并在你下次开启会话时告诉你。计时能识别续接：隔了几天用 `--continue` 重新打开的会话，只统计这一次坐下来的时长，不会给出几百小时的假数字。记录同时写入 `~/.claude/work-log/`。
+>
+> **v4.1.0（2026 年 8 月）** — 新增 **harness-diet**（第 33 个技能）：实测常驻加载的上下文（CLAUDE.md + rules），在不丢失治理规则的前提下把它压回预算之内。
+>
 > **v4.0.0（2026 年 8 月）** — 核心是**对抗式验证循环（adversarial verification loop）**：每一次行为变更都由一个从未写过这段代码、也不了解作者思路的独立审查员（`adversarial-reviewer`）复核——作者与审查者必须是两个不同的角色（maker≠checker），直到审查员给出 `APPROVE` 才算完成。这不是纸上谈兵：在开发 v4.0 本身的过程中，该循环就在维护者自己的 PR（#58、#61）里发现了三个真实缺陷——一个能通过自身回归测试的 CI 校验、修复该校验时在同一处留下的同类漏洞、以及一个悄悄锁定在一年前旧版本上的依赖上限。完整验证记录见 [`docs/VERIFICATION-LOOP.md`](docs/VERIFICATION-LOOP.md)。此外还新增了**可靠性套件**（API 报错后的无人值守自动续接、`/compact` 后仍可继续的会话交接、死循环与编辑后即时校验钩子、可选的 pre-commit 密钥防泄漏、以及它们共用的 `libs/hook-guard.sh`，接线指南见 [`docs/RELIABILITY.md`](docs/RELIABILITY.md)）、**调试升级链**（`systematic-debugger` → `rca-debugger` → `escalation-fixer`）、**任务难度自动分级**（`/workflow-classify` 按 S/M/L/XL 给任务分级，并据此调整文档深度与验证力度），以及**韩语行文质量护栏**（从生成之初就避免翻译腔和 AI 套话，详见韩文版 README）。智能体 16 个、命令 35 个、技能 32 个、钩子 21 个、规则 14 份。详见 [MIGRATION.md](MIGRATION.md)。
 >
 > **v3.1.1 热修复（2026 年 8 月）** — 修复插件安装后完全无法加载的问题（`Hook load failed: expected record, received undefined`）。如果执行 `/plugin install claude-forge` 后显示 `✘ failed to load`、技能/智能体/命令一个都没出现，请升级到 3.1.1。同时修复 Windows `install.ps1` 未复制 statusLine 与 `scripts/` 的问题。相关：[#52](https://github.com/sangrokjung/claude-forge/issues/52)、[#57](https://github.com/sangrokjung/claude-forge/issues/57)、[#50](https://github.com/sangrokjung/claude-forge/issues/50)。
@@ -59,7 +63,7 @@ curl -fsSL https://raw.githubusercontent.com/sangrokjung/claude-forge/main/insta
 - **16 位领域专家**（智能体(专属 AI 助理)）：可以把任务分配给它们——规划师、安全审查员、测试向导、对抗式审查员……
 - **35 个一键快捷指令**（命令(触发完整工作流的斜杠指令)）：输入 `/plan`、`/tdd`、`/code-review`，立即启动完整流程
 - **32 套预置操作流程**（技能(Claude 自动跟随执行的步骤手册)）：它会自动按这些步骤走
-- **21 道安全守卫**（钩子(每次操作前后自动运行的安全检查程序)）：静默拦截危险动作，包括 v4.0 新增的 API 报错自动续接和死循环提醒
+- **22 道安全守卫**（钩子(每次操作前后自动运行的安全检查程序)）：静默拦截危险动作，包括 v4.0 新增的 API 报错自动续接和死循环提醒，以及会话结束时的用时小结
 - **14 份行为准则**（规则文件(每次启动自动加载的 AI 行为规范)）：定义它该如何做事
 - **4 个外部工具接入**（MCP 服务器(模型上下文协议，外部工具扩展接口)）：浏览器自动化、实时文档检索等
 
@@ -123,7 +127,7 @@ cd claude-forge
 | 命令（35 个快捷指令）      | ✅ | ✅ |
 | 技能（32 套操作流程）       | ⚠️ 部分支持 | ✅ |
 | 智能体（16 位专家）         | ❌ | ✅ |
-| 钩子（21 道安全守卫）       | ❌ | ✅ |
+| 钩子（22 道安全守卫）       | ❌ | ✅ |
 | 规则文件（14 份行为准则）    | ❌ | ✅ |
 | MCP 连接（4 个外部工具）    | ❌ | ✅ |
 
@@ -144,7 +148,7 @@ Claude Forge 包含的全部内容，用大白话说明：
 | **智能体**（专属 AI 助理） | 16 个 | 每个专注一个领域——规划师、架构师、安全检查员、测试向导、数据库专家、对抗式审查员等。Claude 会自动调用合适的那位。 |
 | **命令**（一键快捷指令） | 35 个 | 输入 `/plan`，Claude 就生成完整实施方案；输入 `/tdd`，先写测试再写代码。35 个预置快捷键，覆盖常见开发任务。 |
 | **技能**（操作步骤手册） | 32 套 | Claude 已经「背熟」的分步操作流程，会自动执行。`loop-forge` 能把任何重复任务在几秒内封装成可复用的斜杠命令，`review-loop` 负责跑对抗式验证循环。 |
-| **钩子**（自动安全检查程序） | 21 个内置 + 9 个可选示例 | 在 Claude 每次操作前后运行，自动拦截泄漏的密码、危险的数据库命令和不安全的远程脚本，v4.0 起还能在 API 报错后自动续接会话、在你反复卡在同一个文件时提醒你。覆盖 21 个生命周期事件。 |
+| **钩子**（自动安全检查程序） | 22 个内置 + 9 个可选示例 | 在 Claude 每次操作前后运行，自动拦截泄漏的密码、危险的数据库命令和不安全的远程脚本，v4.0 起还能在 API 报错后自动续接会话、在你反复卡在同一个文件时提醒你。覆盖 21 个生命周期事件。 |
 | **规则文件**（行为准则） | 14 份 | 每次会话开始时 Claude 自动读取的书面规范——编码风格、安全原则、Git 工作流约定、对抗式验证循环何时强制启动等。 |
 | **MCP 服务器**（外部工具接入） | 4 个 | 浏览器自动化（Playwright）、实时库文档（context7）、网页内容读取（jina-reader）、Chrome 性能审计（chrome-devtools）。 |
 
@@ -211,10 +215,16 @@ Claude 会根据任务性质自动调用合适的智能体，你不需要手动�
 | `post-compact-restore.sh` | `/compact` 之后（`SessionStart`，matcher `compact`） | 把该指针恢复进新会话的上下文，仅恢复一次 |
 | `emdash-slop-guard.sh` | 编辑韩语占比高的 `.md` 文件后 | 标记破折号插入语这类韩语行文中的 AI 痕迹，详见 [`rules/korean-writing-quality.md`](rules/korean-writing-quality.md) |
 
+**v4.2 新增：会话观测钩子（1 个）**
+
+| 钩子 | 运行时机 | 做什么 |
+|:----|:--------|:------|
+| `session-time-report.sh` | 会话结束时记账（`SessionEnd`），下次开启会话时回放（`SessionStart`） | 汇总结束时间、本次时长和提示词/工具/改动文件数，并写入 `~/.claude/work-log/`。续接过的会话只统计最近一段。之所以挂在两个事件上：Claude Code 只有在 SessionEnd 钩子**失败**时才转发它的输出，正常完成的报告会被丢弃，所以由 SessionStart 负责说给你听 |
+
 完整接线指南见 [`docs/RELIABILITY.md`](docs/RELIABILITY.md)。另外 v4.0 还新增了一个可选的 pre-commit
 密钥防泄漏脚本（`scripts/install-precommit.sh`），它和上面的钩子不同，是你自己安装到指定 git 仓库、保护提交安全的独立工具。
 
-额外 9 个可选示例钩子（覆盖 SessionEnd、PreCompact、SubagentStart/Stop 等更多事件）存放在 [`hooks/examples/`](hooks/examples/) 目录。完整 21 事件目录：[`hooks/README.md`](hooks/README.md)。启用方法：把 `*.example` 文件改名为 `*.sh`，然后在 `settings.json` 中注册。
+额外 9 个可选示例钩子（覆盖 PreCompact、SubagentStart/Stop、WorktreeCreate/Remove 等更多事件）存放在 [`hooks/examples/`](hooks/examples/) 目录。完整 21 事件目录：[`hooks/README.md`](hooks/README.md)。启用方法：把 `*.example` 文件改名为 `*.sh`，然后在 `settings.json` 中注册。
 
 ---
 
@@ -582,7 +592,7 @@ claude-forge/
   ├── cc-chips-custom/           自定义状态栏覆盖层
   ├── commands/                  斜杠命令（35 个 .md，8 个目录已迁移至 skills/）
   ├── docs/                      截图、图表、策略文档（含 RELIABILITY.md、VERIFICATION-LOOP.md）
-  ├── hooks/                     事件驱动 shell 脚本（21 个）
+  ├── hooks/                     事件驱动 shell 脚本（22 个）
   │   └── examples/              21 个生命周期事件的可选示例（9 个）
   ├── knowledge/                 知识库条目
   ├── libs/                      钩子共用的 shell 库（hook-guard.sh）
@@ -595,8 +605,8 @@ claude-forge/
   ├── install.ps1                Windows 安装程序（支持 --upgrade）
   ├── mcp-servers.json           MCP 服务器默认配置（4 个最小集）
   ├── mcp-servers.optional.json  可选 MCP 服务器（memory/exa/github/fetch/time/...）
-  ├── .claude-plugin/plugin.json 插件清单（4.0.0）
-  ├── .claude-plugin/marketplace.json  市场条目（4.0.0）
+  ├── .claude-plugin/plugin.json 插件清单（4.2.0）
+  ├── .claude-plugin/marketplace.json  市场条目（4.2.0）
   ├── settings.json              Claude Code 设置（2026 字段）
   ├── MIGRATION.md               v2.1 → v4.0 迁移指南（英文）
   ├── MIGRATION.ko.md            v2.1 → v4.0 迁移指南（韩文）

@@ -1,7 +1,7 @@
 {
   "name": "claude-forge",
-  "version": "4.1.0",
-  "description": "oh-my-zsh for Claude Code — 16 agents, 35 commands, 33 skills, 21 hooks + 9 examples (21 events), 14 rules, 4 MCP (minimal: playwright, context7, jina-reader, chrome-devtools@0.23.0). Adversarial verification loop (maker≠checker), unattended API-error auto-resume, session relay, and Korean prose quality guardrails. One-line install: curl -fsSL https://raw.githubusercontent.com/sangrokjung/claude-forge/main/install.sh | bash",
+  "version": "4.2.0",
+  "description": "oh-my-zsh for Claude Code — 16 agents, 35 commands, 33 skills, 22 hooks + 9 examples (21 events), 14 rules, 4 MCP (minimal: playwright, context7, jina-reader, chrome-devtools@0.23.0). Adversarial verification loop (maker≠checker), unattended API-error auto-resume, session relay, and Korean prose quality guardrails. One-line install: curl -fsSL https://raw.githubusercontent.com/sangrokjung/claude-forge/main/install.sh | bash",
   "author": {
     "name": "Sangrok Jung",
     "url": "https://github.com/sangrokjung"
@@ -20,7 +20,7 @@
     "security",
     "automation",
     "oh-my-zsh",
-    "hooks-21",
+    "hooks-22",
     "skills-commands-hybrid",
     "mcp-minimal",
     "adversarial-review",

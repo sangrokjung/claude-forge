@@ -29,9 +29,11 @@ Claude Code exposes **27 hookable events** across 7 categories (official catalog
 |----------|-------|---------|------------|---------|
 | Session | `SessionStart` | New session boots / `--continue` resume | Inject context, warm caches, print banners | `context-sync-suggest.sh` |
 | Session | `SessionStart` | Session resumes right after `/compact` (matcher: `compact`) | Restore the next-task pointer left before compaction (relay skill) | `post-compact-restore.sh` |
-| Session | `SessionEnd` | Clean session shutdown | Persist summary, sync TODAY.md | `work-tracker-stop.sh` |
+| Session | `SessionStart` | New session boots | Replay the previous session's time report, once | `session-time-report.sh` (`FORGE_SESSION_MODE=report`) |
+| Session | `SessionEnd` | Clean session shutdown | Measure end time, elapsed, prompt/tool/file counts and file the report | `session-time-report.sh` |
 | Turn | `UserPromptSubmit` | User sends a prompt | Track activity, pre-flight checks | `work-tracker-prompt.sh` |
 | Turn | `Stop` | Assistant finishes a clean turn | Nudge session-wrap, commit suggest | `session-wrap-suggest.sh` |
+| Turn | `Stop` | Assistant finishes a clean turn | Persist the work-tracking buffer, trigger sync | `work-tracker-stop.sh` |
 | Turn | `StopFailure` | Session ends abnormally (crash, rate-limit) | Dump crash report, set recovery flag | `examples/stop-failure.sh.example` |
 | Turn | `StopFailure` | Session dies on a retryable API error (529 / 5xx / stalled stream) | Schedule an unattended resume, under fork-bomb caps — see [`rules/api-error-recovery.md`](../rules/api-error-recovery.md) | `api-error-auto-resume.sh` |
 | Tool | `PreToolUse` | Before a tool runs | Guard destructive commands, rate-limit MCP | `remote-command-guard.sh` |
