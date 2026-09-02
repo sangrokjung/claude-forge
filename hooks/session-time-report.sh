@@ -26,7 +26,8 @@
 # Environment:  FORGE_SESSION_TIME_REPORT=0  kill switch (both modes)
 #               FORGE_SESSION_GAP_MIN        idle minutes that start a new stretch (default 60)
 #               FORGE_SESSION_MAX_MB         transcript scan budget in MB (default 128, max 512)
-#               FORGE_SESSION_MAX_SEC        wall-clock budget for the scan (default 4, max 30)
+#               FORGE_SESSION_MAX_SEC        wall-clock budget for the scan (default 4, max 30;
+#                                            0 skips the scan and reports nothing)
 #               FORGE_SESSION_REPORT_LANG    en | ko (default: auto-detect from LANG/LC_ALL)
 #
 # Elapsed time is resume-aware (CRITICAL). Do NOT report last-minus-first over the
@@ -35,10 +36,10 @@
 # exceeds FORGE_SESSION_GAP_MIN, and the headline always describes the LATEST
 # stretch. Cumulative totals are appended only when they are trustworthy.
 #
-# Reads the transcript only. No network call, no dependency beyond python3. Log
-# files are created 0600 with O_NOFOLLOW, so a symlink planted at one of the log
-# paths is refused rather than followed, and nothing is ever written outside
-# ~/.claude/work-log/. If either budget above runs out the report is dropped
+# Reads the transcript only. No network call, no dependency beyond python3. Every
+# log path is opened with O_NOFOLLOW + O_NONBLOCK and checked to be a regular
+# file, so a symlink or a named pipe planted there is refused instead of followed
+# or waited on, and nothing is ever written outside ~/.claude/work-log/. If either budget above runs out the report is dropped
 # entirely: a partial tail scan would omit the newest events, which are the ones
 # the headline is about.
 # exit 0 required (never disturb session start or teardown)
@@ -46,9 +47,10 @@
 [ "${FORGE_SESSION_TIME_REPORT:-1}" = "0" ] && exit 0
 command -v python3 >/dev/null 2>&1 || exit 0
 
-# Two ways in, because settings.json wires this twice. The inline env form is what
-# the SessionStart entry uses: CI resolves a hook command straight to a repo path,
-# so an argument after the path would be read as part of the filename.
+# Two ways in, because settings.json wires this twice. The SessionStart entry uses
+# the inline env form, which is the form hooks/README.md documents for passing
+# configuration to a hook. --last does the same thing and is what the tests and
+# manual runs use.
 FORGE_SESSION_MODE="${FORGE_SESSION_MODE:-record}"
 [ "${1:-}" = "--last" ] && FORGE_SESSION_MODE="report"
 [ "$FORGE_SESSION_MODE" = "report" ] || FORGE_SESSION_MODE="record"
@@ -61,9 +63,11 @@ INPUT=$(cat)
 # but it also consumes stdin — piping INPUT in would feed the python source to
 # itself. Same technique as db-guard.sh / remote-command-guard.sh.
 MSG=$(FORGE_HOOK_INPUT="$INPUT" python3 <<'PYEOF' 2>/dev/null
+import errno
 import json
 import os
 import re
+import stat
 import sys
 import time
 from datetime import datetime, timezone
@@ -94,7 +98,7 @@ def parse_ts(raw):
 def open_budgeted(path, max_bytes):
     """Read at most max_bytes from the tail. Oversized transcripts must not
     stall teardown; the latest stretch lives at the tail anyway."""
-    handle = open(path, "r", encoding="utf-8", errors="replace")
+    handle = open_plain(path)
     size = os.fstat(handle.fileno()).st_size
     if size <= max_bytes:
         return handle, False
@@ -103,17 +107,39 @@ def open_budgeted(path, max_bytes):
     return handle, True
 
 
+def plain_file(fd, path):
+    """Reject anything that is not a regular file, closing the descriptor first."""
+    try:
+        if stat.S_ISREG(os.fstat(fd).st_mode):
+            return
+    except OSError:
+        pass
+    os.close(fd)
+    raise OSError(errno.EINVAL, "not a regular file", path)
+
+
 def open_private(path, append):
-    """Create at 0600 in one step and refuse to follow a symlink.
+    """Create at 0600 in one step, follow no symlink, wait on no pipe.
 
     open() + chmod() leaves the file at the umask default while it already holds
     content, and both calls follow symlinks, so a link planted at the target path
     gets its contents replaced and its mode narrowed. O_NOFOLLOW plus a creation
-    mode closes both."""
-    flags = os.O_WRONLY | os.O_CREAT | os.O_NOFOLLOW
+    mode closes both. O_NOFOLLOW says nothing about file *type* though, and a
+    named pipe planted at the same path would block the open until a reader
+    appeared, hanging every session close. O_NONBLOCK plus the fstat check below
+    turns that into an ordinary error."""
+    flags = os.O_WRONLY | os.O_CREAT | os.O_NOFOLLOW | os.O_NONBLOCK
     flags |= os.O_APPEND if append else os.O_TRUNC
-    return os.fdopen(os.open(path, flags, 0o600), "a" if append else "w",
-                     encoding="utf-8")
+    fd = os.open(path, flags, 0o600)
+    plain_file(fd, path)
+    return os.fdopen(fd, "a" if append else "w", encoding="utf-8")
+
+
+def open_plain(path):
+    """Read side of the same guard: no symlink, no pipe, no device."""
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    plain_file(fd, path)
+    return os.fdopen(fd, "r", encoding="utf-8", errors="replace")
 
 
 def collect(path, max_bytes, deadline):
@@ -127,18 +153,16 @@ def collect(path, max_bytes, deadline):
     except OSError:
         return None
     events = []
-    scanned = 0
     with handle:
         for line in handle:
-            scanned += 1
-            if scanned % 2000 == 0 and time.monotonic() > deadline:
+            if time.monotonic() > deadline:
                 return None
             line = line.strip()
             if not line:
                 continue
             try:
                 record = json.loads(line)
-            except ValueError:
+            except (ValueError, RecursionError):
                 continue
             if not isinstance(record, dict):
                 continue
@@ -261,7 +285,7 @@ def rotate(path):
     try:
         if os.path.getsize(path) <= HISTORY_MAX_BYTES:
             return
-        with open(path, encoding="utf-8", errors="replace") as handle:
+        with open_plain(path) as handle:
             handle.seek(os.path.getsize(path) - HISTORY_MAX_BYTES // 2)
             handle.readline()
             kept = handle.read()
@@ -311,7 +335,7 @@ def drain():
         return []
     records = []
     try:
-        with open(claimed, encoding="utf-8") as handle:
+        with open_plain(claimed) as handle:
             for line in handle:
                 line = line.strip()
                 if not line:
@@ -395,7 +419,7 @@ def measure(payload):
     gap_seconds = env_int("FORGE_SESSION_GAP_MIN", 60, 1, 1440) * 60
     max_bytes = env_int("FORGE_SESSION_MAX_MB", 128, 1, 512) * 1024 * 1024
 
-    deadline = time.monotonic() + env_int("FORGE_SESSION_MAX_SEC", 4, 1, 30)
+    deadline = time.monotonic() + env_int("FORGE_SESSION_MAX_SEC", 4, 0, 30)
     scanned = collect(transcript, max_bytes, deadline)
     if not scanned:
         return None

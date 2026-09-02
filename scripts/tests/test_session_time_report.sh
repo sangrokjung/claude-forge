@@ -150,8 +150,8 @@ AGAIN=$(printf '{"session_id":"new"}' | FORGE_SESSION_REPORT_LANG=en "$HOOK" --l
 [ -z "$AGAIN" ] && ok "report mode is silent with nothing pending" \
   || no "report mode is silent with nothing pending (got '$AGAIN')"
 
-# settings.json wires report mode through the inline env form, not an argument,
-# because CI resolves a hook command straight to a repo path.
+# settings.json wires report mode through the inline env form; --last is the same
+# switch for manual runs. Both must select report mode.
 run sess-e "$TRANSCRIPT" >/dev/null 2>&1
 ENVMODE=$(printf '{"session_id":"new"}' | FORGE_SESSION_MODE=report FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
 case "$ENVMODE" in "[Claude Forge] Previous session ended"*) ok "FORGE_SESSION_MODE=report selects report mode";;
@@ -257,6 +257,47 @@ CM=$(ls -l "$CANARY" | cut -c1-10)
 TIMEBOX=$(payload sess-t "$TRANSCRIPT" | FORGE_SESSION_MAX_SEC=1 FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
 case "$TIMEBOX" in "[Claude Forge]"*) ok "a small transcript still fits the time budget";;
   *) no "a small transcript still fits the time budget (got '$TIMEBOX')";; esac
+
+# With no budget at all the scan must abandon rather than report a partial read.
+# Deleting the deadline check makes this assertion go red, which is the point:
+# the previous version sampled the clock every 2000 lines and was never exercised.
+SPENT=$(payload sess-d "$TRANSCRIPT" | FORGE_SESSION_MAX_SEC=0 "$HOOK" 2>&1)
+[ -z "$SPENT" ] && ok "an exhausted time budget drops the report" \
+  || no "an exhausted time budget drops the report (got '$SPENT')"
+
+# The starvation case: a transcript of a few very large lines. A check that only
+# samples every N lines never runs here, so the budget would be ignored entirely.
+FEWBIG="$WORK/few-big.jsonl"
+python3 - "$FEWBIG" <<'PYFEW'
+import json, sys
+with open(sys.argv[1], "w") as fh:
+    for i in range(3):
+        fh.write(json.dumps({"type": "user", "timestamp": "2026-09-01T01:0%d:00Z" % i,
+                             "message": {"content": "x" * 200000}}) + "\n")
+PYFEW
+STARVE=$(payload sess-sv "$FEWBIG" | FORGE_SESSION_MAX_SEC=0 "$HOOK" 2>&1)
+[ -z "$STARVE" ] && ok "the budget is checked on every line, not every Nth" \
+  || no "the budget is checked on every line, not every Nth (got '$STARVE')"
+
+# --- a named pipe planted at a log path must not stall the session ----------
+# O_NOFOLLOW only refuses symlinks. A FIFO is a different file type, and opening
+# one blocks until a reader appears, which would hang every close and open.
+FIFOH="$WORK/fifo"
+mkdir -p "$FIFOH/.claude/work-log"
+mkfifo "$FIFOH/.claude/work-log/session-times.jsonl"
+mkfifo "$FIFOH/.claude/work-log/.session-time-pending.jsonl"
+mkfifo "$FIFOH/.claude/work-log/session-time-sess-fifo.json"
+payload sess-fifo "$TRANSCRIPT" | HOME="$FIFOH" timeout 8 "$HOOK" >/dev/null 2>&1
+[ $? -ne 124 ] && ok "a FIFO log path does not hang record mode" || no "a FIFO log path does not hang record mode"
+printf '{"session_id":"n"}' | HOME="$FIFOH" timeout 8 "$HOOK" --last >/dev/null 2>&1
+[ $? -ne 124 ] && ok "a FIFO queue does not hang report mode" || no "a FIFO queue does not hang report mode"
+
+# a FIFO transcript must be ignored, not read
+mkfifo "$WORK/fifo-transcript.jsonl"
+FT=$(payload sess-ft "$WORK/fifo-transcript.jsonl" | timeout 8 "$HOOK" 2>&1)
+FTRC=$?
+{ [ $FTRC -ne 124 ] && [ -z "$FT" ]; } && ok "a FIFO transcript is ignored" \
+  || no "a FIFO transcript is ignored (rc=$FTRC out='$FT')"
 
 # --- defensive paths: never break teardown -----------------------------------
 quiet(){ # command must exit 0 and print nothing on either stream
