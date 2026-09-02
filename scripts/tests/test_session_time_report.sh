@@ -279,6 +279,78 @@ STARVE=$(payload sess-sv "$FEWBIG" | FORGE_SESSION_MAX_SEC=0 "$HOOK" 2>&1)
 [ -z "$STARVE" ] && ok "the budget is checked on every line, not every Nth" \
   || no "the budget is checked on every line, not every Nth (got '$STARVE')"
 
+# One enormous line has no "next line" for a between-lines check to fire on, so
+# the budget has to be sampled inside the read, not around it.
+ONEBIG="$WORK/one-big.jsonl"
+python3 - "$ONEBIG" <<'PYBIG1'
+import json, sys
+with open(sys.argv[1], "w") as fh:
+    fh.write(json.dumps({"type": "user", "timestamp": "2026-09-01T01:00:00Z",
+                         "message": {"content": "x" * (40 * 1024 * 1024)}}) + "\n")
+PYBIG1
+HUGE=$(payload sess-hg "$ONEBIG" | FORGE_SESSION_MAX_SEC=0 timeout 20 "$HOOK" 2>&1)
+[ -z "$HUGE" ] && ok "the budget is sampled inside a single huge line" \
+  || no "the budget is sampled inside a single huge line (got '$HUGE')"
+
+# An over-long record is skipped, but it must not swallow the lines around it.
+MIXBIG="$WORK/mix-big.jsonl"
+python3 - "$MIXBIG" <<'PYBIG2'
+import json, sys
+rows = [
+    {"type": "user", "timestamp": "2026-09-01T01:00:00Z", "message": {"content": "hello"}},
+    {"type": "user", "timestamp": "2026-09-01T01:01:00Z",
+     "message": {"content": "y" * (20 * 1024 * 1024)}},
+    {"type": "assistant", "timestamp": "2026-09-01T01:05:00Z",
+     "message": {"content": [{"type": "tool_use", "name": "Bash", "input": {}}]}},
+    {"type": "user", "timestamp": "2026-09-01T01:09:00Z", "message": {"content": "bye"}},
+]
+with open(sys.argv[1], "w") as fh:
+    for row in rows:
+        fh.write(json.dumps(row) + "\n")
+PYBIG2
+SKIPPED=$(payload sess-sk "$MIXBIG" | FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
+case "$SKIPPED" in *"2 prompts"*"1 tool call"*) ok "an over-long record is skipped, neighbours still parse";;
+  *) no "an over-long record is skipped, neighbours still parse (got '$SKIPPED')";; esac
+
+# --- a poisoned queue line must not cost the whole batch ---------------------
+# drain() parses the queue with its own loop. A line that raises something other
+# than ValueError used to escape it, losing every queued announcement and leaving
+# the claimed file behind.
+POISON="$WORK/poison"
+mkdir -p "$POISON"
+payload pz-1 "$TRANSCRIPT" | HOME="$POISON" "$HOOK" >/dev/null 2>&1
+python3 - "$POISON/.claude/work-log/.session-time-pending.jsonl" <<'PYPOISON'
+import sys
+with open(sys.argv[1], "a") as fh:
+    fh.write("[" * 200000 + "]" * 200000 + "\n")
+PYPOISON
+SURVIVE=$(printf '{"session_id":"n"}' | HOME="$POISON" FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>/dev/null)
+case "$SURVIVE" in "[Claude Forge] Previous session ended"*) ok "a poisoned queue line does not lose the batch";;
+  *) no "a poisoned queue line does not lose the batch (got '$SURVIVE')";; esac
+POISONLEFT=0
+for stray in "$POISON/.claude/work-log/"*.claimed-*; do
+  [ -e "$stray" ] && POISONLEFT=$((POISONLEFT+1))
+done
+[ "$POISONLEFT" = "0" ] && ok "a poisoned batch leaves no claim behind" \
+  || no "a poisoned batch leaves no claim behind ($POISONLEFT)"
+
+# --- a claim orphaned by a dead run is picked back up, a live one is not -----
+ORPH="$WORK/orphan"
+mkdir -p "$ORPH/.claude/work-log"
+OWL="$ORPH/.claude/work-log"
+payload or-1 "$TRANSCRIPT" | HOME="$ORPH" "$HOOK" >/dev/null 2>&1
+mv "$OWL/.session-time-pending.jsonl" "$OWL/.session-time-pending.jsonl.claimed-99999"
+touch -t 202601010000 "$OWL/.session-time-pending.jsonl.claimed-99999"
+RECLAIM=$(printf '{"session_id":"n"}' | HOME="$ORPH" FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>/dev/null)
+case "$RECLAIM" in "[Claude Forge] Previous session ended"*) ok "a stale claim is recovered";;
+  *) no "a stale claim is recovered (got '$RECLAIM')";; esac
+
+payload or-2 "$TRANSCRIPT" | HOME="$ORPH" "$HOOK" >/dev/null 2>&1
+mv "$OWL/.session-time-pending.jsonl" "$OWL/.session-time-pending.jsonl.claimed-88888"
+FRESH=$(printf '{"session_id":"n"}' | HOME="$ORPH" FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>&1)
+[ -z "$FRESH" ] && ok "a fresh claim is left to its owner" \
+  || no "a fresh claim is left to its owner (got '$FRESH')"
+
 # --- a named pipe planted at a log path must not stall the session ----------
 # O_NOFOLLOW only refuses symlinks. A FIFO is a different file type, and opening
 # one blocks until a reader appears, which would hang every close and open.

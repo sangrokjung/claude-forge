@@ -142,6 +142,49 @@ def open_plain(path):
     return os.fdopen(fd, "r", encoding="utf-8", errors="replace")
 
 
+READ_CHUNK = 1 << 20
+MAX_LINE_BYTES = 16 << 20
+
+
+def iter_lines(handle, deadline):
+    """Yield lines, giving up the moment the budget runs out.
+
+    Iterating the file object directly would read an arbitrarily long line before
+    control came back, which let a single huge line ignore the deadline entirely.
+    A line past MAX_LINE_BYTES is dropped rather than buffered: no real transcript
+    record is that large, and holding it would trade a time problem for a memory
+    one."""
+    buffered = ""
+    overlong = False
+    while True:
+        if time.monotonic() > deadline:
+            raise TimeoutError("scan budget exhausted")
+        block = handle.read(READ_CHUNK)
+        if not block:
+            break
+        if overlong:
+            head, sep, rest = block.partition("\n")
+            if not sep:
+                continue
+            overlong = False
+            block = rest
+        buffered += block
+        if "\n" not in buffered:
+            if len(buffered) > MAX_LINE_BYTES:
+                buffered = ""
+                overlong = True
+            continue
+        parts = buffered.split("\n")
+        buffered = parts.pop()
+        for part in parts:
+            yield part
+        if len(buffered) > MAX_LINE_BYTES:
+            buffered = ""
+            overlong = True
+    if buffered and not overlong:
+        yield buffered
+
+
 def collect(path, max_bytes, deadline):
     """Turn transcript lines into (timestamp, prompt, tool_calls, files, sidechain).
 
@@ -154,9 +197,11 @@ def collect(path, max_bytes, deadline):
         return None
     events = []
     with handle:
-        for line in handle:
-            if time.monotonic() > deadline:
-                return None
+        try:
+            lines = list(iter_lines(handle, deadline))
+        except TimeoutError:
+            return None
+        for line in lines:
             line = line.strip()
             if not line:
                 continue
@@ -320,6 +365,61 @@ def stash(record):
         write_line(pending_path(), json.dumps(record, ensure_ascii=False), append=True)
 
 
+STALE_CLAIM_SEC = 60
+
+
+def read_claim(path):
+    """Parse one claimed queue file and delete it, whatever the contents were.
+
+    The removal is in a finally because a claimed file that survives a parse
+    failure is a batch of announcements lost for good."""
+    records = []
+    try:
+        with open_plain(path) as handle:
+            for line in handle:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except (ValueError, RecursionError):
+                    continue
+                if isinstance(entry, dict):
+                    records.append(entry)
+    except OSError:
+        pass
+    finally:
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+    return records
+
+
+def stale_claims(path):
+    """Claims left behind by a run that died mid-drain.
+
+    Only old ones: a drain running right now holds a fresh claim, and stealing it
+    would render the same report twice."""
+    directory, prefix = os.path.dirname(path), os.path.basename(path) + ".claimed-"
+    cutoff = time.time() - STALE_CLAIM_SEC
+    found = []
+    try:
+        names = os.listdir(directory)
+    except OSError:
+        return found
+    for name in names:
+        if not name.startswith(prefix):
+            continue
+        candidate = os.path.join(directory, name)
+        try:
+            if os.path.getmtime(candidate) < cutoff:
+                found.append(candidate)
+        except OSError:
+            continue
+    return sorted(found)
+
+
 def drain():
     """Claim the queue and return everything in it, oldest first.
 
@@ -328,30 +428,15 @@ def drain():
     take. Reading first and deleting after would replay the report on a delete
     failure, and lose entries appended in between."""
     path = pending_path()
+    records = []
+    for orphan in stale_claims(path):
+        records.extend(read_claim(orphan))
     claimed = "%s.claimed-%d" % (path, os.getpid())
     try:
         os.rename(path, claimed)
     except OSError:
-        return []
-    records = []
-    try:
-        with open_plain(claimed) as handle:
-            for line in handle:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    entry = json.loads(line)
-                except ValueError:
-                    continue
-                if isinstance(entry, dict):
-                    records.append(entry)
-    except OSError:
-        pass
-    try:
-        os.remove(claimed)
-    except OSError:
-        pass
+        return records
+    records.extend(read_claim(claimed))
     return records
 
 
