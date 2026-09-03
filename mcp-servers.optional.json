@@ -15,6 +15,12 @@
       "description": "Exa AI web search and company research.",
       "when_to_use": "When built-in WebSearch is insufficient (company/people deep research, semantic search with filters)."
     },
+    "parallel-search": {
+      "type": "http",
+      "url": "https://search.parallel.ai/mcp",
+      "description": "Parallel Search MCP for web search and URL content retrieval. Queries and requested URLs are sent to Parallel.ai.",
+      "when_to_use": "Web search and URL content retrieval without an API key. Useful when you don't want to manage search-provider credentials."
+    },
     "github": {
       "type": "stdio",
       "command": "npx",
