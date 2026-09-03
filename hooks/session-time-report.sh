@@ -3,6 +3,11 @@
 # Tell the user when their session ended, how long it actually ran, and how much
 # went through it (prompts, tool calls, files changed).
 #
+# Reads Claude Code transcripts and, if you point it at one, Codex rollout logs
+# too: Codex 0.150 has its own SessionEnd event and flushes its log before firing
+# it, and its hooks can call any script. install.sh only wires Claude Code, so
+# the Codex side is two lines you add yourself (hooks/README.md has them).
+#
 # Analogy: the shop clock. Nobody writes down when they closed up, so the day
 # just disappears. This stamps the card on the way out and reads it back to you
 # when you next open the door.
@@ -19,7 +24,10 @@
 # Exit codes:   0 always. Neither event may be blocked or delayed.
 # Input (stdin JSON): { session_id, transcript_path, cwd, hook_event_name, reason }
 # Output:       record mode  - stdout, plus the pending file below
-#               report mode  - stdout, the standard SessionStart channel
+#               report mode  - the SessionStart JSON envelope on stdout
+#                              ({"hookSpecificOutput": {"additionalContext": ...}}),
+#                              which is what both agents surface and what the rest
+#                              of this harness already uses (context-sync-suggest.sh)
 # Log:          ~/.claude/work-log/session-time-<session_id>.json   (snapshot, 600)
 #               ~/.claude/work-log/session-times.jsonl              (history, 600)
 # State:        ~/.claude/work-log/.session-time-pending.jsonl      (queue, drained once, 600)
@@ -36,7 +44,10 @@
 # exceeds FORGE_SESSION_GAP_MIN, and the headline always describes the LATEST
 # stretch. Cumulative totals are appended only when they are trustworthy.
 #
-# Reads the transcript only. No network call, no dependency beyond python3. Every
+# Reads the transcript only. No network call, no dependency beyond python3. Two
+# transcript dialects are understood, decided per line rather than per file:
+# Claude writes {type, message:{content:[...]}}, Codex writes a rollout log of
+# {timestamp, ordinal, type, payload:{...}}. Every
 # log path is opened with O_NOFOLLOW + O_NONBLOCK and checked to be a regular
 # file, so a symlink or a named pipe planted there is refused instead of followed
 # or waited on, and nothing is ever written outside ~/.claude/work-log/. If either budget above runs out the report is dropped
@@ -52,9 +63,13 @@ command -v python3 >/dev/null 2>&1 || exit 0
 # configuration to a hook. --last does the same thing and is what the tests and
 # manual runs use.
 FORGE_SESSION_MODE="${FORGE_SESSION_MODE:-record}"
-[ "${1:-}" = "--last" ] && FORGE_SESSION_MODE="report"
 [ "$FORGE_SESSION_MODE" = "report" ] || FORGE_SESSION_MODE="record"
 export FORGE_SESSION_MODE
+# --last selects report mode too, but as the manual form: it prints the report
+# as text rather than wrapping it in the SessionStart envelope.
+FORGE_SESSION_MANUAL=""
+[ "${1:-}" = "--last" ] && { FORGE_SESSION_MANUAL=1; FORGE_SESSION_MODE=report; }
+export FORGE_SESSION_MANUAL
 
 INPUT=$(cat)
 
@@ -73,6 +88,19 @@ import time
 from datetime import datetime, timezone
 
 EDIT_TOOLS = {"Edit", "Write", "NotebookEdit", "MultiEdit"}
+
+# Codex edits files by feeding an apply_patch envelope to a shell tool, so the
+# only reliable file-change signal is the envelope's own header. The path ends at
+# the first real or escaped newline, because the envelope usually arrives inside
+# a JS string literal, or at a quote, because it is often nested one JSON layer
+# deeper than the line around it.
+#
+# Known limitation: a filename that itself contains a quote is cut there. Trying
+# to tell those two quotes apart cost more than it bought. Across 5046 real
+# rollouts a quoted filename appears 0 times, while the nested-payload shape the
+# stricter rule broke appears in 4 of them.
+CODEX_PATCH = re.compile(r'\*\*\* (?:Add|Update|Delete) File: (.+?)(?:\\n|\n|"|$)')
+CODEX_TOOL_ITEMS = ("custom_tool_call", "function_call", "local_shell_call")
 
 
 def env_int(name, default, low, high):
@@ -185,6 +213,86 @@ def iter_lines(handle, deadline):
         yield buffered
 
 
+def read_claude(record):
+    """Claude Code transcript line: {type, isSidechain, message:{content}}."""
+    kind = record.get("type")
+    message = record.get("message")
+    sidechain = bool(record.get("isSidechain"))
+    if kind == "user" and not sidechain and not record.get("isMeta"):
+        body = message.get("content")
+        if isinstance(body, str):
+            return (1 if body.strip() else 0), 0, (), sidechain
+        if isinstance(body, list) and any(
+                isinstance(block, dict) and block.get("type") == "text"
+                for block in body):
+            return 1, 0, (), sidechain
+        return 0, 0, (), sidechain
+    if kind == "assistant":
+        calls = 0
+        touched = []
+        for block in message.get("content") or []:
+            if not isinstance(block, dict) or block.get("type") != "tool_use":
+                continue
+            calls += 1
+            if block.get("name") in EDIT_TOOLS:
+                payload = block.get("input")
+                if isinstance(payload, dict):
+                    target = payload.get("file_path") or payload.get("notebook_path")
+                    if isinstance(target, str) and target:
+                        touched.append(target)
+        return 0, calls, tuple(touched), sidechain
+    return 0, 0, (), sidechain
+
+
+def unescape_path(text):
+    """A patch header often carries one more layer of JSON escaping than the line
+    around it, which leaves \\uXXXX literals in the path. Left alone, the same
+    file counts twice: once escaped, once not."""
+    if "\\u" not in text:
+        return text
+    try:
+        return json.loads('"%s"' % text.replace('"', '\\"'))
+    except ValueError:
+        return text
+
+
+def read_codex(record):
+    """Codex rollout line: {timestamp, ordinal, type, payload:{type, ...}}."""
+    payload = record.get("payload")
+    kind = payload.get("type")
+    if kind == "message":
+        # role 'developer' is the harness briefing the model, not a person typing.
+        if payload.get("role") != "user":
+            return 0, 0, (), False
+        for block in payload.get("content") or []:
+            if isinstance(block, dict) and (block.get("text") or "").strip():
+                return 1, 0, (), False
+        return 0, 0, (), False
+    if kind in CODEX_TOOL_ITEMS:
+        blob = payload.get("input")
+        if not isinstance(blob, str):
+            blob = payload.get("arguments")
+        if not isinstance(blob, str):
+            # local_shell_call keeps its command in a list under action.
+            action = payload.get("action")
+            if isinstance(action, dict):
+                command = action.get("command")
+                if isinstance(command, list):
+                    blob = " ".join(part for part in command if isinstance(part, str))
+                elif isinstance(command, str):
+                    blob = command
+        touched = ()
+        if isinstance(blob, str) and "*** " in blob:
+            touched = tuple(
+                found for found in (
+                    unescape_path(match.group(1).strip().rstrip("\\"))
+                    for match in CODEX_PATCH.finditer(blob)
+                ) if found
+            )
+        return 0, 1, touched, False
+    return 0, 0, (), False
+
+
 def collect(path, max_bytes, deadline):
     """Turn transcript lines into (timestamp, prompt, tool_calls, files, sidechain).
 
@@ -196,6 +304,7 @@ def collect(path, max_bytes, deadline):
     except OSError:
         return None
     events = []
+    seen_claude = seen_codex = False
     with handle:
         try:
             lines = list(iter_lines(handle, deadline))
@@ -214,42 +323,23 @@ def collect(path, max_bytes, deadline):
             stamp = parse_ts(record.get("timestamp"))
             if stamp is None:
                 continue
-            kind = record.get("type")
-            message = record.get("message")
-            prompt = 0
-            calls = 0
-            files = ()
-            # Subagent turns are not prompts the human typed; count them apart.
-            sidechain = bool(record.get("isSidechain"))
-            if isinstance(message, dict):
-                if kind == "user" and not sidechain and not record.get("isMeta"):
-                    body = message.get("content")
-                    if isinstance(body, str):
-                        prompt = 1 if body.strip() else 0
-                    elif isinstance(body, list):
-                        prompt = 1 if any(
-                            isinstance(block, dict) and block.get("type") == "text"
-                            for block in body
-                        ) else 0
-                elif kind == "assistant":
-                    touched = []
-                    for block in message.get("content") or []:
-                        if not isinstance(block, dict) or block.get("type") != "tool_use":
-                            continue
-                        calls += 1
-                        if block.get("name") in EDIT_TOOLS:
-                            payload = block.get("input")
-                            if isinstance(payload, dict):
-                                target = (payload.get("file_path")
-                                          or payload.get("notebook_path"))
-                                if isinstance(target, str) and target:
-                                    touched.append(target)
-                    files = tuple(touched)
+            if isinstance(record.get("message"), dict):
+                seen_claude = True
+                prompt, calls, files, sidechain = read_claude(record)
+            elif isinstance(record.get("payload"), dict):
+                seen_codex = True
+                prompt, calls, files, sidechain = read_codex(record)
+            else:
+                prompt, calls, files, sidechain = 0, 0, (), False
             events.append((stamp, prompt, calls, files, sidechain))
     if not events:
         return None
     events.sort(key=lambda item: item[0])
-    return events, truncated
+    # A rollout that also carries Claude-shaped lines is not a thing, but if it
+    # ever were, say nothing rather than guess.
+    platform = "codex" if seen_codex and not seen_claude else (
+        "claude" if seen_claude and not seen_codex else "")
+    return events, truncated, platform
 
 
 def split_stretches(events, gap_seconds):
@@ -476,9 +566,12 @@ def render(record, previous, also=0):
     changed = record.get("files_changed") or 0
     sub_calls = record.get("subagent_tool_calls") or 0
     snapshot = record.get("snapshot_path") or ""
+    # Two agents share this queue, so name the one being reported on.
+    agent = {"codex": "Codex", "claude": "Claude Code"}.get(record.get("platform") or "", "")
 
     if lang == "ko":
-        head = "[Claude Forge] %s세션 종료 %s" % ("직전 " if previous else "", stamp)
+        head = "[Claude Forge] %s%s세션 종료 %s" % (
+            "직전 " if previous else "", (agent + " ") if agent else "", stamp)
         body = "소요 %s · 프롬프트 %d · 도구 %d · 변경 파일 %d" % (
             human(span), prompts, calls, changed)
         if sub_calls:
@@ -489,8 +582,8 @@ def render(record, previous, also=0):
             body += " (재개 %d회, 누적 %s)" % (resumed, human(active))
         tail = "로그: %s"
     else:
-        head = "[Claude Forge] %s %s" % (
-            "Previous session ended" if previous else "Session ended", stamp)
+        head = "[Claude Forge] %s%ssession ended %s" % (
+            "previous " if previous else "", (agent + " ") if agent else "", stamp)
         body = "%s elapsed · %s · %s · %s" % (
             human(span), plural(prompts, "prompt"), plural(calls, "tool call"),
             plural(changed, "file") + " changed")
@@ -532,7 +625,7 @@ def measure(payload):
     scanned = collect(transcript, max_bytes, deadline)
     if not scanned:
         return None
-    events, truncated = scanned
+    events, truncated, platform = scanned
 
     stretches = split_stretches(events, gap_seconds)
     current = stretches[-1]
@@ -545,6 +638,7 @@ def measure(payload):
     record = {
         "event": "session_time_report",
         "session_id": session_id,
+        "platform": platform,
         "cwd": payload.get("cwd") or "",
         "reason": payload.get("reason") or "",
         "ended_at": ended.isoformat(),
@@ -564,10 +658,18 @@ def measure(payload):
 
 
 try:
-    if os.environ.get("FORGE_SESSION_MODE") == "report":
+    if os.environ.get("FORGE_SESSION_MODE") == "report" or os.environ.get("FORGE_SESSION_MANUAL"):
         queued = drain()
         # Newest first: the session you just left is the one you want to read about.
         text = render(queued[-1], previous=True, also=len(queued) - 1) if queued else None
+        if text and not os.environ.get("FORGE_SESSION_MANUAL"):
+            # SessionStart is the one surface that reaches the user on both
+            # agents, and both read this envelope. Plain text is only reliable
+            # on Claude Code. --last is the manual form, so it stays readable.
+            text = json.dumps({"hookSpecificOutput": {
+                "hookEventName": "SessionStart",
+                "additionalContext": text,
+            }}, ensure_ascii=False)
     else:
         incoming = json.loads(os.environ.get("FORGE_HOOK_INPUT") or "{}")
         measured = measure(incoming) if isinstance(incoming, dict) else None

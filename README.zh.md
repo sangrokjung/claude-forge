@@ -34,7 +34,9 @@
   <a href="#-常见问题">常见问题</a>
 </p>
 
-> **v4.2.0（2026 年 9 月，最新）** — 新增 **session-time-report**（第 22 个钩子）：会话结束时记下几点结束、实际用了多久、期间提交了多少提示词、调用了多少次工具、改动了几个文件，并在你下次开启会话时告诉你。计时能识别续接：隔了几天用 `--continue` 重新打开的会话，只统计这一次坐下来的时长，不会给出几百小时的假数字。记录同时写入 `~/.claude/work-log/`。
+> **v4.3.0（2026 年 9 月，最新）** — **session-time-report 现在也能读 Codex。** 同一个钩子、同一份小结，它会自己判断这份记录是 Claude Code 的会话记录还是 Codex 的 rollout 日志，两种都能统计。Codex 那边的接线是你自己往 `~/.codex/hooks.json` 里加两条（[做法](hooks/README.md#running-a-hook-under-codex)）。
+>
+> **v4.2.0（2026 年 9 月）** — 新增 **session-time-report**（第 22 个钩子）：会话结束时记下几点结束、实际用了多久、期间提交了多少提示词、调用了多少次工具、改动了几个文件，并在你下次开启会话时告诉你。计时能识别续接：隔了几天用 `--continue` 重新打开的会话，只统计这一次坐下来的时长，不会给出几百小时的假数字。记录同时写入 `~/.claude/work-log/`。
 >
 > **v4.1.0（2026 年 8 月）** — 新增 **harness-diet**（第 33 个技能）：实测常驻加载的上下文（CLAUDE.md + rules），在不丢失治理规则的前提下把它压回预算之内。
 >
@@ -605,8 +607,8 @@ claude-forge/
   ├── install.ps1                Windows 安装程序（支持 --upgrade）
   ├── mcp-servers.json           MCP 服务器默认配置（4 个最小集）
   ├── mcp-servers.optional.json  可选 MCP 服务器（memory/exa/github/fetch/time/...）
-  ├── .claude-plugin/plugin.json 插件清单（4.2.0）
-  ├── .claude-plugin/marketplace.json  市场条目（4.2.0）
+  ├── .claude-plugin/plugin.json 插件清单（4.3.0）
+  ├── .claude-plugin/marketplace.json  市场条目（4.3.0）
   ├── settings.json              Claude Code 设置（2026 字段）
   ├── MIGRATION.md               v2.1 → v4.0 迁移指南（英文）
   ├── MIGRATION.ko.md            v2.1 → v4.0 迁移指南（韩文）

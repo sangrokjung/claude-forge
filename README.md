@@ -36,7 +36,9 @@
   <a href="README.ko.md">한국어</a>
 </p>
 
-> **v4.2.0 (September 2026, latest)** — Adds **session-time-report** (22nd hook): measures each session as it closes and tells you at your next start what time it ended, how long it actually ran, and how much you got through. Resume-aware, so a session you picked back up days later reports that sitting rather than a bogus 400-hour total.
+> **v4.3.0 (September 2026, latest)** — **session-time-report now reads Codex too.** Same hook, same report; it detects whether a transcript is a Claude Code transcript or a Codex rollout log and counts either. Wiring for Codex is two entries you add to `~/.codex/hooks.json` ([how](hooks/README.md#running-a-hook-under-codex)).
+>
+> **v4.2.0 (September 2026)** — Adds **session-time-report** (22nd hook): measures each session as it closes and tells you at your next start what time it ended, how long it actually ran, and how much you got through. Resume-aware, so a session you picked back up days later reports that sitting rather than a bogus 400-hour total.
 >
 > **v4.1.0 (August 2026)** — Adds **harness-diet** (33rd skill): measure your always-loaded context (CLAUDE.md + rules) and shrink it back under budget without losing governance.
 >
@@ -371,6 +373,8 @@ Log: ~/.claude/work-log/session-time-<session_id>.json
 
 It reads only the session transcript, so there is no network call and no extra dependency beyond `python3`.
 
+**It also reads Codex.** Codex 0.150 has the same hook events and writes its own rollout log; the hook works out which dialect a transcript is in and counts either one, naming the agent in the line it prints. `install.sh` only wires Claude Code, so the two Codex entries are yours to add: [`hooks/README.md`](hooks/README.md#running-a-hook-under-codex) has them.
+
 **Elapsed time is resume-aware.** A transcript you reopened days later spans hundreds of hours of wall clock, which is not what you worked. The hook splits the timeline wherever there is a long idle gap and reports the *latest stretch*; if the session was resumed, it appends `(resumed 3x, 9h 40m total)`.
 
 | Environment variable | Default | Effect |
@@ -497,8 +501,8 @@ claude-forge/
   ├── install.ps1                Windows installer (--upgrade supported)
   ├── mcp-servers.json           MCP server defaults (4 minimal)
   ├── mcp-servers.optional.json  Optional MCP servers (memory/exa/github/fetch/time/...)
-  ├── .claude-plugin/plugin.json Plugin manifest (4.2.0)
-  ├── .claude-plugin/marketplace.json  Marketplace entry (4.2.0)
+  ├── .claude-plugin/plugin.json Plugin manifest (4.3.0)
+  ├── .claude-plugin/marketplace.json  Marketplace entry (4.3.0)
   ├── settings.json              Claude Code settings (2026 fields)
   ├── MIGRATION.md               v2.1 → v4.0 migration guide (EN)
   ├── MIGRATION.ko.md            v2.1 → v4.0 migration guide (KO)
