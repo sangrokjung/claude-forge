@@ -423,8 +423,8 @@ case "$SKIPPED" in *"2 prompts"*"1 tool call"*) ok "an over-long record is skipp
   *) no "an over-long record is skipped, neighbours still parse (got '$SKIPPED')";; esac
 
 # --- Codex shapes the earlier pass did not read -----------------------------
-# local_shell_call is a real Responses API item and keeps its command in a list,
-# and a filename may legitimately hold a quote.
+# local_shell_call is a real Responses API item and keeps its command in a list
+# rather than a string field.
 ODDROLL="$WORK/odd-codex.jsonl"
 python3 - "$ODDROLL" <<'PYODD'
 import json, sys
@@ -435,22 +435,29 @@ rows = [
                                         "*** Update File: /tmp/from-shell.txt\n"]}}},
     {"timestamp": "2026-09-01T04:02:00Z", "ordinal": 2, "type": "response_item",
      "payload": {"type": "custom_tool_call", "name": "exec",
-                 "input": "{\"cmd\":\"*** Add File: /tmp/od\\\"d.txt\\n\"}"}},
+                 "input": "*** Add File: /tmp/plain.txt\n"}},
+    # the nested-payload shape: the path ends at the quote that closes the JSON
+    # string, not at the end of the line
+    {"timestamp": "2026-09-01T04:04:00Z", "ordinal": 3, "type": "response_item",
+     "payload": {"type": "custom_tool_call", "name": "exec",
+                 "input": "{\"cmd\":\"*** Update File: /tmp/plain.txt\", \"n\":1}"}},
 ]
 with open(sys.argv[1], "w") as fh:
     for row in rows:
         fh.write(json.dumps(row) + "\n")
 PYODD
 ODD=$(payload cx-odd "$ODDROLL" | FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
-case "$ODD" in *"2 tool calls"*) ok "local_shell_call counts as a tool call";;
+case "$ODD" in *"3 tool calls"*) ok "local_shell_call counts as a tool call";;
   *) no "local_shell_call counts as a tool call (got '$ODD')";; esac
-case "$ODD" in *"2 files changed"*) ok "a quoted filename is not cut at the quote";;
-  *) no "a quoted filename is not cut at the quote (got '$ODD')";; esac
-python3 - "$HOME/.claude/work-log/session-time-cx-odd.json" <<'PYODDLOG' && ok "both odd paths land in the log" || no "both odd paths land in the log"
+case "$ODD" in *"2 files changed"*) ok "a nested payload path stops at its closing quote";;
+  *) no "a nested payload path stops at its closing quote (got '$ODD')";; esac
+python3 - "$HOME/.claude/work-log/session-time-cx-odd.json" <<'PYODDLOG' && ok "the shell-list command is read for paths" || no "the shell-list command is read for paths"
 import json, sys
 d = json.load(open(sys.argv[1]))
+# /tmp/from-shell.txt from the list command, /tmp/plain.txt named twice through
+# two different envelopes. Three tool calls, two distinct files.
 assert d["files_changed"] == 2, d
-assert d["tool_calls"] == 2, d
+assert d["tool_calls"] == 3, d
 PYODDLOG
 
 # --- a poisoned queue line must not cost the whole batch ---------------------

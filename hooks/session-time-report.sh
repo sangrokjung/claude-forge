@@ -92,8 +92,14 @@ EDIT_TOOLS = {"Edit", "Write", "NotebookEdit", "MultiEdit"}
 # Codex edits files by feeding an apply_patch envelope to a shell tool, so the
 # only reliable file-change signal is the envelope's own header. The path ends at
 # the first real or escaped newline, because the envelope usually arrives inside
-# a JS string literal.
-CODEX_PATCH = re.compile(r'\*\*\* (?:Add|Update|Delete) File: (.+?)(?:\\n|\n|(?<!\\)"|$)')
+# a JS string literal, or at a quote, because it is often nested one JSON layer
+# deeper than the line around it.
+#
+# Known limitation: a filename that itself contains a quote is cut there. Trying
+# to tell those two quotes apart cost more than it bought. Across 5046 real
+# rollouts a quoted filename appears 0 times, while the nested-payload shape the
+# stricter rule broke appears in 4 of them.
+CODEX_PATCH = re.compile(r'\*\*\* (?:Add|Update|Delete) File: (.+?)(?:\\n|\n|"|$)')
 CODEX_TOOL_ITEMS = ("custom_tool_call", "function_call", "local_shell_call")
 
 
