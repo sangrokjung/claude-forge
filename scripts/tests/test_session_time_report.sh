@@ -436,11 +436,13 @@ rows = [
     {"timestamp": "2026-09-01T04:02:00Z", "ordinal": 2, "type": "response_item",
      "payload": {"type": "custom_tool_call", "name": "exec",
                  "input": "*** Add File: /tmp/plain.txt\n"}},
-    # the nested-payload shape: the path ends at the quote that closes the JSON
-    # string, not at the end of the line
+    # The nested-payload shape, encoded the way it actually arrives: the envelope
+    # sits one JSON layer deeper than the line, so the quote that closes the path
+    # reaches the parser as a backslash and a quote. A terminator that skips an
+    # escaped quote runs past the end of the path and invents a second file.
     {"timestamp": "2026-09-01T04:04:00Z", "ordinal": 3, "type": "response_item",
      "payload": {"type": "custom_tool_call", "name": "exec",
-                 "input": "{\"cmd\":\"*** Update File: /tmp/plain.txt\", \"n\":1}"}},
+                 "input": '{\\"cmd\\":\\"*** Update File: /tmp/plain.txt\\", \\"n\\":1}'}},
 ]
 with open(sys.argv[1], "w") as fh:
     for row in rows:
