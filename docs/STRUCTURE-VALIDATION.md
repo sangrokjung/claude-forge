@@ -149,10 +149,10 @@ agents/
 | Check | Status | Details |
 |-------|--------|---------|
 | Files present | PASS | 11 agent `.md` files |
-| Frontmatter format | PASS (with note) | All agents use a custom format: line 1 is a comment (`# Part of Claude Forge`), then `---` YAML frontmatter with `name`, `description`, `tools` |
+| Frontmatter format | PASS | All agents start with `---` on line 1 (YAML frontmatter with `name`, `description`, `tools`, `model`, `memory`, `maxTurns`, `color`). No comment line precedes the fence; CI rejects one. |
 | Required fields | PASS | All have `name`, `description`, `tools` |
 
-**Format Note**: Official plugins don't specify an agents format in the example-plugin. Claude Forge agents use `---` YAML frontmatter which is the standard Claude Code agent format. The `# Part of Claude Forge` comment on line 1 before `---` is non-standard but Claude Code parser typically skips to the first `---`.
+**Format Note**: Official plugins don't specify an agents format in the example-plugin. Claude Forge agents use `---` YAML frontmatter, which is the standard Claude Code agent format, and the file starts with that fence. An earlier revision put a `# Part of Claude Forge` comment on line 1; it was removed because the CI frontmatter check requires the fence on line 1, and the contributing guide now says so.
 
 ---
 
@@ -277,4 +277,4 @@ These are not auto-loaded by Claude Code's plugin system but are used by the ins
 1. **HIGH**: Create `.mcp.json` at plugin root with flat format (from `mcp-servers.json`)
 2. **MEDIUM**: Add frontmatter to `build-fix.md`, `refactor-clean.md`, `eval.md` commands
 3. **LOW**: Remove extra fields from `plugin.json` for strict compatibility (optional, not breaking)
-4. **LOW**: Remove `# Part of Claude Forge` comment line before `---` in agent files (optional)
+4. ~~**LOW**: Remove `# Part of Claude Forge` comment line before `---` in agent files~~ Done; the guide and CI now agree.

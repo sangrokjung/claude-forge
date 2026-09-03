@@ -23,12 +23,17 @@ Thank you for your interest in contributing to Claude Forge!
 **File structure:**
 
 ```markdown
-# Part of Claude Forge — github.com/sangrokjung/claude-forge
 ---
 name: my-agent
-description: One-line description of the agent's purpose
+description: |
+  One line on what it does, then when to reach for it and which sibling
+  agent to use instead. Example: "Use proactively when ... For SQL use
+  database-reviewer."
 tools: ["Read", "Grep", "Glob"]
-model: opus
+model: sonnet
+memory: project
+maxTurns: 15
+color: blue
 ---
 
 <Agent_Prompt>
@@ -54,10 +59,14 @@ You are a [role description]...
 
 **Guidelines:**
 - One `.md` file per agent
+- **The file must start with `---` on line 1.** CI parses frontmatter with `^---\n(.*?)\n---\n`, so any line before the opening fence, including a comment, fails the build with `missing YAML frontmatter`. Do not add an attribution header; the Contributors section of the README carries credit.
+- Frontmatter is validated against [`reference/agent-schema.json`](reference/agent-schema.json) with `additionalProperties: false`. Only these keys are accepted: `name`, `description`, `tools`, `model`, `memory`, `maxTurns`, `color`, `skills`, `isolation`, `background`, `permissionMode`, `mcpServers`, `effort`, `hooks`, `disallowedTools`. Anything else (for example `author` or `allowedTools`) fails CI.
+- `tools` lists Claude Code tools (`Read`, `Grep`, `Bash`, `mcp__*`), not libraries the agent might talk about.
 - Follow the `<Agent_Prompt>` structure with `<Role>`, `<Constraints>`, `<Investigation_Protocol>`, `<Output_Format>` sections
-- Specify `model` (opus for deep analysis, sonnet for fast execution, haiku for quick tasks)
-- Include the Claude Forge attribution header at the top
-- Keep agent descriptions focused and specific
+- Specify `model`. The kit's default is `sonnet` (10 of 16 agents); use `opus` only where the agent reasons over a whole codebase or arbitrates between other agents, and `haiku` for quick mechanical tasks.
+- Keep agent descriptions focused and specific. Copy the shape of [`agents/code-reviewer.md`](agents/code-reviewer.md).
+- Before opening the PR, run the same check CI runs (needs `pip install pyyaml jsonschema` once):
+  `python3 -c "import json,re,sys,yaml;from jsonschema import validate;p=sys.argv[1];t=open(p).read();m=re.match(r'^---\n(.*?)\n---\n',t,re.S) or sys.exit('missing YAML frontmatter');validate(yaml.safe_load(m.group(1)),json.load(open('reference/agent-schema.json')));print('ok')" agents/my-agent.md`
 
 ### Commands (`commands/`)
 
@@ -132,7 +141,7 @@ Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `ci`
 ## Contributor Benefits
 
 - **README recognition**: All contributors are permanently featured in the Contributors section via [contrib.rocks](https://contrib.rocks)
-- **Agent author credit**: When you create a new agent, your GitHub username is credited in the agent file's frontmatter (`author` field)
+- **Agent author credit**: your GitHub username is credited in the pull request and the README Contributors section. Agent files themselves carry no author field; the schema rejects it.
 - **Good First Issues**: Look for issues labeled `good first issue` for a great starting point
 
 ## Publishing to the Plugin Directory

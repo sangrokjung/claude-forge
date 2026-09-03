@@ -37,6 +37,6 @@ Identical to Method A but lets you inspect/modify the source before installing.
 
 **Verification:** After install, run `claude --version` (≥ 2.1.110 required) and check `ls ~/.claude/agents/ | wc -l` — should print at least 11.
 
-**Uninstall:** `./install.sh --uninstall` removes the symlinks created by Method A/C without touching your `~/.claude/settings.json` user content.
+**Uninstall:** there is no `--uninstall` flag yet. Method A/C install symlinks into `~/.claude/` (`agents`, `rules`, `commands`, `scripts`, `skills`, `hooks`, `libs`, `reference`, `cc-chips`, `cc-chips-custom`, plus `settings.json`); remove those links by hand. `install.sh` backs up a pre-existing `~/.claude/` to `~/.claude.backup.<timestamp>/` on a fresh interactive install, but not on `--upgrade` and not when it runs non-interactively (`curl | bash`), so check for that directory before assuming there is a `settings.json` to restore. A proper uninstall script is tracked in [PR #30](https://github.com/sangrokjung/claude-forge/pull/30).
 
 **Troubleshooting:** [`docs/STRUCTURE-VALIDATION.md`](docs/STRUCTURE-VALIDATION.md) explains the directory layout if `~/.claude` is in an unusual state.
