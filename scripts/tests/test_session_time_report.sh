@@ -1,6 +1,7 @@
 #!/bin/bash
 # session-time-report.sh regression: resume-aware elapsed time, counts, output
-# channel, log file, and the defensive paths that must never break teardown.
+# channel, log file, both transcript dialects (Claude Code and Codex), and the
+# defensive paths that must never break session start or teardown.
 # Run: bash scripts/tests/test_session_time_report.sh
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -84,7 +85,7 @@ run(){ payload "$1" "$2" | FORGE_SESSION_REPORT_LANG=en "$HOOK"; }
 ERR=$(run sess-a "$TRANSCRIPT" 2>&1 >/dev/null)
 OUT=$(run sess-a "$TRANSCRIPT" 2>/dev/null)
 [ -z "$ERR" ] && ok "stderr stays clean" || no "stderr stays clean (got '$ERR')"
-case "$OUT" in "[Claude Forge] Session ended"*) ok "stdout carries a tagged report";;
+case "$OUT" in "[Claude Forge] Claude Code session ended"*) ok "stdout carries a tagged report";;
   *) no "stdout carries a tagged report (got '$OUT')";; esac
 ERR="$OUT"   # the assertions below read the rendered report
 
@@ -112,7 +113,7 @@ case "$WIDE" in *"6h 10m elapsed"*) ok "FORGE_SESSION_GAP_MIN widens the stretch
 
 # --- Korean surface ----------------------------------------------------------
 KO=$(payload sess-k "$TRANSCRIPT" | FORGE_SESSION_REPORT_LANG=ko "$HOOK" 2>/dev/null)
-case "$KO" in *"세션 종료"*) ok "ko locale renders Korean";;
+case "$KO" in *"Claude Code 세션 종료"*) ok "ko locale renders Korean";;
   *) no "ko locale renders Korean (got '$KO')";; esac
 
 # --- log file ----------------------------------------------------------------
@@ -134,17 +135,120 @@ assert d["stretch_seconds"] == 1800, d["stretch_seconds"]
 assert d["prompts"] == 2 and d["tool_calls"] == 3 and d["files_changed"] == 1, d
 PY
 
+# --- the Codex dialect ------------------------------------------------------
+# Codex writes a rollout log instead of a Claude transcript: every line is
+# {timestamp, ordinal, type, payload}. One prompt, three tool calls, two files
+# touched through an apply_patch envelope (one of them twice).
+ROLLOUT="$WORK/rollout.jsonl"
+python3 - "$ROLLOUT" <<'PYROLL'
+import json, sys
+
+def at(minute):
+    return "2026-09-01T02:%02d:00Z" % minute
+
+rows = [
+    # the harness briefing the model is not a person typing
+    {"timestamp": at(0), "ordinal": 1, "type": "response_item",
+     "payload": {"type": "message", "role": "developer",
+                 "content": [{"type": "input_text", "text": "<skills_instructions>"}]}},
+    {"timestamp": at(1), "ordinal": 2, "type": "response_item",
+     "payload": {"type": "message", "role": "user",
+                 "content": [{"type": "input_text", "text": "고쳐줘"}]}},
+    {"timestamp": at(2), "ordinal": 3, "type": "response_item",
+     "payload": {"type": "custom_tool_call", "name": "exec", "input": "ls -la"}},
+    {"timestamp": at(4), "ordinal": 4, "type": "response_item",
+     "payload": {"type": "custom_tool_call", "name": "exec",
+                 "input": "apply_patch <<'EOF'\n*** Add File: /tmp/one.txt\n+hi\n*** End Patch\nEOF"}},
+    # the envelope usually arrives inside a JS string, so the path ends at \n
+    {"timestamp": at(6), "ordinal": 5, "type": "response_item",
+     "payload": {"type": "function_call", "name": "shell",
+                 "arguments": "{\"cmd\":\"*** Update File: /tmp/one.txt\\n*** Update File: /tmp/two.txt\\n\"}"}},
+    # non-tool items must not be counted
+    {"timestamp": at(7), "ordinal": 6, "type": "response_item",
+     "payload": {"type": "reasoning", "summary": []}},
+    {"timestamp": at(8), "ordinal": 7, "type": "event_msg",
+     "payload": {"type": "token_count", "info": {}}},
+]
+with open(sys.argv[1], "w") as fh:
+    for row in rows:
+        fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+PYROLL
+
+CX=$(payload cx-1 "$ROLLOUT" | FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
+case "$CX" in "[Claude Forge] Codex session ended"*) ok "a Codex rollout is recognised and named";;
+  *) no "a Codex rollout is recognised and named (got '$CX')";; esac
+case "$CX" in *"1 prompt"*) ok "Codex developer turns are not counted as prompts";;
+  *) no "Codex developer turns are not counted as prompts (got '$CX')";; esac
+case "$CX" in *"3 tool calls"*) ok "Codex tool calls counted, reasoning ignored";;
+  *) no "Codex tool calls counted, reasoning ignored (got '$CX')";; esac
+case "$CX" in *"2 files changed"*) ok "Codex apply_patch paths counted and deduplicated";;
+  *) no "Codex apply_patch paths counted and deduplicated (got '$CX')";; esac
+case "$CX" in *"8m elapsed"*) ok "Codex elapsed time measured";;
+  *) no "Codex elapsed time measured (got '$CX')";; esac
+
+# A patch header can carry one more layer of JSON escaping than the line around
+# it, so the same path arrives once as \uXXXX literals and once decoded. Counted
+# raw, that one file looks like two.
+ESCROLL="$WORK/escaped.jsonl"
+python3 - "$ESCROLL" <<'PYESC'
+import json, sys
+same = "/tmp/\\ud604\\uacf5\\uc0ac/a.md"        # the escaped spelling
+plain = "/tmp/현공사/a.md"                      # the same file, decoded
+rows = [
+    {"timestamp": "2026-09-01T03:00:00Z", "ordinal": 1, "type": "response_item",
+     "payload": {"type": "custom_tool_call", "name": "exec",
+                 "input": "*** Update File: %s\n" % same}},
+    {"timestamp": "2026-09-01T03:01:00Z", "ordinal": 2, "type": "response_item",
+     "payload": {"type": "custom_tool_call", "name": "exec",
+                 "input": "*** Update File: %s\n" % plain}},
+]
+with open(sys.argv[1], "w") as fh:
+    for row in rows:
+        fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+PYESC
+ESC=$(payload cx-esc "$ESCROLL" | FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
+case "$ESC" in *"1 file changed"*) ok "an escaped path is the same file as its decoded twin";;
+  *) no "an escaped path is the same file as its decoded twin (got '$ESC')";; esac
+
+CXK=$(payload cx-k "$ROLLOUT" | FORGE_SESSION_REPORT_LANG=ko "$HOOK" 2>/dev/null)
+case "$CXK" in *"Codex 세션 종료"*) ok "Codex is named in Korean too";;
+  *) no "Codex is named in Korean too (got '$CXK')";; esac
+
+python3 - "$HOME/.claude/work-log/session-time-cx-1.json" <<'PYCXLOG' && ok "the log records which agent it was" || no "the log records which agent it was"
+import json, sys
+d = json.load(open(sys.argv[1]))
+assert d.get("platform") == "codex", d.get("platform")
+assert d["prompts"] == 1 and d["tool_calls"] == 3 and d["files_changed"] == 2, d
+PYCXLOG
+
+# a Claude transcript must still be labelled Claude, from the same script
+python3 - "$HOME/.claude/work-log/session-time-sess-a.json" <<'PYCLLOG' && ok "a Claude transcript is still labelled claude" || no "a Claude transcript is still labelled claude"
+import json, sys
+assert json.load(open(sys.argv[1])).get("platform") == "claude"
+PYCLLOG
+
 # --- report mode: SessionStart replays the last session exactly once ---------
 PENDING="$HOME/.claude/work-log/.session-time-pending.jsonl"
 run sess-p "$TRANSCRIPT" >/dev/null 2>&1
 [ -f "$PENDING" ] && ok "record mode leaves a pending report" || no "record mode leaves a pending report"
 
 REPLAY=$(printf '{"session_id":"new","source":"startup"}' | FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>/dev/null)
-case "$REPLAY" in "[Claude Forge] Previous session ended"*) ok "report mode replays the previous session";;
+case "$REPLAY" in *"[Claude Forge] previous Claude Code session ended"*) ok "report mode replays the previous session";;
   *) no "report mode replays the previous session (got '$REPLAY')";; esac
 case "$REPLAY" in *"30m elapsed"*) ok "replay keeps the measured numbers";;
   *) no "replay keeps the measured numbers (got '$REPLAY')";; esac
 [ -f "$PENDING" ] && no "pending report is drained" || ok "pending report is drained"
+
+# The payload travels by env var: a heredoc already owns stdin here, and letting
+# both redirections fight makes python read the JSON as its own source, which is
+# valid Python and would pass no matter what the envelope said.
+REPLAY_JSON="$REPLAY" python3 <<'PYENV' && ok "report mode emits the SessionStart envelope" || no "report mode emits the SessionStart envelope"
+import json, os
+payload = json.loads(os.environ["REPLAY_JSON"])
+out = payload["hookSpecificOutput"]
+assert out["hookEventName"] == "SessionStart", out
+assert "[Claude Forge]" in out["additionalContext"], out
+PYENV
 
 AGAIN=$(printf '{"session_id":"new"}' | FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>&1)
 [ -z "$AGAIN" ] && ok "report mode is silent with nothing pending" \
@@ -154,14 +258,14 @@ AGAIN=$(printf '{"session_id":"new"}' | FORGE_SESSION_REPORT_LANG=en "$HOOK" --l
 # switch for manual runs. Both must select report mode.
 run sess-e "$TRANSCRIPT" >/dev/null 2>&1
 ENVMODE=$(printf '{"session_id":"new"}' | FORGE_SESSION_MODE=report FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
-case "$ENVMODE" in "[Claude Forge] Previous session ended"*) ok "FORGE_SESSION_MODE=report selects report mode";;
+case "$ENVMODE" in *"[Claude Forge] previous Claude Code session ended"*) ok "FORGE_SESSION_MODE=report selects report mode";;
   *) no "FORGE_SESSION_MODE=report selects report mode (got '$ENVMODE')";; esac
 
-# both wirings must resolve to a tracked file in this repo
-python3 - "$ROOT" <<'PYCHK' && ok "settings.json wiring resolves to this hook" || no "settings.json wiring resolves to this hook"
+# Both events must be wired in the settings.json this kit ships.
+python3 - "$ROOT" <<'PYCHK' && ok "settings.json wires both events" || no "settings.json wires both events"
 import json, pathlib, sys
 root = pathlib.Path(sys.argv[1])
-settings = json.loads((root / "settings.json").read_text())
+settings = json.loads((root / "settings.json").read_text(encoding="utf-8"))
 found = {"SessionEnd": False, "SessionStart": False}
 for event, groups in settings.get("hooks", {}).items():
     if event not in found:
@@ -172,9 +276,9 @@ for event, groups in settings.get("hooks", {}).items():
             if "session-time-report.sh" not in command:
                 continue
             found[event] = True
-            path = command.split()[-1]
-            assert path.startswith("~/.claude/"), command
-            assert (root / path[len("~/.claude/"):]).is_file(), command
+            script = command.split()[-1]
+            assert script.startswith("~/.claude/"), command
+            assert (root / script[len("~/.claude/"):]).is_file(), command
 assert all(found.values()), found
 PYCHK
 
@@ -215,7 +319,7 @@ with open(sys.argv[1], "w") as fh:
         fh.write(json.dumps(row) + "\n")
 PYMIX
 MIX=$(payload sess-mx "$MIXED" | FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
-case "$MIX" in "[Claude Forge] Session ended"*) ok "naive and aware timestamps mix cleanly";;
+case "$MIX" in "[Claude Forge] Claude Code session ended"*) ok "naive and aware timestamps mix cleanly";;
   *) no "naive and aware timestamps mix cleanly (got '$MIX')";; esac
 
 # --- the history file has a ceiling -----------------------------------------
@@ -325,7 +429,7 @@ with open(sys.argv[1], "a") as fh:
     fh.write("[" * 200000 + "]" * 200000 + "\n")
 PYPOISON
 SURVIVE=$(printf '{"session_id":"n"}' | HOME="$POISON" FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>/dev/null)
-case "$SURVIVE" in "[Claude Forge] Previous session ended"*) ok "a poisoned queue line does not lose the batch";;
+case "$SURVIVE" in *"[Claude Forge] previous Claude Code session ended"*) ok "a poisoned queue line does not lose the batch";;
   *) no "a poisoned queue line does not lose the batch (got '$SURVIVE')";; esac
 POISONLEFT=0
 for stray in "$POISON/.claude/work-log/"*.claimed-*; do
@@ -342,7 +446,7 @@ payload or-1 "$TRANSCRIPT" | HOME="$ORPH" "$HOOK" >/dev/null 2>&1
 mv "$OWL/.session-time-pending.jsonl" "$OWL/.session-time-pending.jsonl.claimed-99999"
 touch -t 202601010000 "$OWL/.session-time-pending.jsonl.claimed-99999"
 RECLAIM=$(printf '{"session_id":"n"}' | HOME="$ORPH" FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>/dev/null)
-case "$RECLAIM" in "[Claude Forge] Previous session ended"*) ok "a stale claim is recovered";;
+case "$RECLAIM" in *"[Claude Forge] previous Claude Code session ended"*) ok "a stale claim is recovered";;
   *) no "a stale claim is recovered (got '$RECLAIM')";; esac
 
 payload or-2 "$TRANSCRIPT" | HOME="$ORPH" "$HOOK" >/dev/null 2>&1
@@ -368,7 +472,7 @@ mkdir -p "$POIS/.claude/work-log"
 : > "$POIS/.claude/work-log/.session-time-pending.jsonl.claimed-99999999999999999999"
 payload pp-1 "$TRANSCRIPT" | HOME="$POIS" "$HOOK" >/dev/null 2>&1
 PIDPOISON=$(printf '{"session_id":"n"}' | HOME="$POIS" FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>/dev/null)
-case "$PIDPOISON" in "[Claude Forge] Previous session ended"*) ok "an unusable pid suffix cannot silence the drain";;
+case "$PIDPOISON" in *"[Claude Forge] previous Claude Code session ended"*) ok "an unusable pid suffix cannot silence the drain";;
   *) no "an unusable pid suffix cannot silence the drain (got '$PIDPOISON')";; esac
 
 for SUFFIX in 0 -1 abc 1e9 ""; do
@@ -376,7 +480,7 @@ for SUFFIX in 0 -1 abc 1e9 ""; do
 done
 payload pp-2 "$TRANSCRIPT" | HOME="$POIS" "$HOOK" >/dev/null 2>&1
 ODD=$(printf '{"session_id":"n"}' | HOME="$POIS" FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>/dev/null)
-case "$ODD" in "[Claude Forge] Previous session ended"*) ok "odd pid suffixes are survivable";;
+case "$ODD" in *"[Claude Forge] previous Claude Code session ended"*) ok "odd pid suffixes are survivable";;
   *) no "odd pid suffixes are survivable (got '$ODD')";; esac
 
 # --- a named pipe planted at a log path must not stall the session ----------
