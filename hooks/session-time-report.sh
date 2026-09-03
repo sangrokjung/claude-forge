@@ -63,9 +63,13 @@ command -v python3 >/dev/null 2>&1 || exit 0
 # configuration to a hook. --last does the same thing and is what the tests and
 # manual runs use.
 FORGE_SESSION_MODE="${FORGE_SESSION_MODE:-record}"
-[ "${1:-}" = "--last" ] && FORGE_SESSION_MODE="report"
 [ "$FORGE_SESSION_MODE" = "report" ] || FORGE_SESSION_MODE="record"
 export FORGE_SESSION_MODE
+# --last selects report mode too, but as the manual form: it prints the report
+# as text rather than wrapping it in the SessionStart envelope.
+FORGE_SESSION_MANUAL=""
+[ "${1:-}" = "--last" ] && { FORGE_SESSION_MANUAL=1; FORGE_SESSION_MODE=report; }
+export FORGE_SESSION_MANUAL
 
 INPUT=$(cat)
 
@@ -89,8 +93,8 @@ EDIT_TOOLS = {"Edit", "Write", "NotebookEdit", "MultiEdit"}
 # only reliable file-change signal is the envelope's own header. The path ends at
 # the first real or escaped newline, because the envelope usually arrives inside
 # a JS string literal.
-CODEX_PATCH = re.compile(r'\*\*\* (?:Add|Update|Delete) File: (.+?)(?:\\n|\n|"|$)')
-CODEX_TOOL_ITEMS = ("custom_tool_call", "function_call")
+CODEX_PATCH = re.compile(r'\*\*\* (?:Add|Update|Delete) File: (.+?)(?:\\n|\n|(?<!\\)"|$)')
+CODEX_TOOL_ITEMS = ("custom_tool_call", "function_call", "local_shell_call")
 
 
 def env_int(name, default, low, high):
@@ -262,6 +266,15 @@ def read_codex(record):
         blob = payload.get("input")
         if not isinstance(blob, str):
             blob = payload.get("arguments")
+        if not isinstance(blob, str):
+            # local_shell_call keeps its command in a list under action.
+            action = payload.get("action")
+            if isinstance(action, dict):
+                command = action.get("command")
+                if isinstance(command, list):
+                    blob = " ".join(part for part in command if isinstance(part, str))
+                elif isinstance(command, str):
+                    blob = command
         touched = ()
         if isinstance(blob, str) and "*** " in blob:
             touched = tuple(
@@ -639,14 +652,14 @@ def measure(payload):
 
 
 try:
-    if os.environ.get("FORGE_SESSION_MODE") == "report":
+    if os.environ.get("FORGE_SESSION_MODE") == "report" or os.environ.get("FORGE_SESSION_MANUAL"):
         queued = drain()
         # Newest first: the session you just left is the one you want to read about.
         text = render(queued[-1], previous=True, also=len(queued) - 1) if queued else None
-        if text:
+        if text and not os.environ.get("FORGE_SESSION_MANUAL"):
             # SessionStart is the one surface that reaches the user on both
             # agents, and both read this envelope. Plain text is only reliable
-            # on Claude Code.
+            # on Claude Code. --last is the manual form, so it stays readable.
             text = json.dumps({"hookSpecificOutput": {
                 "hookEventName": "SessionStart",
                 "additionalContext": text,

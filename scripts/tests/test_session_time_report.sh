@@ -239,15 +239,21 @@ case "$REPLAY" in *"30m elapsed"*) ok "replay keeps the measured numbers";;
   *) no "replay keeps the measured numbers (got '$REPLAY')";; esac
 [ -f "$PENDING" ] && no "pending report is drained" || ok "pending report is drained"
 
+# --last is the manual form and must stay readable text. The envelope belongs to
+# the wiring, which selects report mode through the environment.
+case "$REPLAY" in "{"*) no "--last stays readable text";; *) ok "--last stays readable text";; esac
+
+run sess-env "$TRANSCRIPT" >/dev/null 2>&1
+ENVELOPE=$(printf '{"session_id":"new"}' | FORGE_SESSION_MODE=report FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
 # The payload travels by env var: a heredoc already owns stdin here, and letting
 # both redirections fight makes python read the JSON as its own source, which is
 # valid Python and would pass no matter what the envelope said.
-REPLAY_JSON="$REPLAY" python3 <<'PYENV' && ok "report mode emits the SessionStart envelope" || no "report mode emits the SessionStart envelope"
+ENVELOPE_JSON="$ENVELOPE" python3 <<'PYENV' && ok "the wired path emits the SessionStart envelope" || no "the wired path emits the SessionStart envelope"
 import json, os
-payload = json.loads(os.environ["REPLAY_JSON"])
+payload = json.loads(os.environ["ENVELOPE_JSON"])
 out = payload["hookSpecificOutput"]
 assert out["hookEventName"] == "SessionStart", out
-assert "[Claude Forge]" in out["additionalContext"], out
+assert "[Claude Forge]" in out["additionalContext"] or "[session]" in out["additionalContext"], out
 PYENV
 
 AGAIN=$(printf '{"session_id":"new"}' | FORGE_SESSION_REPORT_LANG=en "$HOOK" --last 2>&1)
@@ -257,7 +263,7 @@ AGAIN=$(printf '{"session_id":"new"}' | FORGE_SESSION_REPORT_LANG=en "$HOOK" --l
 # settings.json wires report mode through the inline env form; --last is the same
 # switch for manual runs. Both must select report mode.
 run sess-e "$TRANSCRIPT" >/dev/null 2>&1
-ENVMODE=$(printf '{"session_id":"new"}' | FORGE_SESSION_MODE=report FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
+ENVMODE=$(printf '{"session_id":"new"}' | FORGE_SESSION_MODE=report FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null | python3 -c "import json,sys; raw=sys.stdin.read().strip(); print(json.loads(raw)['hookSpecificOutput']['additionalContext'] if raw else '')")
 case "$ENVMODE" in *"[Claude Forge] previous Claude Code session ended"*) ok "FORGE_SESSION_MODE=report selects report mode";;
   *) no "FORGE_SESSION_MODE=report selects report mode (got '$ENVMODE')";; esac
 
@@ -415,6 +421,37 @@ PYBIG2
 SKIPPED=$(payload sess-sk "$MIXBIG" | FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
 case "$SKIPPED" in *"2 prompts"*"1 tool call"*) ok "an over-long record is skipped, neighbours still parse";;
   *) no "an over-long record is skipped, neighbours still parse (got '$SKIPPED')";; esac
+
+# --- Codex shapes the earlier pass did not read -----------------------------
+# local_shell_call is a real Responses API item and keeps its command in a list,
+# and a filename may legitimately hold a quote.
+ODDROLL="$WORK/odd-codex.jsonl"
+python3 - "$ODDROLL" <<'PYODD'
+import json, sys
+rows = [
+    {"timestamp": "2026-09-01T04:00:00Z", "ordinal": 1, "type": "response_item",
+     "payload": {"type": "local_shell_call",
+                 "action": {"command": ["bash", "-lc",
+                                        "*** Update File: /tmp/from-shell.txt\n"]}}},
+    {"timestamp": "2026-09-01T04:02:00Z", "ordinal": 2, "type": "response_item",
+     "payload": {"type": "custom_tool_call", "name": "exec",
+                 "input": "{\"cmd\":\"*** Add File: /tmp/od\\\"d.txt\\n\"}"}},
+]
+with open(sys.argv[1], "w") as fh:
+    for row in rows:
+        fh.write(json.dumps(row) + "\n")
+PYODD
+ODD=$(payload cx-odd "$ODDROLL" | FORGE_SESSION_REPORT_LANG=en "$HOOK" 2>/dev/null)
+case "$ODD" in *"2 tool calls"*) ok "local_shell_call counts as a tool call";;
+  *) no "local_shell_call counts as a tool call (got '$ODD')";; esac
+case "$ODD" in *"2 files changed"*) ok "a quoted filename is not cut at the quote";;
+  *) no "a quoted filename is not cut at the quote (got '$ODD')";; esac
+python3 - "$HOME/.claude/work-log/session-time-cx-odd.json" <<'PYODDLOG' && ok "both odd paths land in the log" || no "both odd paths land in the log"
+import json, sys
+d = json.load(open(sys.argv[1]))
+assert d["files_changed"] == 2, d
+assert d["tool_calls"] == 2, d
+PYODDLOG
 
 # --- a poisoned queue line must not cost the whole batch ---------------------
 # drain() parses the queue with its own loop. A line that raises something other

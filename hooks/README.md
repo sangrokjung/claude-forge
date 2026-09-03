@@ -91,21 +91,34 @@ To wire it, add to `~/.codex/hooks.json`:
 {
   "hooks": {
     "SessionEnd": [
-      { "hooks": [ { "type": "command", "command": "~/.claude/hooks/session-time-report.sh", "timeout": 10 } ] }
+      { "hooks": [ { "type": "command", "command": "FORGE_SESSION_MAX_SEC=2 ~/.claude/hooks/session-time-report.sh", "timeout": 3 } ] }
     ],
     "SessionStart": [
-      { "hooks": [ { "type": "command", "command": "FORGE_SESSION_MODE=report ~/.claude/hooks/session-time-report.sh", "timeout": 5 } ] }
+      { "hooks": [ { "type": "command", "command": "FORGE_SESSION_MODE=report ~/.claude/hooks/session-time-report.sh", "timeout": 3 } ] }
     ]
   }
 }
 ```
 
-Two things worth knowing:
+Three things you have to know, all of them measured against `codex 0.150.1`:
 
+- **A new hook does not run until you trust it.** Codex keeps its own hook-trust
+  record, and an entry it has not seen before is skipped with no error and no
+  output at all. Open the hooks screen in the Codex TUI and trust them, or pass
+  `--dangerously-bypass-hook-trust` for a single automated invocation. Editing a
+  hook you had already trusted puts it back into review, so re-trust after a
+  change. If your report never appears, check this first: nothing else about it
+  looks like a failure.
+- **Codex clamps a SessionEnd hook to 3 seconds**, whatever `timeout` you write,
+  and says so when it loads the config. That is below this hook's own 4-second
+  default scan budget, so the recipe above sets `FORGE_SESSION_MAX_SEC=2`: the
+  scan gives up on its own terms before Codex kills it, and you get no report
+  rather than a half-read one.
 - Codex flushes the tail of its rollout log before it fires `SessionEnd`, so the
   transcript is already complete when the hook reads it.
-- If your other Codex `SessionStart` hooks go through a stdin-draining wrapper,
-  send this one the same way. It drains stdin itself, so a bare entry works too.
+
+If your other Codex `SessionStart` hooks go through a stdin-draining wrapper,
+send this one the same way. It drains stdin itself, so a bare entry works too.
 
 ## Hook Handler Types
 
