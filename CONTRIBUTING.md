@@ -65,7 +65,7 @@ You are a [role description]...
 - Follow the `<Agent_Prompt>` structure with `<Role>`, `<Constraints>`, `<Investigation_Protocol>`, `<Output_Format>` sections
 - Specify `model`. The kit's default is `sonnet` (10 of 16 agents); use `opus` only where the agent reasons over a whole codebase or arbitrates between other agents, and `haiku` for quick mechanical tasks.
 - Keep agent descriptions focused and specific. Copy the shape of [`agents/code-reviewer.md`](agents/code-reviewer.md).
-- Before opening the PR, run the same check CI runs:
+- Before opening the PR, run the same check CI runs (needs `pip install pyyaml jsonschema` once):
   `python3 -c "import json,re,sys,yaml;from jsonschema import validate;p=sys.argv[1];t=open(p).read();m=re.match(r'^---\n(.*?)\n---\n',t,re.S) or sys.exit('missing YAML frontmatter');validate(yaml.safe_load(m.group(1)),json.load(open('reference/agent-schema.json')));print('ok')" agents/my-agent.md`
 
 ### Commands (`commands/`)
