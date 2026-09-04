@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  macOS launchd template for the claude-forge Telegram resume bot.
+  Generated/expanded by install.sh — placeholders are replaced via sed.
+
+  After install:
+    launchctl list | grep com.claudeforge.telegram-resume
+    launchctl kickstart -k gui/$UID/com.claudeforge.telegram-resume
+    tail -f @@LOG_DIR@@/bot.out.log
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.claudeforge.telegram-resume</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-c</string>
+    <string>set -a; [ -f "@@ENV_FILE@@" ] &amp;&amp; . "@@ENV_FILE@@"; set +a; exec "@@PYTHON@@" "@@BOT@@"</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>@@WORKING_DIR@@</string>
+
+  <key>StandardOutPath</key>
+  <string>@@LOG_DIR@@/bot.out.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>@@LOG_DIR@@/bot.err.log</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>KeepAlive</key>
+  <dict>
+    <key>SuccessfulExit</key>
+    <false/>
+    <key>NetworkState</key>
+    <true/>
+  </dict>
+
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+</dict>
+</plist>
