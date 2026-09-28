@@ -21,6 +21,15 @@
       "description": "Parallel Search MCP for web search and URL content retrieval. Queries and requested URLs are sent to Parallel.ai.",
       "when_to_use": "Web search and URL content retrieval without an API key. Useful when you don't want to manage search-provider credentials."
     },
+    "serply": {
+      "type": "http",
+      "url": "https://api.serply.io/mcp",
+      "headers": {
+        "X-Api-Key": "${SERPLY_API_KEY}"
+      },
+      "description": "Serply MCP for Google web, news, Scholar, and Maps search plus URL scraping. Queries and requested URLs are sent to Serply. Setup and key: https://serply.io/mcp",
+      "when_to_use": "When built-in WebSearch is insufficient and you need Google results by vertical (news, Scholar papers with citation counts, Maps/local) or date-filtered queries. Requires SERPLY_API_KEY (free tier, no card)."
+    },
     "github": {
       "type": "stdio",
       "command": "npx",
