@@ -66,6 +66,24 @@ SESSION_LIST_LIMIT = int(os.environ.get("TELEGRAM_LIST_LIMIT", "20"))
 
 
 API_BASE = f"https://api.telegram.org/bot{BOT_TOKEN}" if BOT_TOKEN else ""
+
+
+def _redact(msg: str) -> str:
+    """Strip the bot token from arbitrary text before logging.
+
+    Telegram URLs embed the token in the path (`.../bot<token>/method`), and
+    requests.RequestException stringifies with the full URL — so any exception
+    repr would otherwise leak the token into bot.err.log on every network
+    blip.  Replace `/bot<token>/` with `/bot<redacted>/` and also strip bare
+    occurrences of the token for defence-in-depth.
+    """
+    if not msg:
+        return msg
+    out = str(msg)
+    if BOT_TOKEN:
+        out = out.replace(f"/bot{BOT_TOKEN}/", "/bot<redacted>/")
+        out = out.replace(BOT_TOKEN, "<redacted>")
+    return out
 HELP_TEXT = (
     "🤖 *Claude Code 세션 이어서 작업 봇*\n\n"
     "*명령어*\n"
@@ -114,8 +132,8 @@ def _api(method: str, **payload: Any) -> dict:
     try:
         resp = requests.post(url, json=payload, timeout=POLL_TIMEOUT + 5)
     except requests.RequestException as exc:
-        log.warning("API call %s failed: %s", method, exc)
-        return {"ok": False, "description": f"transport: {exc}"}
+        log.warning("API call %s failed: %s: %s", method, type(exc).__name__, _redact(str(exc)))
+        return {"ok": False, "description": f"transport: {type(exc).__name__}"}
     try:
         body = resp.json()
     except ValueError:
@@ -417,7 +435,21 @@ def handle_update(update: dict) -> None:
         return
 
     if _bridge is not None and _bridge.is_active():
-        ok, result = _bridge.inject(text)
+        owner = _bridge.state.chat_id if _bridge.state else ""
+        if str(chat_id) != str(owner):
+            # Bridge is owned by whichever chat opened it; allowlisted-but-
+            # different chats must not be able to type into someone else's
+            # live session.
+            log.warning(
+                "Rejecting bridge inject: sender=%s is not bridge owner=%s",
+                chat_id, owner,
+            )
+            send_message(
+                chat_id,
+                "🚫 _이 bridge는 다른 채팅에서 열렸습니다 — 주입 거부됨._",
+            )
+            return
+        ok, result = _bridge.inject(text, sender_chat_id=chat_id)
         if ok:
             log.info("Bridge inject from chat=%s: %d chars", chat_id, len(text))
         else:
@@ -469,7 +501,10 @@ def poll_loop() -> None:
                 timeout=poll_timeout + 5,
             )
         except requests.RequestException as exc:
-            log.warning("getUpdates failed: %s — backing off", exc)
+            log.warning(
+                "getUpdates failed: %s: %s — backing off",
+                type(exc).__name__, _redact(str(exc)),
+            )
             time.sleep(3)
             continue
 

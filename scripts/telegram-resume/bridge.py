@@ -50,9 +50,9 @@ MAX_TG_MESSAGE = 3800  # safe under 4096 to allow our header
 MAX_OUTPUT_BURST = int(os.environ.get("TELEGRAM_BRIDGE_MAX_BURST", "8"))
 
 # Telegram legacy-Markdown special chars that need escaping in arbitrary
-# text content (the parser will silently reject the whole message on
-# unbalanced/invalid sequences).  We deliberately keep backticks unescaped
-# inside fenced code blocks via _format_text_block().
+# text content.  Any unbalanced/invalid sequence makes the parser silently
+# reject the whole message, so we always escape and never emit fenced code
+# blocks from `escape_md`.
 _MD_LEGACY_ESCAPE = ("\\", "_", "*", "`", "[")
 
 
@@ -228,8 +228,13 @@ class BridgeManager:
 
     # -------------------------------------------------------------- inject
 
-    def inject(self, text: str) -> tuple[bool, str]:
+    def inject(self, text: str, sender_chat_id: str | None = None) -> tuple[bool, str]:
         """Push a user message into the bridged tmux pane.
+
+        A bridge is owned by the single chat that opened it (`state.chat_id`).
+        When ``sender_chat_id`` is supplied, it MUST match the owner — this is
+        the defence against cross-chat injection: with two allowlisted ids,
+        chat B must not be able to type into the session chat A opened.
 
         Single-line text goes through `send-keys -l` (literal).  Multi-line
         text goes through `load-buffer` + `paste-buffer` so each newline
@@ -238,6 +243,8 @@ class BridgeManager:
         """
         if not self._state:
             return False, "no bridge active"
+        if sender_chat_id is not None and str(sender_chat_id) != str(self._state.chat_id):
+            return False, "sender is not the bridge owner"
         if not shutil.which("tmux"):
             return False, "tmux not found"
         target = self._state.tmux_target

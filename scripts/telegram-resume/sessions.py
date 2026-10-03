@@ -41,16 +41,23 @@ class SessionMeta:
         return asdict(self)
 
 
-def _read_head_tail(path: Path, head: int = HEAD_LINES, tail: int = TAIL_LINES) -> tuple[list[str], list[str]]:
-    """Read first N and last N lines without loading entire file."""
+def _read_head_tail(
+    path: Path, head: int = HEAD_LINES, tail: int = TAIL_LINES
+) -> tuple[list[str], list[str], int]:
+    """Read first N and last N lines without loading entire file.
+
+    Returns (head_lines, tail_lines, line_count) — the count is reused as
+    turn_count by the caller instead of a second full-file scan.
+    """
     head_lines: list[str] = []
     tail_dq: deque[str] = deque(maxlen=tail)
+    i = -1
     with path.open("r", encoding="utf-8", errors="replace") as fp:
         for i, line in enumerate(fp):
             if i < head:
                 head_lines.append(line)
             tail_dq.append(line)
-    return head_lines, list(tail_dq)
+    return head_lines, list(tail_dq), i + 1
 
 
 def _safe_json(line: str) -> dict | None:
@@ -92,7 +99,7 @@ def load_session_meta(jsonl_path: Path) -> SessionMeta | None:
         return None
 
     try:
-        head_lines, tail_lines = _read_head_tail(jsonl_path)
+        head_lines, tail_lines, turn_count = _read_head_tail(jsonl_path)
     except OSError:
         return None
 
@@ -137,13 +144,6 @@ def load_session_meta(jsonl_path: Path) -> SessionMeta | None:
 
     project_name = Path(cwd).name if cwd else uuid[:8]
     slug = jsonl_path.parent.name
-
-    turn_count = 0
-    try:
-        with jsonl_path.open("rb") as fp:
-            turn_count = sum(1 for _ in fp)
-    except OSError:
-        pass
 
     return SessionMeta(
         uuid=uuid,

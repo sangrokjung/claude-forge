@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 #
 # install.sh — install the Telegram resume bot to ~/.claude-forge/telegram-resume/
-# and (optionally) wire the Stop hook and launchd service.
+# and (optionally) wire hooks and the launchd service.
+#
+# Hooks are OPT-IN: without --with-hook, the Stop + UserPromptSubmit hooks
+# that register Bridge into your Claude Code sessions are NOT installed.
+# This keeps the blast radius narrow — Bridge is remote keyboard input
+# into a live session by design, so you should opt in deliberately.
 #
 # Usage:
-#   ./install.sh              # interactive
-#   ./install.sh --no-hook    # skip Stop-hook registration
-#   ./install.sh --no-daemon  # skip launchd registration
-#   ./install.sh --uninstall  # remove launchd service + hook entry
+#   ./install.sh                # bot files + launchd, no hooks
+#   ./install.sh --with-hook    # also register Stop + UserPromptSubmit hooks
+#   ./install.sh --no-daemon    # skip launchd registration
+#   ./install.sh --uninstall    # remove launchd service + hook entry
 #
 
 set -euo pipefail
@@ -18,17 +23,22 @@ LAUNCHD_LABEL="com.claudeforge.telegram-resume"
 PLIST_PATH="$HOME/Library/LaunchAgents/${LAUNCHD_LABEL}.plist"
 SETTINGS_JSON="$HOME/.claude/settings.json"
 
-INSTALL_HOOK=1
+INSTALL_HOOK=0
 INSTALL_DAEMON=1
 UNINSTALL=0
 
 for arg in "$@"; do
   case "$arg" in
-    --no-hook)   INSTALL_HOOK=0 ;;
+    --with-hook) INSTALL_HOOK=1 ;;
+    --no-hook)
+      # Previously the default was opt-out; honour --no-hook as a no-op for
+      # anyone still passing it from scripts/docs.
+      INSTALL_HOOK=0
+      ;;
     --no-daemon) INSTALL_DAEMON=0 ;;
     --uninstall) UNINSTALL=1 ;;
     --help|-h)
-      sed -n '1,20p' "$0"
+      sed -n '1,24p' "$0"
       exit 0
       ;;
     *)
@@ -87,9 +97,13 @@ c_green "✓ Copied bot files to ${TARGET_DIR}"
 
 if [[ ! -f "$TARGET_DIR/.env" ]]; then
   cp -f "$REPO_DIR/.env.example" "$TARGET_DIR/.env"
-  c_yellow "✓ Created ${TARGET_DIR}/.env — EDIT IT before starting the bot."
+  chmod 600 "$TARGET_DIR/.env"
+  c_yellow "✓ Created ${TARGET_DIR}/.env (0600) — EDIT IT before starting the bot."
 else
-  c_green "✓ Existing ${TARGET_DIR}/.env preserved"
+  # Tighten perms even on existing files — the token must stay owner-only
+  # regardless of umask when the file was first created.
+  chmod 600 "$TARGET_DIR/.env"
+  c_green "✓ Existing ${TARGET_DIR}/.env preserved (perms tightened to 0600)"
 fi
 
 c_blue "→ Installing Python deps to ${TARGET_DIR}/venv"
@@ -101,21 +115,38 @@ fi
 c_green "✓ Installed Python deps"
 
 if (( INSTALL_HOOK )); then
-  c_blue "→ Registering Stop + UserPromptSubmit hooks in ${SETTINGS_JSON}"
+  # Claude-forge's own `install.sh` symlinks ~/.claude/settings.json into the
+  # repo checkout, so writing to it would dirty the checkout and later block
+  # `git pull`.  Register hooks in settings.local.json instead — Claude Code
+  # overlays local settings on top of the shared file.
+  SETTINGS_LOCAL="$(dirname "$SETTINGS_JSON")/settings.local.json"
+  WRITE_TARGET="$SETTINGS_JSON"
+  if [[ -L "$SETTINGS_JSON" ]]; then
+    WRITE_TARGET="$SETTINGS_LOCAL"
+    c_yellow "ℹ️  ${SETTINGS_JSON} is a symlink — writing hooks to ${WRITE_TARGET} instead"
+  fi
+
+  c_blue "→ Registering Stop + UserPromptSubmit hooks in ${WRITE_TARGET}"
   HOOKS_DIR="$(cd "$REPO_DIR/../../hooks" && pwd)"
   STOP_HOOK="${HOOKS_DIR}/telegram-resume-notify.sh"
   PROMPT_HOOK="${HOOKS_DIR}/handoff-telegram.sh"
 
-  mkdir -p "$(dirname "$SETTINGS_JSON")"
-  if [[ ! -f "$SETTINGS_JSON" ]]; then
-    echo '{}' > "$SETTINGS_JSON"
+  mkdir -p "$(dirname "$WRITE_TARGET")"
+  if [[ ! -f "$WRITE_TARGET" ]]; then
+    echo '{}' > "$WRITE_TARGET"
   fi
 
-  python3 - "$SETTINGS_JSON" "$STOP_HOOK" "$PROMPT_HOOK" <<'PY'
+  python3 - "$WRITE_TARGET" "$STOP_HOOK" "$PROMPT_HOOK" <<'PY'
 import json, sys, pathlib
 
 settings_path = pathlib.Path(sys.argv[1])
 stop_cmd, prompt_cmd = sys.argv[2], sys.argv[3]
+
+# Guard: if this is still a symlink for any reason, resolve + warn rather
+# than silently writing through it (the shared file would get polluted).
+if settings_path.is_symlink():
+    print(f"⚠️  Refusing to write through symlink: {settings_path}", file=sys.stderr)
+    sys.exit(3)
 
 data = json.loads(settings_path.read_text() or "{}")
 hooks = data.setdefault("hooks", {})
@@ -137,7 +168,7 @@ print("Stop:", register("Stop", stop_cmd, 10))
 print("UserPromptSubmit:", register("UserPromptSubmit", prompt_cmd, 5))
 settings_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
 PY
-  c_green "✓ Hooks registered"
+  c_green "✓ Hooks registered in ${WRITE_TARGET}"
 fi
 
 if (( INSTALL_DAEMON )); then
@@ -148,7 +179,7 @@ if (( INSTALL_DAEMON )); then
   LOG_DIR="$TARGET_DIR/logs"
   mkdir -p "$LOG_DIR"
 
-  PLIST_SRC="$REPO_DIR/systemd/com.claudeforge.telegram-resume.plist"
+  PLIST_SRC="$REPO_DIR/launchd/com.claudeforge.telegram-resume.plist"
   if [[ -f "$PLIST_SRC" ]]; then
     sed \
       -e "s|@@PYTHON@@|${PYTHON_BIN}|g" \
@@ -171,5 +202,11 @@ echo "1) Edit env:    \$EDITOR ${TARGET_DIR}/.env"
 echo "2) Restart bot: launchctl kickstart -k gui/\$UID/${LAUNCHD_LABEL}"
 echo "3) Test:        send '/sessions' to your bot"
 echo "4) Logs:        tail -f ${TARGET_DIR}/logs/bot.out.log"
+if (( ! INSTALL_HOOK )); then
+  echo
+  c_yellow "Note: Stop + UserPromptSubmit hooks are NOT installed."
+  c_yellow "      Resume alerts and the /tg bridge trigger need them."
+  c_yellow "      Rerun with --with-hook once you've read docs/THREAT-MODEL.md."
+fi
 echo
 c_green "Done."

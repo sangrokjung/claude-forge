@@ -1,161 +1,181 @@
-# Telegram Resume + Bridge Bot
+# Telegram Resume + Bridge
 
-> 두 가지 모드 — **Resume**(세션을 새로 켜기) + **Bridge**(살아있는 세션을 폰으로 원격 조작)
+> Opt-in companion to Claude Code — resume dead sessions from Telegram, and
+> optionally drive a live tmux session with your phone's keyboard.
+>
+> ⚠️ **Bridge forwards your Telegram messages as keystrokes into a live
+> terminal.** Read [THREAT-MODEL.md](./THREAT-MODEL.md) before enabling it.
 
-**비유**:
-- *Resume* = 카페 진동벨. 죽은 주문을 다시 부른다.
-- *Bridge* = 사무실 PC 원격 데스크톱. PC는 안 끄고, 폰으로 키보드만 친다.
+Two modes:
 
-설계 근거:
-- [`docs/design/telegram-resume-button.md`](../../docs/design/telegram-resume-button.md) — Resume 모드
-- [`docs/design/telegram-bridge-mode.md`](../../docs/design/telegram-bridge-mode.md) — Bridge 모드 (이번 추가)
+- **Resume** — session ended; tap a Telegram button to relaunch
+  `claude --resume <uuid>` on your Mac.
+- **Bridge** — session still alive; type `/tg` in the tmux pane and from
+  that point your Telegram chat *is* the keyboard until you `/end` it.
 
----
-
-## Resume 모드
-
-- `/sessions` — 최근 세션 리스트 + 프로젝트별 한 줄 버튼
-- `/resume`   — 가장 최근 세션으로 바로 확인 화면
-- Stop hook  — 세션 종료 시 `[ ↩️ 이 세션 이어서 작업 ]` 단일 버튼 알림
-- 콜백 → `executor.sh` → tmux에 `claude --resume <uuid>` 송출
-- Fork (`--fork-session`), Remote Control (`--remote-control`) 분기 지원
-
-## Bridge 모드 (NEW)
-
-**Mac에서 `/tg`를 치면** 그 순간부터 입출력이 Telegram으로 우회:
-
-```
-[Mac 터미널 / Claude Code 도중]
-> /tg
-↓ (UserPromptSubmit 훅이 가로챔)
-🔌 Telegram bridge 활성화됨
-
-[Telegram]
-> 빌드 한번 돌려봐    ← 폰에서 입력
-↓ (bot이 tmux send-keys로 주입)
-[Mac tmux]
-> 빌드 한번 돌려봐
-↓ (Claude 응답 → jsonl 기록)
-[bot이 jsonl tail에서 감지]
-↓
-[Telegram]
-🤖 Claude: 빌드 시작합니다...
-🔧 Bash: make build
-✅ 빌드 성공
-
-> /end  ← 종료 시
-↓
-🛑 Bridge 종료. Mac 터미널에서 계속하세요.
-```
-
-Claude 프로세스는 안 죽음 — MCP 서버·메모리 컨텍스트·tool 상태 그대로 유지.
+Analogy: Resume is the restaurant pager — your dead order rings again.
+Bridge is a remote-desktop keyboard — your PC never left, your fingers
+did.
 
 ---
 
-## 빠른 시작 (5분)
+## Status / Security
 
-### 1) 봇 생성
+| Item                        | Status                                     |
+|-----------------------------|--------------------------------------------|
+| Install default             | Bot files + launchd. Hooks are **opt-in**. |
+| Enable hooks                | `./install.sh --with-hook`                 |
+| Threat model                | [THREAT-MODEL.md](./THREAT-MODEL.md)       |
+| Platform                    | macOS (launchd) — Linux requires manual systemd unit |
+| Transport                   | long polling only, no inbound HTTP         |
+| Allowlist                   | `TELEGRAM_CHAT_IDS`, enforced on every inbound update |
+| Bridge owner check          | Only the chat that opened a bridge can inject into it |
 
-@BotFather에서 `/newbot` → 토큰 받기. 토큰을 봇과 채팅하면서 `/start`를 보내고:
+**Token = keyboard.** The bot token is the only thing standing between an
+attacker and your terminal while Bridge is active. See
+[THREAT-MODEL.md](./THREAT-MODEL.md) for the full picture.
+
+---
+
+## Quick start
 
 ```bash
+# 1) Create a bot via @BotFather, note the token.
+#    Message the bot once, then:
 curl "https://api.telegram.org/bot<TOKEN>/getUpdates" | jq '.result[0].message.chat.id'
-```
 
-본인의 chat_id가 출력됩니다.
-
-### 2) 설치
-
-```bash
+# 2) Install (bot files + launchd, NO hooks yet):
 cd scripts/telegram-resume
 ./install.sh
+
+# 3) Fill in ~/.claude-forge/telegram-resume/.env — chmod 0600 is set for you.
+
+# 4) Start the bot:
+launchctl kickstart -k "gui/$UID/com.claudeforge.telegram-resume"
+tail -f ~/.claude-forge/telegram-resume/logs/bot.out.log
+
+# 5) Verify from Telegram: send '/sessions' to your bot.
+
+# 6) ONLY after reading THREAT-MODEL.md — enable hooks for Resume alerts
+#    and the /tg Bridge trigger:
+./install.sh --with-hook
 ```
 
-자동으로 처리되는 항목:
-- `~/.claude-forge/telegram-resume/`에 봇 파일 복사
-- Python venv 생성 + `requests` 설치
-- `~/.claude/settings.json`의 Stop hook 등록
-- macOS launchd 서비스 (`com.claudeforge.telegram-resume`) 등록
+The hooks step is separate on purpose: once installed, every session-end
+sends a project / branch / 100-char prompt preview to Telegram, and `/tg`
+turns your Telegram chat into keyboard input.
 
-### 3) 토큰 설정
+---
 
-```bash
-$EDITOR ~/.claude-forge/telegram-resume/.env
-```
+## Install flags
+
+| Flag                | Effect                                           |
+|---------------------|--------------------------------------------------|
+| *(none)*            | Copy bot files, create `.env` (mode `0600`), register launchd. **No hooks.** |
+| `--with-hook`       | Also register `Stop` and `UserPromptSubmit` hooks in `settings.local.json`.* |
+| `--no-daemon`       | Skip launchd registration.                       |
+| `--uninstall`       | Unload + remove launchd service. (Hooks must be removed manually from `settings.local.json`.) |
+
+\* If `~/.claude/settings.json` is a symlink (claude-forge's default), the
+installer writes hooks to `settings.local.json` instead so your checkout
+stays clean.
+
+---
+
+## Environment
+
+Put these in `~/.claude-forge/telegram-resume/.env` (mode `0600`):
 
 ```ini
 TELEGRAM_BOT_TOKEN=1234567890:ABCdef...
-TELEGRAM_CHAT_IDS=987654321
+TELEGRAM_CHAT_IDS=987654321,112233445     # comma-separated allowlist
 ```
 
-### 4) 봇 재시작
+For the hooks to use the token, your Claude Code process also needs it
+exported — the hooks read `TELEGRAM_BOT_TOKEN` from the environment, not
+from `.env`. Put the export in your shell init or in a wrapper that
+launches Claude Code. The token thus lives in two places; see
+[THREAT-MODEL.md](./THREAT-MODEL.md) for the residual risk.
 
-```bash
-launchctl kickstart -k "gui/$UID/com.claudeforge.telegram-resume"
-tail -f ~/.claude-forge/telegram-resume/logs/bot.out.log
-```
+Optional:
 
-### 5) 동작 확인
-
-Telegram에서 봇에게 `/sessions` 전송. 최근 세션 리스트가 보이면 성공.
+| Variable                                | Default | Meaning                               |
+|-----------------------------------------|---------|---------------------------------------|
+| `TELEGRAM_POLL_TIMEOUT`                 | `25`    | long-poll seconds                     |
+| `TELEGRAM_LIST_LIMIT`                   | `20`    | sessions per page                     |
+| `TELEGRAM_BRIDGE_MAX_IDLE_MIN`          | `90`    | auto-close idle bridge                |
+| `TELEGRAM_BRIDGE_MAX_BURST`             | `8`     | max forwarded entries per tick        |
+| `TELEGRAM_RESUME_NOTIFY_MIN_TURNS`      | `2`     | skip Stop hook under N turns          |
+| `TELEGRAM_LOG_LEVEL`                    | `INFO`  |                                       |
 
 ---
 
-## 옵션 — 수동 실행 (launchd 없이)
+## What the Stop hook sends to Telegram
 
-```bash
-cd ~/.claude-forge/telegram-resume
-set -a; . ./.env; set +a
-./venv/bin/python bot.py
-```
+When `--with-hook` registers it, the Stop hook sends a message like:
+
+> ✅ *projectname* 세션 종료 · `branch` \
+> *"first 100 chars of the last user prompt"* \
+> 12턴 · `abcd1234`
+
+Specifically: project name (`basename` of cwd), git branch (last segment),
+turn count, first 8 chars of session UUID, and up to **100 characters of
+the last user message** in the transcript. If that preview is sensitive
+for your work, don't pass `--with-hook`, or edit
+`hooks/telegram-resume-notify.sh` to omit the quoted preview.
 
 ---
 
-## 파일 구조
+## File layout
 
 ```
 scripts/telegram-resume/
-├── README.md                                # 이 문서
-├── bot.py                                   # 메인 long-polling 봇 (Resume + Bridge 통합)
-├── bridge.py                                # Bridge 상태머신 (jsonl tail + tmux inject)
-├── keyboard.py                              # InlineKeyboard 빌더
-├── sessions.py                              # 세션 메타 로더
-├── executor.sh                              # Resume: tmux 송출
-├── notify.sh                                # 재사용 가능 Telegram 알림 송신기
-├── install.sh                               # 설치 자동화
-├── requirements.txt                         # requests
-├── .env.example                             # 환경변수 템플릿
-└── systemd/
-    └── com.claudeforge.telegram-resume.plist  # launchd 템플릿
+├── README.md                                   # this doc (English primary)
+├── THREAT-MODEL.md                             # read before --with-hook
+├── bot.py                                      # long-polling bot (Resume + Bridge)
+├── bridge.py                                   # bridge state machine
+├── keyboard.py                                 # inline keyboard builders
+├── sessions.py                                 # session metadata loader
+├── executor.sh                                 # resume → tmux
+├── notify.sh                                   # one-shot Telegram sender
+├── install.sh                                  # installer
+├── requirements.txt                            # requests
+├── .env.example                                # env template
+└── launchd/
+    └── com.claudeforge.telegram-resume.plist   # launchd template (macOS)
 
 hooks/
-├── telegram-resume-notify.sh                # Stop hook (Resume 알림 + Bridge 자동 정리)
-└── handoff-telegram.sh                      # UserPromptSubmit 훅 (/tg 트리거)
+├── telegram-resume-notify.sh                   # Stop hook (opt-in via --with-hook)
+└── handoff-telegram.sh                         # UserPromptSubmit hook (/tg trigger)
 ```
 
 ---
 
-## 콜백 라우팅
+## Callback routing
 
-| callback_data              | 동작                                  |
-|----------------------------|--------------------------------------|
-| `cf:resume:latest`         | 최근 세션 확인 화면                    |
-| `cf:resume:<uuid>`         | 특정 세션 확인 화면                    |
-| `cf:exec:r:<short>`        | `claude --resume <uuid>` (tmux)      |
-| `cf:exec:f:<short>`        | `... --fork-session`                 |
-| `cf:exec:rc:<short>`       | `... --remote-control`               |
-| `cf:list:page=N`           | 페이지네이션                           |
-| `cf:list:refresh`          | 리스트 새로고침                        |
-| `cf:cancel`                | 확인 취소                              |
-| `cf:settings`              | 설정 표시                              |
+| callback_data              | Action                                       |
+|----------------------------|----------------------------------------------|
+| `cf:resume:latest`         | Confirmation screen for most recent session  |
+| `cf:resume:<uuid>`         | Confirmation screen for a specific session   |
+| `cf:exec:r:<short>`        | `claude --resume <uuid>` via tmux            |
+| `cf:exec:f:<short>`        | `--fork-session`                             |
+| `cf:exec:rc:<short>`       | `--remote-control`                           |
+| `cf:list:page=N`           | Pagination                                   |
+| `cf:list:refresh`          | Refresh list                                 |
+| `cf:cancel`                | Dismiss confirmation                         |
+| `cf:settings`              | Settings dialog                              |
 
-UUID 짧은 형태(`<short>` = 첫 8자)는 64-byte callback 한도 안에서 모드 + UUID + prefix를 한 번에 보내기 위한 것. 봇은 prefix로 full UUID를 다시 찾아 실행합니다.
+`<short>` is the first 8 chars of the full UUID — the 64-byte Telegram
+callback limit forces a prefix, and the bot resolves it back to the full
+UUID from the session index before executing.
 
-## Bridge 모드 — 사용법
+---
 
-### 1) Mac에서 시작
+## Bridge mode — how it works
 
-Claude Code 세션 도중, **tmux 안에서** 다음 중 하나를 입력:
+### 1) Mac — trigger
+
+Inside a Claude Code session that is running **inside tmux**, type one of:
 
 ```
 /tg
@@ -163,43 +183,51 @@ Claude Code 세션 도중, **tmux 안에서** 다음 중 하나를 입력:
 >>tg
 ```
 
-UserPromptSubmit 훅이 가로채서:
-- `~/.claude-forge/telegram-resume/state/bridge.json` 작성
-- Telegram에 "🔌 Bridge 시작" 알림 발송
-- exit 2 — 이 prompt는 Claude로 가지 않음
+The `UserPromptSubmit` hook intercepts it and:
 
-### 2) Telegram에서 작업
+1. Writes `~/.claude-forge/telegram-resume/state/bridge.json`.
+2. Sends a "🔌 Bridge started" message to the first allowlisted chat.
+3. Exits with code 2 so the prompt is NOT delivered to Claude.
 
-봇과의 채팅에서:
-- **일반 텍스트** → Mac tmux로 `send-keys`로 주입 (= Claude 입력)
-- `/bridge` → 현재 bridge 상태 표시
-- `/end` → bridge 종료, Mac 터미널 사용 가능
+The Claude process keeps running — MCP servers, memory context, tool
+state are all preserved.
 
-### 3) PC로 복귀 — 두 가지 길
+### 2) Telegram — operate
 
-**A. Mac 터미널에서 직접 종료 (NEW)**
-```
-/tg-end       # 또는 /end-tg, /handoff-end
-```
-훅이 가로채서 상태 파일 삭제 + Telegram에 "Mac으로 복귀" 알림 전송. 그 다음부터는 Mac 키보드로만 작업, 폰 동기화 끊김.
+In your chat with the bot:
 
-**B. Telegram에서 종료**
-```
-/end
-```
+- **Plain text** → `tmux send-keys` into the Mac pane (= Claude input).
+  Only the chat that opened the bridge can inject; a second allowlisted
+  chat gets *"this bridge is owned by another chat — injection refused."*
+- `/bridge` or `/status` → current bridge state.
+- `/end` → stop the bridge; Mac keyboard resumes.
+- `/health` → diagnostic summary.
+- `/sessions`, `/resume` — Resume features (work regardless of Bridge).
 
-### 4) 자동 종료 조건
+### 3) Mac — return to the keyboard
 
-위 두 가지 수동 종료 외에:
-- Mac 세션이 종료될 때 (Stop hook이 자동 정리)
-- 90분 idle (`TELEGRAM_BRIDGE_MAX_IDLE_MIN`)
-- jsonl/tmux 세션 사라짐 감지 시 (bridge.tick에서 알림 후 stop)
+Two paths:
 
-### 5) 멀티라인 메시지
+- **A. From Mac tmux:** `/tg-end`, `/end-tg`, or `/handoff-end`. Hook
+  deletes the state file and pings Telegram that control returned.
+- **B. From Telegram:** `/end`.
 
-Telegram에서 멀티라인 메시지를 보내면 `tmux paste-buffer -p`로 **bracketed paste** 시퀀스(`ESC[200~ ... ESC[201~`)와 함께 전달됩니다. Claude Code TUI(React-Ink 기반)는 BPM을 지원하므로 멀티라인을 단일 입력으로 인식. 단, 일부 line-buffered 도구는 각 newline을 별도 Enter로 처리할 수 있음 — 이 경우 메시지를 한 줄씩 보내거나 Claude에 paste 모드 사용을 유도하세요.
+### 4) Auto-close conditions
 
-### Bridge 상태 파일 protocol
+- The owning Claude session's `Stop` hook fires (session ended).
+- 90 min idle (`TELEGRAM_BRIDGE_MAX_IDLE_MIN`).
+- `bridge.tick` notices the jsonl or tmux session vanished.
+
+### 5) Multi-line messages
+
+A Telegram message with newlines is sent through
+`tmux load-buffer` + `paste-buffer -p`, i.e. with bracketed-paste markers
+(`ESC[200~ … ESC[201~`). Claude Code's TUI (React Ink) treats the whole
+block as one input instead of splitting on each newline. Line-buffered
+tools that ignore BPM may still treat each newline as Enter — in that
+case send one line at a time.
+
+### Bridge state file
 
 ```json
 {
@@ -216,56 +244,75 @@ Telegram에서 멀티라인 메시지를 보내면 `tmux paste-buffer -p`로 **b
 }
 ```
 
-봇은 매 polling 사이클마다 이 파일의 mtime을 확인하고, 변경되면 reload. 봇 재시작에도 자동 복구됩니다 (단, `jsonl_size_at_start`로 과거 응답 replay는 방지).
+The bot polls this file's mtime each cycle; a change triggers a reload.
+Bot restarts recover the active bridge, and `jsonl_size_at_start` prevents
+replaying old assistant turns.
 
 ---
 
-## 보안
-
-- `TELEGRAM_CHAT_IDS` allowlist 외부에서 온 메시지는 즉시 거부
-- 봇은 long-polling 방식 — 외부 webhook 노출 없음
-- 토큰은 `~/.claude-forge/telegram-resume/.env`에만 저장 (Git에 커밋되지 않음)
-- 모든 명령은 본인 머신의 `executor.sh`에서만 실행 — SSH/원격 진입 없음
-- Stop hook은 토큰 미설정 시 silent no-op — 세션을 막지 않음
-
----
-
-## 검증 — 수동 dry-run
-
-봇을 실행하지 않고 컴포넌트만 점검:
+## Running without launchd
 
 ```bash
-# 1) 세션 인덱서 점검
-python3 sessions.py
-
-# 2) 키보드 렌더링 점검 (JSON 출력)
-python3 keyboard.py
-
-# 3) executor.sh 시뮬레이션 — 실제 tmux 실행 없음
-DRY_RUN=1 ./executor.sh resume <session-uuid>
-
-# 4) Stop hook 단독 점검 — 실제 메시지 발송 없음
-echo '{"session_id":"...","cwd":"/tmp","transcript_path":"..."}' \
-  | TELEGRAM_BOT_TOKEN= TELEGRAM_CHAT_IDS= \
-    ../../hooks/telegram-resume-notify.sh
+cd ~/.claude-forge/telegram-resume
+set -a; . ./.env; set +a
+./venv/bin/python bot.py
 ```
 
 ---
 
-## 제거
+## Dry-run verification
+
+```bash
+# 1) Session indexer
+python3 sessions.py
+
+# 2) Keyboard rendering (JSON)
+python3 keyboard.py
+
+# 3) executor.sh — no tmux side effects
+DRY_RUN=1 ./executor.sh resume <session-uuid>
+
+# 4) Stop hook — no outbound send with empty env
+echo '{"session_id":"...","cwd":"/tmp","transcript_path":"..."}' \
+  | TELEGRAM_BOT_TOKEN= TELEGRAM_CHAT_IDS= \
+    ../../hooks/telegram-resume-notify.sh
+
+# 5) Unit tests
+python3 -m unittest discover -s tests -v
+```
+
+---
+
+## Uninstall
 
 ```bash
 ./install.sh --uninstall
 ```
 
-launchd 서비스가 unload되고 plist가 삭제됩니다. Stop hook 항목은 `~/.claude/settings.json`에서 수동으로 지워주세요.
+Unloads and removes the launchd plist. The Stop / UserPromptSubmit hook
+entries (if you had passed `--with-hook`) must be removed manually from
+`~/.claude/settings.local.json` — grep for `telegram-resume-notify.sh`
+and `handoff-telegram.sh`.
 
 ---
 
-## 알려진 한계
+## Known limitations
 
-- macOS 전용 (launchd). Linux는 systemd unit을 직접 작성해야 합니다.
-- 봇이 동작 중인 머신에서만 세션 재개가 가능 — 멀티 머신 라우팅은 미지원.
-- iTerm2 native panes 대신 plain tmux 사용 — `claude --tmux` 호환성은 별도 작업.
+- macOS launchd only. Linux users need to write a systemd unit by hand.
+- Session resume runs on the machine the bot is on; multi-machine routing
+  is out of scope.
+- Uses `tmux` panes, not iTerm2 native panes; `claude --tmux`
+  compatibility is a separate problem.
 
-설계 문서의 "Standard / Full" 단계를 참고해 확장할 수 있습니다.
+---
+
+## 한국어 요약
+
+- 두 모드 — Resume(죽은 세션 다시 띄우기) + Bridge(살아있는 tmux 세션을 폰 키보드로 조작)
+- Bridge는 설계상 **원격 키보드 주입**이다. 토큰 유출 = 터미널 키보드 접근으로 간주.
+  활성화 전에 반드시 [THREAT-MODEL.md](./THREAT-MODEL.md)를 읽을 것.
+- hooks는 기본 비활성 (`--with-hook`로 명시적 opt-in)
+- `.env`는 설치 시 `0600`으로 강제
+- Bridge 활성 중에는 bridge를 연 채팅만 주입 가능 (교차 채팅 주입 차단)
+- Stop hook은 Telegram으로 프로젝트명 / 브랜치 / 최근 유저 메시지 100자 preview를 전송
+- 원래 Korean README는 git history에서 확인 가능 (`git log -- README.md`)
