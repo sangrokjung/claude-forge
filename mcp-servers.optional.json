@@ -21,6 +21,12 @@
       "description": "Parallel Search MCP for web search and URL content retrieval. Queries and requested URLs are sent to Parallel.ai.",
       "when_to_use": "Web search and URL content retrieval without an API key. Useful when you don't want to manage search-provider credentials."
     },
+    "fxmacrodata": {
+      "type": "http",
+      "url": "https://mcp.fxmacrodata.com",
+      "description": "FXMacroData MCP for official central-bank and statistics-agency macro data (policy rates, CPI, GDP, jobs, bond yields), release calendars, COT and FX rates across 22 currencies. Keyless covers USD releases from the last 90 days (15-minute delay), the USD release calendar, USD press releases and the USD data catalogue, up to 100 requests/day. For everything else add a headers block: { \"Authorization\": \"Bearer ${FXMACRODATA_API_KEY}\" }.",
+      "when_to_use": "Macro and FX research: what a central bank last did, when the next CPI or payrolls print is due, or the history of an indicator. Calendar `date` is the reference period; use `announcement_datetime` for release timing."
+    },
     "github": {
       "type": "stdio",
       "command": "npx",
